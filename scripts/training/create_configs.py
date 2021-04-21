@@ -85,14 +85,8 @@ config = {
     "description": "", # TODO
     "pre-name": "standard-config" # TODO 
 }
-# -
 
 config["accumulate_grad_batches"] = int(config["effective_batch_size"]/config["batch_size"])
-#z_range_min = (config["num_slices"]-1) * min(config["equidistance_range"])/10 + 4
-#z_range_max = (config["num_slices"]-1) * max(config["equidistance_range"])/10 
-#config["z_range_min"] = z_range_min
-#config["z_range_max"] = z_range_max
-data_path = config["data_path"]
 
 
 if __name__ == "__main__": 

@@ -1,5 +1,6 @@
 data/
-src/
+src/models/
+src/configs/local/
 .ipynb_checkpoints/
 __pycache__/
 
