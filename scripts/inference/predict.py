@@ -7,7 +7,7 @@ import numpy as np
 
 
 sys.path.append("../../")
-from scripts.inference.predict_volume import PredictVolume 
+
 from scripts.postprocessing.datasanitychecks import DataSanityCheck
 from scripts.postprocessing.slicescoreprocessing import SliceScoreProcessing
 from scripts.postprocessing.lookuptable import LookUpTable
