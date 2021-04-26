@@ -21,7 +21,6 @@ from pytorch_lightning.loggers import TensorBoardLogger
 sys.path.append("../../")
 from scripts.network_architecture.bpr_model import BodyPartRegression
 from scripts.dataset.bpr_dataset import BPRDataset
-from scripts.evaluation.model_evaluation import ModelEvaluation 
 
 np.seterr(divide='ignore', invalid='ignore') #TODO
 
