@@ -1,6 +1,7 @@
 import sys, os, datetime
 import argparse,  pickle, json
 import torch
+import pytorch_lightning as pl
 from sklearn.linear_model import RANSACRegressor
 from scipy.ndimage import gaussian_filter
 import numpy as np 
@@ -71,7 +72,7 @@ class Predict(SliceScoreProcessing):
         abdomen_array, abdomen_max = self.body_range(slice_scores, pelvis_max, self.lookup_table[3]["mean"])
         lung_array, lung_max       = self.body_range(slice_scores, abdomen_max, self.lookup_table[5]["mean"])
         neck_array, neck_max       = self.body_range(slice_scores, lung_max, self.lookup_table[6]["mean"])
-        head_array = np.arange(neck_max + 1, len(slice_scores))
+        head_array = np.arange(neck_max, len(slice_scores))
 
         body_part_examined = {"legs": list(legs_array.astype(float)), 
                              "pelvis": list(pelvis_array.astype(float)), 
@@ -106,8 +107,8 @@ class Predict(SliceScoreProcessing):
         lookup_copy = {key: {} for key in self.lookup_table}
         for key in self.lookup_table: 
             lookup_copy[key]["landmark-name"] = self.lookup_table[key]["landmark-name"]
-            lookup_copy[key]["mean"] = np.round(self.transform_0_100(self.lookup_table[key]["mean"].copy()), 3)
-            lookup_copy[key]["std"]  = np.round(self.transform_0_100(self.lookup_table[key]["std"].copy(), min_value=0), 3)
+            lookup_copy[key]["mean"] = np.round(self.transform_0_100(self.lookup_table[key]["mean"]), 3)
+            lookup_copy[key]["std"]  = np.round(self.transform_0_100(self.lookup_table[key]["std"], min_value=0), 3)
         
         return lookup_copy
     
@@ -166,21 +167,27 @@ if __name__ == "__main__":
     base_dir = "../../src/models/loh-ldist-l2/sigma-dataset-v11/"
     sys.path.append("../../../s429r/") # TODO!! Modell indieser Ordnerstruktur erzeugen und ausführbar machen -> Code auf GPU laden 
     # TODO Model in Dockerfile bekommen --> nicht Pfad außerhalb nutzen 
-    slope_mean = 0.012527
-    slope_std = 0.00138
+    slope_mean = 0.012527 # TODO 
+    slope_std = 0.00138 # TODO 
     lower_bound_score = -6
     upper_bound_score = 6
-    smoothing_sigma = 10
+    smoothing_sigma = 10 # TODO 
 
-    print(os.path.exists(base_dir))
-    lut = LookUpTable(base_dir)
-    """
-    lookup_table = lut.get_lookup_table(val_dataset)
-    bpr = BodyPartRegression(base_dir, 
-                             slope_mean, 
-                             slope_std, 
-                             lower_bound_score, 
-                             upper_bound_score, 
-                             smoothing_sigma,
-                             lookup_table)
-    """
+    # import lookup-table
+    with open(base_dir + "lookuptable.json", "r") as f: 
+        table = json.load(f)
+        # convert to integer keys
+        table = {int(key): table[key] for key in table.keys()}
+
+    model = Predict(base_dir, 
+                  slope_mean, 
+                  slope_std, 
+                  lower_bound_score, 
+                  upper_bound_score, 
+                  smoothing_sigma,
+                  lookup_table=table)
+
+    nifti_path = "../../data/Task049_StructSeg2019_Task1_HaN_OAR_20_0000.nii.gz"
+    output_path = "../../data/Task049_StructSeg2019_Task1_HaN_OAR_20_0000.json"
+
+    model.predict(nifti_path, output_path)
