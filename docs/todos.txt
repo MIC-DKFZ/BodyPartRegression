@@ -1,0 +1,19 @@
+- add descritpion of how to train the model 
+    - explain how to evaluate with the normalized MSE 
+    - example of train and validation dataset annotations 
+    - write this as well into the readme 
+
+- add tests 
+    - add regression tests and define test-cases at the end to ensure consistency
+
+- docmentation 
+    - add doc-strings 
+    - only use english for documentation 
+    - define types in functions/classes
+
+- go through # TODO in Code
+- convert the directory to a python module
+- make the code work for different GPU-capabilities (predict-method)
+
+- src
+    - addapt slope-mean and slope-std value

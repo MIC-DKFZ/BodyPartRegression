@@ -1,0 +1,3 @@
+docker login registry.hzdr.de
+docker build -t registry.hzdr.de/kaapana/kaapana/bodypartregression:test .
+docker push registry.hzdr.de/kaapana/kaapana/bodypartregression:test

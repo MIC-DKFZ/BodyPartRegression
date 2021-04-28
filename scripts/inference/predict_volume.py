@@ -23,9 +23,7 @@ class PredictVolume:
         self.config_filepath = base_dir + "config.p"
         self.model_filepath = base_dir + "model.pt"
 
-        print(self.config_filepath)
         with open(self.config_filepath, "rb") as f: 
-            print(f)
             self.config = pickle.load(f)
             
         self.model = BodyPartRegression(alpha=self.config["alpha"], 

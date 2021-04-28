@@ -1,7 +1,6 @@
-# Test
-
 # For more information, please refer to https://aka.ms/vscode-docker-python
-FROM python:3.8-slim-buster
+#FROM python:3.8-slim-buster
+FROM nvcr.io/nvidia/pytorch:20.09-py3
 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -15,6 +14,7 @@ COPY requirements.txt .
 COPY scripts scripts/
 COPY src/models/loh-ldist-l2/sigma-dataset-v11/model.pt src/models/loh-ldist-l2/sigma-dataset-v11/model.pt
 COPY src/models/loh-ldist-l2/sigma-dataset-v11/config.p src/models/loh-ldist-l2/sigma-dataset-v11/config.p
+COPY src/models/loh-ldist-l2/sigma-dataset-v11/lookuptable.json src/models/loh-ldist-l2/sigma-dataset-v11/lookuptable.json
 
 # Install pip requirements
 RUN pip3 install --upgrade pip
@@ -31,3 +31,6 @@ USER root
 
 # During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
 #CMD ["python", "application/BodyPartRegression.py"]
+
+# run docker in interactive mode command
+#  docker run -it --gpus all -v /home/AD/s429r/Documents/Code/bodypartregression/data/:/app/data/  bpr:v7 sh
