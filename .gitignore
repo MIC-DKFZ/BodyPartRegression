@@ -3,6 +3,7 @@ src/models/
 src/configs/local/
 .ipynb_checkpoints/
 __pycache__/
+starter.py
 
 *.gz
 *.csv
@@ -15,6 +16,7 @@ __pycache__/
 *.pth
 *.pyc
 *.png
+
 
 
 
