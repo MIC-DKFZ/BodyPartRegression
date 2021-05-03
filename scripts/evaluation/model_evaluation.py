@@ -12,29 +12,24 @@ sys.path.append("../../")
 from scripts.network_architecture.bpr_model import BodyPartRegression
 from scripts.postprocessing.lookuptable import LookUpTable
 from scripts.training.train import get_dataframe, get_datasets
-from src.settings.settings import COLORS, LANDMARK_CLASS_MAPPING, LANDMARK_NAMES, settings
+from src.settings.settings import *
 
 def grid_plot(X: np.ndarray, 
-             titles: list[str] = [], 
+             titles: list = [], 
              cols: int = 4, 
              rows: int = 4, 
              save_path: str = "", 
              cmap: str = "gray", 
-             vmax: int = 250):
-    if rows > 3:
-        _, axs = plt.subplots(rows, cols, figsize=(18, 16))
-
-    elif rows == 3:
-        _, axs = plt.subplots(rows, cols, figsize=(14, 15))
-    else:
-        _, axs = plt.subplots(rows, cols, figsize=(16, 10))
-
+             vmin: int = 0,
+             vmax: int = 250, 
+             figsize: tuple = (16,10)):
+    _, axs = plt.subplots(rows, cols, figsize=figsize)
     idx = 0
     for row in range(rows):
         for col in range(cols):
-            axs[row, col].imshow(X[idx], cmap=cmap, vmin=0, vmax=vmax)
+            axs[row, col].imshow(X[idx], cmap=cmap, vmin=vmin, vmax=vmax)
             if len(titles) == cols * rows:
-                axs[row, col].set_title(titles[idx])
+                axs[row, col].set_title(titles[idx], fontsize=15)
             axs[row, col].set_yticklabels([])
             axs[row, col].set_xticklabels([])
             idx += 1
