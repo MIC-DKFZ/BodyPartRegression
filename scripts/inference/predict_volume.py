@@ -15,7 +15,8 @@ class PredictVolume:
     - find valid region of slice scores 
         - output always: slice scores + slice index 
     """
-    def __init__(self, base_dir):
+    def __init__(self, base_dir, gpu=1):
+        self.gpu = gpu
         self.load_model(base_dir)
 
     def load_model(self, base_dir): 
@@ -31,7 +32,10 @@ class PredictVolume:
                                         base_model=self.config["base_model"])
         self.model.load_state_dict(torch.load(self.model_filepath))
         self.model.eval()
-        self.model.to("cuda")
+        if self.gpu: 
+            self.model.to("cuda")
+        else: 
+            self.model.to("cpu")
         
     def preprocess_npy(self, path: str, resize=False):
         x = np.load(path)
@@ -51,53 +55,20 @@ class PredictVolume:
         return scores, x
     
     
-    def predict_tensor(self, tensor): 
-        if tensor.shape[0] <= 300: 
-            with torch.no_grad(): 
-                self.model.eval()
-                scores = self.model(tensor) # TODO -> für zu viele slices aufsplitten
-                scores = [y.item() for y in scores]
-                
-        elif tensor.shape[1] <= 600: 
-            with torch.no_grad(): 
-                self.model.eval()
-                scores1 = self.model(tensor[0:300, :, :, :])
-                scores1 =  [y.item() for y in scores1]
+    def predict_tensor(self, tensor, n_splits=200): 
+        scores = []
+        n = tensor.shape[0]
+        slice_splits = list(np.arange(0, n, n_splits)) 
+        slice_splits.append(n)
 
-                scores2 = self.model(tensor[300:, :, :, :])
-                scores2 =  [y.item() for y in scores2]
-                scores = scores1 + scores2 
+        with torch.no_grad(): 
+            self.model.eval() 
+            for i in range(len(slice_splits) - 1): 
+                min_index = slice_splits[i]
+                max_index = slice_splits[i+1]
+                score = self.model(tensor[min_index:max_index,:, :, :])
+                scores += [s.item() for s in score]
 
-        elif tensor.shape[1] <= 900: 
-            with torch.no_grad(): 
-                self.model.eval()
-                scores1 = self.model(tensor[0:300, :, :, :])
-                scores1 =  [y.item() for y in scores1]
-
-                scores2 = self.model(tensor[300:600, :, :, :])
-                scores2 =  [y.item() for y in scores2]
-                
-                scores3 = self.model(tensor[600:, :, :, :])
-                scores3 =  [y.item() for y in scores3]
-                
-                scores = scores1 + scores2 + scores3
-        else: 
-            with torch.no_grad(): 
-                self.model.eval()
-                scores1 = self.model(tensor[0:300, :, :, :])
-                scores1 =  [y.item() for y in scores1]
-
-                scores2 = self.model(tensor[300:600, :, :, :])
-                scores2 =  [y.item() for y in scores2]
-
-                scores3 = self.model(tensor[600:900, :, :, :])
-                scores3 =  [y.item() for y in scores3]
-
-                scores4 = self.model(tensor[900:, :, :, :])
-                scores4 =  [y.item() for y in scores4]
-                
-                scores = scores1 + scores2 + scores3 + scores4
-            
         scores = np.array(scores)
         return scores
 

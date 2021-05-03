@@ -21,16 +21,18 @@ class Predict(SliceScoreProcessing):
     Args:
         model_dir (str): path, where model and config files are inside. The directory should contain the files:
         model.pt, config.p, settings.json and lookuptable.json
+        gpu (bool): 1 - run model with gpu
         smoothing_sigma (float): standard-deviation of gaussian filter for smoothing the slice-scores [in mm]
     """
 
     def __init__(
         self,
         model_dir: str,
+        gpu: bool = 1, 
         smoothing_sigma: float = 10,
     ):
-        SliceScoreProcessing.__init__(self, model_dir)
-
+        SliceScoreProcessing.__init__(self, model_dir, gpu=gpu)
+        
         # load settings
         with open(model_dir + "settings.json", "r") as f:
             settings = json.load(f)
@@ -97,7 +99,9 @@ class Predict(SliceScoreProcessing):
         # get nifti file as tensor
         x, pixel_spacings = self.n2n.preprocess_nifti(nifti_path)
         x = np.transpose(x, (2, 0, 1))[:, np.newaxis, :, :]
-        x_tensor = torch.tensor(x).cuda()
+        x_tensor = torch.tensor(x)
+        if self.gpu == 1: 
+            x_tensor = x_tensor.cuda() 
 
         # predict slice-scores
         scores = self.predict_tensor(x_tensor)

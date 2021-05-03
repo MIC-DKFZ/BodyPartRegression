@@ -206,12 +206,13 @@ class Nifti2Npy:
             return None, None, None
         pixel_spacings = np.array(list(img_nii.header.get_zooms()))
         affine = img_nii.affine[:3, :3]
-        return x, pixel_spacings, affine
+
+        x, pixel_spacings = self.reorder_volume(x, pixel_spacings, affine, filepath.split("/")[-1])
+
+        return x, pixel_spacings
 
     def preprocess_nifti(self, filepath):
-        filename = filepath.split("/")[-1]
-        x0, pixel_spacings0, affine = self.load_volume(filepath)
-        x, pixel_spacings = self.reorder_volume(x0, pixel_spacings0, affine, filename)
+        x, pixel_spacings= self.load_volume(filepath)
         x = self.rescale_xy(x)
         x = self.resize_volume(x, pixel_spacings)
         return x, pixel_spacings
@@ -222,26 +223,25 @@ class Nifti2Npy:
             self.opath + filename.replace(".nii", "").replace(".gz", "") + ".npy"
         )
 
-        x0, pixel_spacings0, affine = self.load_volume(filepath)
+        x0, pixel_spacings = self.load_volume(filepath)
         if not isinstance(x0, np.ndarray):
             return None, None, None
-        x, pixel_spacings = self.reorder_volume(x0, pixel_spacings0, affine, filename)
 
         check = self.test_pixelspacing(pixel_spacings)
         if check == 1:
             return None, None, None
         if (
-            (x.shape[0] < self.skip_slices)
-            or (x.shape[1] < self.skip_slices)
-            or (x.shape[2] < self.skip_slices)
+            (x0.shape[0] < self.skip_slices)
+            or (x0.shape[1] < self.skip_slices)
+            or (x0.shape[2] < self.skip_slices)
         ):
-            print(f"Not enough slices {x.shape}. Skip file.")
+            print(f"Not enough slices {x0.shape}. Skip file.")
             return None, None, None
-        if len(x.shape) > 3:
-            print(f"Unknown dimensions {x.shape}. Skip file.")
+        if len(x0.shape) > 3:
+            print(f"Unknown dimensions {x0.shape}. Skip file.")
             return None, None, None
 
-        x = self.rescale_xy(x)
+        x = self.rescale_xy(x0)
         x = self.resize_volume(x, pixel_spacings)
         x = self.remove_empty_slices(x)
         self.test_volume(x)

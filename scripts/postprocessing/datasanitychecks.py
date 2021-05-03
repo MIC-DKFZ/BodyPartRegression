@@ -70,11 +70,15 @@ class DataSanityCheck:
         return z_hat, delta_z_hat
 
     def is_reverse_zordering(self):
+        if np.isnan(self.a): return np.nan 
+        
         if self.a < 0:
             return 1
         return 0
 
     def is_valid_zspacing(self):
+        if np.isnan(self.zhat): return np.nan 
+
         if ((self.zhat - 3 * self.zhat_std) < self.z) and (
             self.z < (self.zhat + 3 * self.zhat_std)
         ):

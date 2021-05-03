@@ -6,9 +6,9 @@ sys.path.append("../../")
 from scripts.inference.predict_volume import PredictVolume
 
 class SliceScoreProcessing(PredictVolume): 
-    def __init__(self, base_dir): 
+    def __init__(self, base_dir, gpu=1): 
         self.base_dir = base_dir
-        PredictVolume.__init__(self, base_dir)
+        PredictVolume.__init__(self, base_dir, gpu=gpu)
     
     def cut_window(self, y: np.array, min_value: int, max_value: int):
         smaller_min_cut = np.where(y < min_value)[0]

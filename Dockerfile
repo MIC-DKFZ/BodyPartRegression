@@ -34,5 +34,3 @@ USER root
 # During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
 CMD ["python3", "-u", "starter.py"]
 
-# run docker in interactive mode command
-#  docker run -it --gpus all -v /home/AD/s429r/Documents/Code/bodypartregression/data/:/app/data/  bpr:v7 sh
