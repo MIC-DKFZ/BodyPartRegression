@@ -41,10 +41,14 @@ class DataSanityCheck:
         self.smoothing_sigma = smoothing_sigma 
         self.lower_bound_score = lower_bound_score
         self.upper_bound_score = upper_bound_score
-        self.a, self.b = self.fit_line(scores, zspacing)
+        if len(scores) == 1: 
+            self.a, self.b = np.nan, np.nan 
+            self.zhat, self.zhat_std = np.nan, np.nan 
+        else: 
+            self.a, self.b = self.fit_line(scores, zspacing)
 
-        # get expected z-spacing
-        self.zhat, self.zhat_std = self.estimate_zspacing(scores)
+            # get expected z-spacing
+            self.zhat, self.zhat_std = self.estimate_zspacing(scores)
 
     def fit_line(self, scores, zspacing=1):
         # Use robust linear regression

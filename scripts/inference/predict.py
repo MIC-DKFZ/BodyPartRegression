@@ -1,9 +1,7 @@
-import sys, os, datetime
-import argparse, pickle, json
+import sys, os
+import argparse, json
 import torch
-import pytorch_lightning as pl
-from sklearn.linear_model import RANSACRegressor
-from scipy.ndimage import gaussian_filter
+from tqdm import tqdm
 import numpy as np
 
 
@@ -59,7 +57,7 @@ class Predict(SliceScoreProcessing):
         upper_slice_index = np.max(body_region) + 1
         return np.arange(lower_slice_index, upper_slice_index), upper_slice_index
 
-    def _get_body_part_examined(self, slice_scores, valid_indices):
+    def _get_body_part_examined(self, slice_scores):
         legs_array, legs_max = self._body_range(
             slice_scores, 0, self.lookup_table[0]["mean"]
         )
@@ -77,12 +75,12 @@ class Predict(SliceScoreProcessing):
         )
         head_array = np.arange(neck_max, len(slice_scores))
 
-        legs_indices = list(valid_indices[legs_array].astype(float))
-        pelvis_indices = list(valid_indices[pelvis_array].astype(float))
-        abdomen_indices = list(valid_indices[abdomen_array].astype(float))
-        lung_indices = list(valid_indices[lung_array].astype(float))
-        neck_indices = list(valid_indices[neck_array].astype(float))
-        head_indices = list(valid_indices[head_array].astype(float))
+        legs_indices = list(legs_array.astype(float))
+        pelvis_indices = list(pelvis_array.astype(float))
+        abdomen_indices = list(abdomen_array.astype(float))
+        lung_indices = list(lung_array.astype(float))
+        neck_indices = list(neck_array.astype(float))
+        head_indices = list(head_array.astype(float))
 
         body_part_examined = {
             "legs": legs_indices,
@@ -129,6 +127,7 @@ class Predict(SliceScoreProcessing):
 
         return lookup_copy
 
+
     def predict(self, nifti_path, output_path):
         scores, pixel_spacings = self.predict_scores(nifti_path)
 
@@ -147,7 +146,7 @@ class Predict(SliceScoreProcessing):
         valid_zspacing = dsc.is_valid_zspacing()
 
         # estimate BodyPartExamined
-        body_part_examined = self._get_body_part_examined(cleaned_scores, valid_indices)
+        body_part_examined = self._get_body_part_examined(cleaned_scores)
 
         # transform to 0-100
         cleaned_scores = self._transform_0_100(cleaned_scores)
@@ -183,14 +182,13 @@ if __name__ == "__main__":
     opath = value.o
 
     base_dir = "../../src/models/loh-ldist-l2/sigma-dataset-v11/"
-    sys.path.append("../../../s429r/")
-
     model = Predict(
         base_dir,
         smoothing_sigma=10,
     )
 
-    nifti_path = "../../data/Task049_StructSeg2019_Task1_HaN_OAR_20_0000.nii.gz"
-    output_path = "../../data/Task049_StructSeg2019_Task1_HaN_OAR_20_0000.json"
-
-    model.predict(nifti_path, output_path)
+    data_path = "../../data/test_cases/"
+    nifti_paths = [data_path + f for f in os.listdir(data_path) if f.endswith(".nii.gz")]
+    for nifti_path in tqdm(nifti_paths): 
+        output_path = nifti_path.replace("test_cases", "test_results").replace(".nii.gz", ".json")
+        model.predict(nifti_path, output_path)
