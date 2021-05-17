@@ -41,6 +41,8 @@ class Nifti2Npy:
         reverse_zaxis: list = [],
         sigma: tuple = (0.8, 0.8, 0),
         reference_downscaling_factor: float = 0.25,
+        rescale_max=1, 
+        rescale_min=-1, 
     ):
         self.ipath = ipath
         self.opath = opath
@@ -58,6 +60,8 @@ class Nifti2Npy:
         self.corrputed_files = corrupted_files
         self.reverse_zaxis = reverse_zaxis
         self.skip_slices = skip_slices
+        self.rescale_max = rescale_max
+        self.rescale_min = rescale_min 
 
         self.sigma = sigma
         self.reference_downscaling_factor = reference_downscaling_factor
@@ -149,7 +153,7 @@ class Nifti2Npy:
         x = np.where(x > self.max_hu, self.max_hu, x)
         x = np.where(x < self.min_hu, self.min_hu, x)
         x = x - self.min_hu
-        x = x * 255 / (self.max_hu - self.min_hu)
+        x = x * (self.rescale_max - self.rescale_min)/ (self.max_hu - self.min_hu) + self.rescale_min 
         return x
 
     def resize_xy(self, x, pixel_spacings):

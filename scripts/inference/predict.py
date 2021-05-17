@@ -169,7 +169,7 @@ class Predict(SliceScoreProcessing):
             "z-spacing": np.round(float(pixel_spacings[2]), 2),
             "expected z-spacig": np.round(dsc.zhat, 2),
         }
-
+        
         with open(output_path, "w") as f:
             json.dump(json_output, f)
 

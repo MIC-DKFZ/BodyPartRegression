@@ -106,13 +106,15 @@ class BPRDataset(Dataset):
 
         self.landmark_names = [col for col in dfl.columns if col != "filename"]
         for i, f in enumerate(landmark_filenames): 
+            # fix autocorrectur of CT-COLON files 
+            f = f.replace("—","--")
             landmarks[i]["filename"] = f
             
             # get index of landmark in current dataset
             try: index = np.where(self.filenames == f)[0][0]
             except: 
                 print(f, np.where(self.filenames == f)) 
-                raise ValueError(f"Filename {f} not found")
+                raise ValueError(f"Filename {f} from landmark-file {path} not found.")
            
             landmarks[i]["dataset_index"] = index
             

@@ -203,7 +203,6 @@ class BodyPartRegression(pl.LightningModule):
         # iterate through files
         for i, landmark_dir in dataset.landmarks.items(): 
             x = dataset.get_full_volume(landmark_dir["dataset_index"])
-            
             x = torch.tensor(x[landmark_dir["slice_indices"], :, :])[:, np.newaxis, :, :]
             with torch.no_grad(): 
                 self.eval()
@@ -214,8 +213,6 @@ class BodyPartRegression(pl.LightningModule):
 
         landmark_vars = np.nanvar(landmark_prediction, axis=0)
         total_var = np.nanvar(landmark_prediction)
-        #total_var = self.estimate_total_var_prediction(dataset) # takes to much time
-        # TODO rename var to std loss
         return np.nanmean(landmark_vars/total_var), np.nanstd(landmark_vars/total_var), total_var
     
     def estimate_total_var_prediction(self, dataset): 

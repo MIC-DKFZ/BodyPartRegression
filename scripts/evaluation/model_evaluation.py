@@ -117,8 +117,8 @@ class Evaluation:
         """
         return {landmark: [landmark-scores] for landmark in landmarks} dictionary
         """
-        landmark_preds = {i: [] for i in range(0, 9)}
-        landmark_preds_ids = {i: [] for i in range(0, 9)}
+        landmark_preds = {i: [] for i in range(0, 12)}
+        landmark_preds_ids = {i: [] for i in range(0, 12)}
         for i, myDict in dataset.landmarks.items():
             index = myDict["dataset_index"]
             if index not in dataset_preds.keys():
@@ -304,7 +304,7 @@ class Evaluation:
         obs = []
         s = []
         for key, landmark_dict in dataset.landmarks.items():
-            obs_classes, pred_classes, scores, accuracy, _ = self.classify_volume(
+            obs_classes, pred_classes, scores, volume_accuracy, _ = self.classify_volume(
                 landmark_dict, predictions, reference_results, reverse=reverse
             )
             preds += list(pred_classes)
@@ -377,37 +377,23 @@ class Evaluation:
 
     def score_to_class(self, score, results, reverse):
         if not reverse:
-            if score < results[1]["mean"]:
-                return 1  # pelvis
-            if (score >= results[1]["mean"]) & (score < results[4]["mean"]):
-                return 2  # abdomen
-            if 5 in results.keys():
-                if (score >= results[4]["mean"]) & (score < results[5]["mean"]):
-                    return 3  # thorax
-
-                if (score >= results[5]["mean"]) & (score < results[6]["mean"]):
-                    return 4  # neck
-                if score >= results[6]["mean"]:
-                    return 5  # head
-            else:
-                if score >= results[4]["mean"]:
-                    return 4  # neck
+            for l_idx, map_value in  self.landmarkToClassMapping.items(): 
+                upper_condition = (score < results[l_idx]["mean"])
+                lower_condition = 1
+                if l_idx > 0: 
+                    lower_condition = (score > results[l_idx - 1]["mean"])
+                if (lower_condition & upper_condition): 
+                    return map_value
 
         else:
-            if score > results[1]["mean"]:
-                return 1  # pelvis
-            if (score <= results[1]["mean"]) & (score > results[4]["mean"]):
-                return 2  # abdomen
-            if 5 in results.keys():
-                if (score <= results[4]["mean"]) & (score > results[5]["mean"]):
-                    return 3  # thorax
-                if (score <= results[5]["mean"]) & (score > results[6]["mean"]):
-                    return 4  # neck
-                if score <= results[6]["mean"]:
-                    return 5  # head
-            else:
-                if score <= results[4]["mean"]:
-                    return 4  # neck
+            for l_idx, map_value in  self.landmarkToClassMapping.items(): 
+                upper_condition = (score > results[l_idx]["mean"])
+                lower_condition = 1
+                if l_idx > 0: 
+                    lower_condition = (score < results[l_idx - 1]["mean"])
+                if (lower_condition & upper_condition): 
+                    return map_value
+
 
     def plot_slope_histogramm(
         self, filename="slope-histogramm-2.png", bin_width=0.00025
@@ -434,7 +420,9 @@ class ModelEvaluation(Evaluation, LookUpTable):
     - BPREvaluation soll von dieser Klasse erben
     """
 
-    def __init__(self, base_filepath, setup=True, val_dataset=False):
+    def __init__(self, base_filepath,  
+                 val_dataset=False):
+
         Evaluation.__init__(self)
         LookUpTable.__init__(self, base_filepath)
         self.base_filepath = base_filepath
@@ -839,3 +827,8 @@ class ModelEvaluation(Evaluation, LookUpTable):
         rmse = np.mean(np.sqrt((np.array(y_estimated) - np.array(y_expected)) ** 2))
 
         return rmse
+
+if __name__ == "__main__": 
+    base_dir = "/home/AD/s429r/Documents/Code/bodypartregression/src/models/loh-ldist-l2/sigma-dataset-v11-v2/"
+    modelEval = ModelEvaluation(base_dir)
+

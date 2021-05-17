@@ -93,16 +93,16 @@ class AddFrame:
 
 
 class GaussNoise(object): 
-    def __init__(self, var_min=0, var_max=10, min_value=0, max_value=255, p=0.5): 
-        self.var_min = var_min
-        self.var_max = var_max
+    def __init__(self, std_min=0, std_max=5, min_value=0, max_value=255, p=0.5): 
+        self.std_min = std_min
+        self.std_max = std_max
         self.min_value = min_value
         self.max_value = max_value
         self.p = p
         
     def __call__(self, x): 
         if random.random() < self.p: 
-            sigma = random.uniform(self.var_min, self.var_max) ** 0.5
+            sigma = random.uniform(self.std_min, self.std_max)
             gauss = np.random.normal(0, sigma, x.shape)
             x = x + gauss
             x[x < self.min_value] = self.min_value
@@ -127,16 +127,18 @@ class ShiftHU(object):
 
 
 class ScaleHU: 
-    def __init__(self, scale_delta=0.2, max_value=255, p=1):
+    def __init__(self, scale_delta=0.2, min_value=0, max_value=255, p=1):
         self.p = p
         self.scale_delta = scale_delta
         self.max_value = max_value
+        self.min_value = min_value
     
     def __call__(self, x): 
         if random.random() < self.p: 
             factor = np.random.uniform(1 - self.scale_delta,  1 + self.scale_delta)
             x = x * factor
             x[x > self.max_value] = self.max_value
+            x[x < self.min_value] = self.min_value
             
         return x
 

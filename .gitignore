@@ -3,6 +3,11 @@ src/models/
 src/configs/local/
 .ipynb_checkpoints/
 __pycache__/
+lightning_logs/
+docs/docker-docs.txt
+starter.py 
+.vscode/*
+.vscode/settings.json
 
 *.gz
 *.csv

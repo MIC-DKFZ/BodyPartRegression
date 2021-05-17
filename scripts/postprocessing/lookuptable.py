@@ -10,15 +10,7 @@ from scripts.inference.predict_volume import PredictVolume
 class LookUpTable(PredictVolume): 
     def __init__(self, base_dir): 
         PredictVolume.__init__(self, base_dir)
-        self.description = {0: {"landmark-name": "pelvis_start"}, 
-                             1: {"landmark-name": "pelvis_end"}, 
-                             2: {"landmark-name": "kidneys"}, 
-                             3: {"landmark-name": "lung_start"}, 
-                             4: {"landmark-name": "liver_end"}, 
-                             5: {"landmark-name": "lung_end"}, 
-                             6: {"landmark-name": "teeths"}, 
-                             7: {"landmark-name": "nose"}, 
-                             8: {"landmark-name": "eyes_end"}}
+
         
     def get_lookup_table(self, dataset):
         """
@@ -42,7 +34,7 @@ class LookUpTable(PredictVolume):
         landmark_stds = np.nanstd(landmark_prediction, axis=0)
         total_var = np.nanvar(landmark_prediction)
         landmark_predictions = np.nanmean(landmark_prediction, axis=0)
-        results = {i: {"landmark-name": self.description[i]["landmark-name"],
+        results = {i: {"landmark-name": dataset.landmark_names[i],
                        "mean": np.round(landmark_predictions[i],3), 
                        "std": np.round(landmark_stds[i],3)} for i in range(len(landmark_vars))}
                        #"landmark metric": np.round(landmark_vars[i]/total_var, 4)}
