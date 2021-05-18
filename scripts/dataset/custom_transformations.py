@@ -50,11 +50,12 @@ class adjust_contrast(object):
 
 
 class AddFrame: 
-    def __init__(self, r_square=0.6, r_circle=0.75, dimension=128, p=0.2): 
+    def __init__(self, r_square=0.6, r_circle=0.75, dimension=128, p=0.2, fill_value=-1.0): 
         self.p = p
         self.d = dimension
         self.r_square=r_square
         self.r_circle=r_circle
+        self.fill_value = fill_value
         self.square_frame = self.get_square_frame()
         self.circle_frame = self.get_circle_frame()
 
@@ -72,7 +73,7 @@ class AddFrame:
         irange = int(self.d*self.r_circle + 0.5)
         if irange%2 == 0: irange += 1
         X = np.full((self.d, self.d), np.nan)
-        X_inside = np.full((irange, irange), 0.0)
+        X_inside = np.full((irange, irange), 0, dtype=float)
         center = irange//2
         radius = center
         for idx in range(irange): 
@@ -87,8 +88,9 @@ class AddFrame:
     
     def __call__(self, x): 
         if random.random() < self.p:
-            if random.random() < 0.5: 
-                x = np.nan_to_num(x + self.circle_frame)
+            x = x + self.circle_frame
+            x[np.isnan(x)] = self.fill_value
+            x = np.nan_to_num(x)
         return x
 
 
@@ -111,8 +113,8 @@ class GaussNoise(object):
 
 
 class ShiftHU(object): 
-    def __init__(self, limit=2.55, max_value=255, min_value=0, p=0.5): 
-        self.limit = limit
+    def __init__(self, shift_limit=2.55, max_value=255, min_value=0, p=0.5): 
+        self.limit = shift_limit
         self.p = p
         self.min_value = min_value
         self.max_value = max_value

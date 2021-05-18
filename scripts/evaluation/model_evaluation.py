@@ -284,16 +284,14 @@ class Evaluation:
         max_value = reference_results[8]["mean"]  # pelvis-start landmark
         min_value = reference_results[0]["mean"]  # eyes-end landmark
 
-        for key in landmark_preds.keys():
-            if not key in reference_results.keys():
+        for landmark in landmark_preds.keys():
+            if not landmark in reference_results.keys():
                 continue
             landmark_deviations = (
-                (np.array(landmark_preds[key]) - reference_results[key]["mean"])
+                (np.array(landmark_preds[landmark]) - reference_results[landmark]["mean"])
                 / (max_value - min_value)
             ) ** 2
             deviations += list(landmark_deviations)
-
-        deviations = deviations / (max_value - min_value)
 
         mse = np.mean(deviations)
         mse_std = np.std(deviations) / np.sqrt(len(deviations))
@@ -413,7 +411,7 @@ class Evaluation:
         plt.show()
 
 
-class ModelEvaluation(Evaluation, LookUpTable):
+class ModelEvaluation(Evaluation):
     """
     Todo:
     - allgemeine Klasse mit Funktionen, die nicht nur auf spezielles Modell angewendet werden kann
@@ -421,13 +419,20 @@ class ModelEvaluation(Evaluation, LookUpTable):
     """
 
     def __init__(self, base_filepath,  
-                 val_dataset=False):
+                 val_dataset=False, 
+                 overwrite_df_data_source_path="", 
+                 overwrite_landmark_path="", 
+                 overwrite_data_path=""):
 
         Evaluation.__init__(self)
-        LookUpTable.__init__(self, base_filepath)
+        self.lut = LookUpTable(base_filepath)
         self.base_filepath = base_filepath
         self.config_filepath = base_filepath + "config.p"
         self.model_filepath = base_filepath + "model.pt"
+
+        self.overwrite_df_data_source_path = overwrite_df_data_source_path
+        self.overwrite_landmark_path = overwrite_landmark_path
+        self.overwrite_data_path = overwrite_data_path
         # self.landmark_names = names = ["pelvis-start", "pelvis-end", "kidney", "lung-start",
         #                               "liver-end", "lung-end", "teeth", "nose", "eyes-end"]
         # self.landmarkToClassMapping = {0: 0, 1: 1, 2: 2, 3: 2, 4: 2, 5: 3, 6: 4, 7: 5, 8: 5}
@@ -458,7 +463,7 @@ class ModelEvaluation(Evaluation, LookUpTable):
         self._setup_data(val_dataset=val_dataset)
 
         # get look-up table
-        self.train_lm_summary = self.get_lookup_table(self.train_dataset)
+        self.train_lm_summary = self.lut.get_lookup_table(self.train_dataset)
 
         # get metrics
         self.val_metrics = self.trainer.test(self.model, self.val_dataloader)
@@ -474,7 +479,7 @@ class ModelEvaluation(Evaluation, LookUpTable):
         self.val_acc, self.val_std = self.accuracy(
             self.val_dataset, self.val_preds, self.train_lm_summary
         )
-        self.rmse, self.rmse_std = self.mean_relative_deviation(
+        self.mse, self.mse_std = self.mean_relative_deviation(
             self.val_landmark_preds, self.train_lm_summary
         )
 
@@ -495,6 +500,13 @@ class ModelEvaluation(Evaluation, LookUpTable):
         config["num_slices"] = 8
         config["batch_size"] = 32
         config["shuffle_train_dataloader"] = False
+
+        if len(self.overwrite_df_data_source_path) > 0: 
+            config["df_data_source_path"] = self.overwrite_df_data_source_path
+        if len(self.overwrite_landmark_path) > 0: 
+            config["landmark_path"] = self.overwrite_landmark_path
+        if len(self.overwrite_data_path) > 0: 
+            config["data_path"] = self.overwrite_data_path
 
         df_data = get_dataframe(config)
         if val_dataset:
@@ -805,14 +817,14 @@ class ModelEvaluation(Evaluation, LookUpTable):
             f"\nValidation accuracy:             \t{self.val_acc*100:<1.2f}% +- {self.val_std*100:<1.2f}%"
         )
         print(
-            f"Mean relative deviation (in 1e-6): \t{self.rmse*1e6:1.1f} +- {self.rmse_std*1e6:1.1f}"
+            f"Mean relative deviation (in 1e-3): \t{self.mse*1e3:1.3f} +- {self.mse_std*1e3:1.3f}"
         )
         print("\nTraining-set prediction summary\n*******************************")
-        self.print(self.train_lm_summary)
+        self.lut.print(self.train_lm_summary)
 
-    def rmse_for_volume(self, vol_idx):
+    def mse_for_volume(self, vol_idx):
         """
-        Notice: rmse values are not normalized
+        Notice: mse values are not normalized
         """
         (
             slice_idx,
@@ -824,9 +836,9 @@ class ModelEvaluation(Evaluation, LookUpTable):
         ) = self.landmarks2score(vol_idx, self.val_dataset, self.train_lm_summary)
         expected_f = interpolate.interp1d(slice_idx, expected_scores, kind="linear")
         y_expected = expected_f(x)
-        rmse = np.mean(np.sqrt((np.array(y_estimated) - np.array(y_expected)) ** 2))
+        mse = np.mean(np.sqrt((np.array(y_estimated) - np.array(y_expected)) ** 2))
 
-        return rmse
+        return mse
 
 if __name__ == "__main__": 
     base_dir = "/home/AD/s429r/Documents/Code/bodypartregression/src/models/loh-ldist-l2/sigma-dataset-v11-v2/"

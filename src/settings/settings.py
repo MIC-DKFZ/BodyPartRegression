@@ -52,3 +52,8 @@ COLORS = [
     "purple",
     "pink",
 ]
+
+DF_DATA_SOURCE_PATH = "/home/AD/s429r/Documents/Data/DataSet/MetaData/meta-data-public-dataset-npy-arrays-3.5mm-windowing-sigma.xlsx"
+LANDMARK_PATH =  "/home/AD/s429r/Documents/Data/DataSet/MetaData/landmarks-meta-data-v2.xlsx"
+DATA_PATH = "/home/AD/s429r/Documents/Data/DataSet/Arrays-3.5mm-sigma-01/"
+

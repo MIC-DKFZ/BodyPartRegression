@@ -15,9 +15,9 @@ from scripts.dataset.custom_transformations import *
 
 # Array-3.5 mm pixel spacing setup - 01 scaling
 gaussian_noise = GaussNoise(std_min=0, std_max=0.04, min_value=-1, max_value=1, p=0.5) # equivalent to max gaussian std noise of 50 HU 
-shift_hu = ShiftHU(limit=0.08, min_value=-1, max_value=1, p=0.5) # equivalent to max shift of 100 HU 
+shift_hu = ShiftHU(shift_limit=0.08, min_value=-1, max_value=1, p=0.5) # equivalent to max shift of 100 HU 
 scale_hu = ScaleHU(scale_delta=0.2, min_value=-1, max_value=1, p=0.5)
-add_frame = AddFrame(p=0.25)
+add_frame = Ad, p=0.dFrame(p=0.25)
 flip = A.Flip(p=0.5) # Flip the input either horizontally, vertically or both
 transpose = A.Transpose(p=0.5) 
 shift_scale_rotate = A.ShiftScaleRotate(shift_limit=0, scale_limit=0.2, rotate_limit=10, p=0.5, border_mode=cv2.BORDER_CONSTANT)
