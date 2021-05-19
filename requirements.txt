@@ -1,5 +1,5 @@
+pytorch_lightning==1.2.10
 nibabel
 scipy
 sklearn
 albumentations
-pytorch_lightning
