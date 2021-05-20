@@ -63,8 +63,8 @@ config = {
     "base_model": "vgg", 
     "   ": "\n*******************************************************", 
 
-    "batch_size": 20, # TODO
-    "effective_batch_size": 20, # TODO 
+    "batch_size": 21, # TODO
+    "effective_batch_size": 21, # TODO 
     "equidistance_range": [5, 100], # in mmm 
     "num_slices": 12, 
 
@@ -102,20 +102,20 @@ if __name__ == "__main__":
     }
     
     
-    experiments = {0: {'alpha': 0.001, 'beta': 0.001, 'name': 'loh-0.001a-0.001b.p'},
- 1: {'alpha': 0.001, 'beta': 0.01, 'name': 'loh-0.001a-0.01b.p'},
- 2: {'alpha': 0.001, 'beta': 0.1, 'name': 'loh-0.001a-0.1b.p'},
- 3: {'alpha': 0.01, 'beta': 0.001, 'name': 'loh-0.01a-0.001b.p'},
- 4: {'alpha': 0.01, 'beta': 0.01, 'name': 'loh-0.01a-0.01b.p'},
- 5: {'alpha': 0.01, 'beta': 0.1, 'name': 'loh-0.01a-0.1b.p'},
- 6: {'alpha': 0.1, 'beta': 0.001, 'name': 'loh-0.1a-0.001b.p'},
- 7: {'alpha': 0.1, 'beta': 0.01, 'name': 'loh-0.1a-0.01b.p'},
- 8: {'alpha': 0.1, 'beta': 0.1, 'name': 'loh-0.1a-0.1b.p'},
- 9: {'alpha': 1, 'beta': 0.001, 'name': 'loh-1a-0.001b.p'},
- 10: {'alpha': 1, 'beta': 0.01, 'name': 'loh-1a-0.01b.p'},
- 11: {'alpha': 1, 'beta': 0.1, 'name': 'loh-1a-0.1b.p'},
- 12: {'alpha': 0.1, 'beta': 0.0001, 'name': 'loh-0.1a-0.0001b.p'},
- 13: {'alpha': 0.1, 'beta': 1, 'name': 'loh-0.1a-1b.p'}}
+    experiments = {0: {'alpha_h': 0.001, 'beta_h': 0.001, 'name': 'loh-0.001a-0.001b.p'},
+ 1: {'alpha_h': 0.001, 'beta_h': 0.01, 'name': 'loh-0.001a-0.01b.p'},
+ 2: {'alpha_h': 0.001, 'beta_h': 0.1, 'name': 'loh-0.001a-0.1b.p'},
+ 3: {'alpha_h': 0.01, 'beta_h': 0.001, 'name': 'loh-0.01a-0.001b.p'},
+ 4: {'alpha_h': 0.01, 'beta_h': 0.01, 'name': 'loh-0.01a-0.01b.p'},
+ 5: {'alpha_h': 0.01, 'beta_h': 0.1, 'name': 'loh-0.01a-0.1b.p'},
+ 6: {'alpha_h': 0.1, 'beta_h': 0.001, 'name': 'loh-0.1a-0.001b.p'},
+ 7: {'alpha_h': 0.1, 'beta_h': 0.01, 'name': 'loh-0.1a-0.01b.p'},
+ 8: {'alpha_h': 0.1, 'beta_h': 0.1, 'name': 'loh-0.1a-0.1b.p'},
+ 9: {'alpha_h': 1, 'beta_h': 0.001, 'name': 'loh-1a-0.001b.p'},
+ 10: {'alpha_h': 1, 'beta_h': 0.01, 'name': 'loh-1a-0.01b.p'},
+ 11: {'alpha_h': 1, 'beta_h': 0.1, 'name': 'loh-1a-0.1b.p'},
+ 12: {'alpha_h': 0.1, 'beta_h': 0.0001, 'name': 'loh-0.1a-0.0001b.p'},
+ 13: {'alpha_h': 0.1, 'beta_h': 1, 'name': 'loh-0.1a-1b.p'}}
 
     save_path_folder = "../../src/configs/" + mode + "/" +  config["model_name"] + "/" 
     if not os.path.exists(save_path_folder): os.mkdir(save_path_folder)
