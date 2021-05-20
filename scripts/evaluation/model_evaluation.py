@@ -141,6 +141,8 @@ class Evaluation:
         max_value=20,
         save_path=False,
         skip_diff=0.25,
+        vmin=-1, 
+        vmax=1
     ):
         targets = np.linspace(min_value, max_value, 5, dtype=int)
 
@@ -151,11 +153,12 @@ class Evaluation:
             else:
                 save_path2 = False
             self.plot_closest_slices(
-                dataset, preds, target, skip_diff=skip_diff, save_path=save_path2
+                dataset, preds, target, skip_diff=skip_diff, save_path=save_path2, vmin=vmin, vmax=vmax
             )
 
     def plot_closest_slices(
-        self, dataset, predict_dict, y_target, skip_idx=[], skip_diff=3, save_path=False
+        self, dataset, predict_dict, y_target, skip_idx=[], skip_diff=3, save_path=False,
+        vmin=-1, vmax=1,
     ):
         vols = []
         titles = []
@@ -171,7 +174,7 @@ class Evaluation:
             if np.abs(closest_value - y_target) < skip_diff:
                 vols.append(closest_slice)
                 titles.append(f"Volume {vol_idx} closest image to score {y_target}")
-        grid_plot(vols[0:9], titles[0:9], cols=3, rows=3, save_path=save_path)
+        grid_plot(vols[0:9], titles[0:9], cols=3, rows=3, save_path=save_path, vmin=vmin, vmax=vmax)
 
     def get_closest_slice(self, dataset, predict_dict, y_target, vol_idx):
         y_pred = np.array(predict_dict[vol_idx])
@@ -620,10 +623,15 @@ class ModelEvaluation(Evaluation):
             x = [(z * i) for i in range(len(y))]
             x_shift = landmark_xy[idx]["x"] * z
             x = np.array(x) - x_shift
+
+            # get landmark positions
+            x_landmarks, y_landmarks = self.landmark_positions(dataset, idx, x, y)
+
             plt.plot(x / 10, y, label=f"volume {idx}", color=color)
+            plt.plot(x_landmarks/10, y_landmarks, color="black", marker=".", linestyle=" ")
             plotted_ids.append(idx)
 
-        self.set_scientific_style(ax)
+        # self.set_scientific_style(ax) # TODO 
         plt.xlabel("z [cm]", fontsize=16)
         plt.ylabel("slice score", fontsize=16)
         plt.title(title, fontsize=16)
@@ -660,9 +668,14 @@ class ModelEvaluation(Evaluation):
             y = preds[idx]
             z = zs[idx]
             x = np.array([(z * i) for i in range(len(y))])
-            plt.plot(x / 10, y, label=f"volume {idx}", color=color)
 
-        self.set_scientific_style(ax, legend_anchor=(0.98, 0.7))
+            # get landmark positions
+            x_landmarks, y_landmarks = self.landmark_positions(dataset, idx, x, y)
+
+            plt.plot(x / 10, y, label=f"volume {idx}", color=color)
+            plt.plot(x_landmarks/10, y_landmarks, color="black", marker=".", linestyle=" ")
+
+        # self.set_scientific_style(ax, legend_anchor=(0.98, 0.7)) # TODO 
         plt.xlabel("z [cm]", fontsize=16)
         plt.ylabel("slice score", fontsize=16)
         plt.title(title, fontsize=16)
@@ -674,6 +687,16 @@ class ModelEvaluation(Evaluation):
                 bbox_inches="tight",
             )
         plt.show()
+
+    def landmark_positions(self, dataset, dataset_idx, x, y):
+        landmarks = dataset.landmarks 
+        landmark_dict_idx = [i for i in range(len(dataset)) if landmarks[i]["dataset_index"] == dataset_idx][0]
+        indices = landmarks[landmark_dict_idx]["slice_indices"]
+        x_landmarks = x[indices]
+        y_landmarks = np.array(y)[indices]
+
+        return x_landmarks, y_landmarks
+
 
     def predict_image(self, volume, indices=[]):
         if len(indices) == 0:
