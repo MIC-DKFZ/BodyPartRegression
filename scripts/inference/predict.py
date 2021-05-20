@@ -8,11 +8,10 @@ import numpy as np
 sys.path.append("../../")
 
 from scripts.postprocessing.datasanitychecks import DataSanityCheck
-from scripts.postprocessing.slicescoreprocessing import SliceScoreProcessing
 from scripts.preprocessing.nifti2npy import Nifti2Npy
+from scripts.inference.predict_volume import PredictVolume
 
-
-class Predict(SliceScoreProcessing):
+class Predict(PredictVolume):
     """Get body part examined estimate for CT volume.
     Predict slice scores for a given 3D CT nifti-file.
     Get information about the seen bodypart in the CT file based on the look up table,
@@ -31,7 +30,7 @@ class Predict(SliceScoreProcessing):
         gpu: bool = 1, 
         smoothing_sigma: float = 10,
     ):
-        SliceScoreProcessing.__init__(self, model_dir, gpu=gpu)
+        PredictVolume.__init__(self, model_dir, gpu=gpu)
         
         # load settings
         with open(model_dir + "settings.json", "r") as f:
@@ -100,8 +99,8 @@ class Predict(SliceScoreProcessing):
         x, pixel_spacings = self.n2n.preprocess_nifti(nifti_path)
         x = np.transpose(x, (2, 0, 1))[:, np.newaxis, :, :]
         x_tensor = torch.tensor(x)
-        if self.gpu == 1: 
-            x_tensor = x_tensor.cuda() 
+        x_tensor.to(self.device)
+
 
         # predict slice-scores
         scores = self.predict_tensor(x_tensor)
@@ -180,15 +179,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--i", default="")
     parser.add_argument("--o", default="")
+    parser.add_argument("--g", default=1) 
 
     value = parser.parse_args()
     ipath = value.i
     opath = value.o
+    gpu = value.g
 
     base_dir = "../../src/models/loh-ldist-l2/sigma-dataset-v11/"
     model = Predict(
         base_dir,
         smoothing_sigma=10,
+        gpu=gpu
     )
 
     data_path = "../../data/test_cases/"

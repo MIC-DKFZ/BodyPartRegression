@@ -16,8 +16,12 @@ class PredictVolume:
         - output always: slice scores + slice index 
     """
     def __init__(self, base_dir, gpu=1):
-        self.gpu = gpu
+        if gpu == 1: 
+            self.device = "cuda"
+        else: 
+            self.device = "cpu"
         self.load_model(base_dir)
+
 
     def load_model(self, base_dir): 
         self.base_filepath = base_dir
@@ -32,10 +36,7 @@ class PredictVolume:
                                         base_model=self.config["base_model"])
         self.model.load_state_dict(torch.load(self.model_filepath))
         self.model.eval()
-        if self.gpu: 
-            self.model.to("cuda")
-        else: 
-            self.model.to("cpu")
+        self.model.to(self.device)
         
     def preprocess_npy(self, path: str, resize=False):
         x = np.load(path)
@@ -50,7 +51,7 @@ class PredictVolume:
     
     def predict_npy(self, path: str, resize=False): 
         x = self.preprocess_npy(path, resize=resize)
-        x_tensor = torch.tensor(x[:, np.newaxis, :, :]).cuda()
+        x_tensor = torch.tensor(x[:, np.newaxis, :, :]).to(device)
         scores = self.predict_tensor(x_tensor)
         return scores, x
     
@@ -63,10 +64,11 @@ class PredictVolume:
 
         with torch.no_grad(): 
             self.model.eval() 
+            self.model.to(self.device)
             for i in range(len(slice_splits) - 1): 
                 min_index = slice_splits[i]
                 max_index = slice_splits[i+1]
-                score = self.model(tensor[min_index:max_index,:, :, :])
+                score = self.model(tensor[min_index:max_index,:, :, :].to(self.device))
                 scores += [s.item() for s in score]
 
         scores = np.array(scores)
