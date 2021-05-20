@@ -116,6 +116,9 @@ if __name__ == "__main__":
  11: {'alpha_h': 1, 'beta_h': 0.1, 'name': 'loh-1a-0.1b.p'},
  12: {'alpha_h': 0.1, 'beta_h': 0.0001, 'name': 'loh-0.1a-0.0001b.p'},
  13: {'alpha_h': 0.1, 'beta_h': 1, 'name': 'loh-0.1a-1b.p'}}
+    
+    experiments = {0: {"alpha_h": 1, "beta_h": 0.0001, "name": "loh-1a-0.0001b.p"},
+                   1: {"alpha_h": 1, "beta_h": 1, "name": "loh-1a-1b.p"}}
 
     save_path_folder = "../../src/configs/" + mode + "/" +  config["model_name"] + "/" 
     if not os.path.exists(save_path_folder): os.mkdir(save_path_folder)
