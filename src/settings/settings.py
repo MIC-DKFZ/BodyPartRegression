@@ -29,7 +29,7 @@ LANDMARK_CLASS_MAPPING = {
     7: CLASSES["thorax"],
     8: CLASSES["thorax"],
     9: CLASSES["neck"],
-    10: CLASSES["head"],
+    10: CLASSES["neck"],
     11: CLASSES["head"],
 }
 

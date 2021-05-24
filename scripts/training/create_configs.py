@@ -287,6 +287,15 @@ if __name__ == "__main__":
                       'model_name': 'order-loss-experiment',
                       'name': 'order-loss-c-16m-1.2a.p'}}
 
+    experiments = {0: {'alpha_h': 1, 'beta_h': 0.001, 'name': 'loh-1a-0.001b.p', 'model_name':'loh-experiment'},
+               1: {'alpha_h': 1, 'beta_h': 0.01, 'name': 'loh-1a-0.01b.p', 'model_name':'loh-experiment'},
+               2: {'alpha_h': 1, 'beta_h': 0.1, 'name': 'loh-1a-0.1b.p', 'model_name':'loh-experiment'},
+               3: {"alpha_h": 1, "beta_h": 0.0001, "name": "loh-1a-0.0001b.p", 'model_name':'loh-experiment'},
+               4: {"alpha_h": 1, "beta_h": 1, "name": "loh-1a-1b.p", 'model_name':'loh-experiment'},
+               5: {"alpha_h": 1, "beta_h": 0.008, "name": "loh-1a-0.008b.p", 'model_name':'loh-experiment'},
+               6: {"alpha_h": 1, "beta_h": 0.02, "name": "loh-1a-0.02b.p", 'model_name':'loh-experiment'},
+               7: {"alpha_h": 1, "beta_h": 0.03, "name": "loh-1a-0.03b.p", 'model_name':'loh-experiment'},
+               8: {"alpha_h": 1, "beta_h": 0.04, "name": "loh-1a-0.04b.p", 'model_name':'loh-experiment'}}
 
     save_path_folder = "../../src/configs/" + mode + "/" +  config["model_name"] + "/" 
     if not os.path.exists(save_path_folder): os.mkdir(save_path_folder)
