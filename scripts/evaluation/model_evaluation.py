@@ -67,7 +67,7 @@ class ModelEvaluation(Evaluation):
         # get train and val slice score matrix
         self.val_slice_score_matrix = self.model.compute_slice_score_matrix(self.val_dataset)
         self.train_slice_score_matrix = self.model.compute_slice_score_matrix(self.train_dataset)
-        self.mse, self.mse_std, self.d = self.model.normalized_mse(modelEval.val_dataset, modelEval.train_dataset)
+        self.mse, self.mse_std, self.d = self.model.normalized_mse(self.val_dataset, self.train_dataset)
         
         # get look-up table
         self.train_lm_summary = self.lut.get_lookup_table(self.train_dataset)

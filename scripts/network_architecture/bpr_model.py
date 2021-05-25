@@ -197,23 +197,9 @@ class BodyPartRegression(pl.LightningModule):
         return optimizer
     
     def landmark_metric(self, dataset): 
-        # initialize landmark prediction array
-        landmark_prediction = np.full((len(dataset.landmarks),
-                                       len(dataset.landmark_names)), np.nan)
-        
-        # iterate through files
-        for i, landmark_dir in dataset.landmarks.items(): 
-            x = dataset.get_full_volume(landmark_dir["dataset_index"])
-            x = torch.tensor(x[landmark_dir["slice_indices"], :, :])[:, np.newaxis, :, :]
-            with torch.no_grad(): 
-                self.eval()
-                ys = self(x.cuda())
-                ys = np.array([y.item() for y in ys])
-
-            landmark_prediction[(i, landmark_dir["defined_landmarks_i"])] = ys
-
-        landmark_vars = np.nanvar(landmark_prediction, axis=0)
-        total_var = np.nanvar(landmark_prediction)
+        slice_score_matrix = self.compute_slice_score_matrix(dataset)
+        landmark_vars = np.nanvar(slice_score_matrix, axis=0)
+        total_var = np.nanvar(slice_score_matrix)
         return np.nanmean(landmark_vars/total_var), np.nanstd(landmark_vars/total_var), total_var
     
 
