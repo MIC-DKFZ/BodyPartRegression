@@ -297,8 +297,7 @@ if __name__ == "__main__":
                7: {"alpha_h": 1, "beta_h": 0.03, "name": "loh-1a-0.03b.p", 'model_name':'loh-experiment'},
                8: {"alpha_h": 1, "beta_h": 0.04, "name": "loh-1a-0.04b.p", 'model_name':'loh-experiment'}}
 
-    save_path_folder = "../../src/configs/" + mode + "/" +  config["model_name"] + "/" 
-    if not os.path.exists(save_path_folder): os.mkdir(save_path_folder)
+    experiments = {0: { 'name': 'test.p', 'model_name':'test'}}
 
     for idx, data in experiments.items(): 
         print("Idx: ", idx)
@@ -306,11 +305,13 @@ if __name__ == "__main__":
             config[key] = data[key]
             print(key, data[key])
 
-        save_path = save_path_folder + config["name"]
-        # Save file 
-        with open(save_path, 'wb') as f:
-            print("save file: ", save_path)
-            pickle.dump(config, f)
+    save_path_folder = "../../src/configs/" + mode + "/" +  config["model_name"] + "/" 
+    if not os.path.exists(save_path_folder): os.mkdir(save_path_folder)
+    save_path = save_path_folder + config["name"]
+    # Save file 
+    with open(save_path, 'wb') as f:
+        print("save file: ", save_path)
+        pickle.dump(config, f)
 
 
 

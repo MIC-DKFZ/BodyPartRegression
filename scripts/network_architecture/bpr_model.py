@@ -144,8 +144,6 @@ class BodyPartRegression(pl.LightningModule):
         self.log('val_landmark_metric_var', landmark_var)
         self.log('total variance', total_var)
       
-
-    
     def validation_step(self, batch, batch_idx):
         loss, loss_order, loss_dist, loss_l2 = self.base_step(batch, batch_idx)
         self.log('val_loss', loss)
