@@ -137,12 +137,16 @@ class BodyPartRegression(pl.LightningModule):
         train_dataloader = self.train_dataloader()
 
         landmark_mean, landmark_var, total_var = self.landmark_metric(val_dataloader.dataset)
-        mse, mse_std, d = self.normalized_mse(val_dataloader.dataset, train_dataloader.dataset)
-        self.log('mse', mse)
-        self.log('d', d)
+        mse_t, mse_t_std, d = self.normalized_mse(val_dataloader.dataset, train_dataloader.dataset)
+        mse_v, mse_v_std, d = self.normalized_mse(val_dataloader.dataset, val_dataloader.dataset)
+
         self.log('val_landmark_metric_mean', landmark_mean)
         self.log('val_landmark_metric_var', landmark_var)
         self.log('total variance', total_var)
+        self.log('mse_t', mse_t)
+        self.log('mse_v', mse_v)
+
+        self.log('d', d)
       
     def validation_step(self, batch, batch_idx):
         loss, loss_order, loss_dist, loss_l2 = self.base_step(batch, batch_idx)
@@ -223,21 +227,35 @@ class BodyPartRegression(pl.LightningModule):
                                                     dataset.landmark_slices_per_volume,
                                                     dataset.defined_landmarks_per_volume): 
                 scores = self(torch.tensor(slices[:, np.newaxis, :, :]).cuda())
-                slice_score_matrix[i, defined_landmarks] = scores[0].cpu().detach().numpy()
+                slice_score_matrix[i, defined_landmarks] = scores[:, 0].cpu().detach().numpy()
         return slice_score_matrix
 
     def normalized_mse(self, val_dataset, train_dataset): 
         val_slice_score_matrix = self.compute_slice_score_matrix(val_dataset)
         train_slice_score_matrix = self.compute_slice_score_matrix(train_dataset)
-        expected_slice_scores = np.nanmean(train_slice_score_matrix, axis=0) 
-        d = (expected_slice_scores[-1] - expected_slice_scores[1]) 
-
-        mse_values = ((val_slice_score_matrix - expected_slice_scores)/d)**2
-        mse = np.nanmean(mse_values)
-        counts = np.sum(np.where(~np.isnan(mse_values), 1, 0))
-        mse_std = np.nanstd(mse_values)/np.sqrt(counts)
+        mse, mse_std, d = normalized_mse_from_matrices(val_slice_score_matrix, train_slice_score_matrix)
         
         return mse, mse_std, d
+
+
+def normalized_mse_from_matrices(val_slice_score_matrix, train_slice_score_matrix): 
+    expected_slice_scores = np.nanmean(train_slice_score_matrix, axis=0) 
+    d = (expected_slice_scores[-1] - expected_slice_scores[0]) 
+
+    mse_values = ((val_slice_score_matrix - expected_slice_scores)/d)**2
+    mse = np.nanmean(mse_values)
+    counts = np.sum(np.where(~np.isnan(mse_values), 1, 0))
+    mse_std = np.nanstd(mse_values)/np.sqrt(counts)
+
+    return mse, mse_std, d
+
+
+
+
+
+
+
+
 
 ############################## TODO ################################################################################
 """
