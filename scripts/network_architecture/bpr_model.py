@@ -1,4 +1,5 @@
 import numpy as np 
+import datetime
 import random, sys
 import torch
 import cv2
@@ -131,31 +132,29 @@ class BodyPartRegression(pl.LightningModule):
         x = x.reshape(batch_size, num_slices)
         return x
         
+    def validation_epoch_end(self, validation_step_outputs): 
+        val_dataloader = self.val_dataloader()
+        train_dataloader = self.train_dataloader()
 
+        landmark_mean, landmark_var, total_var = self.landmark_metric(val_dataloader.dataset)
+        mse, mse_std, d = self.normalized_mse(val_dataloader.dataset, train_dataloader.dataset)
+        self.log('mse', mse)
+        self.log('d', d)
+        self.log('val_landmark_metric_mean', landmark_mean)
+        self.log('val_landmark_metric_var', landmark_var)
+        self.log('total variance', total_var)
+      
+
+    
     def validation_step(self, batch, batch_idx):
         loss, loss_order, loss_dist, loss_l2 = self.base_step(batch, batch_idx)
-        dataloader = self.val_dataloader()
-        landmark_mean, landmark_var, total_var = self.landmark_metric(dataloader.dataset)
-        
-        self.val_landmark_metric.append(landmark_mean)
-        self.val_loss.append(loss.item())
-        
         self.log('val_loss', loss)
         self.log('val_loss_order', loss_order)
         self.log('val_loss_dist', loss_dist)
         self.log('val_loss_l2', loss_l2)
-        self.log('val_landmark_metric_mean', landmark_mean)
-        self.log('val_landmark_metric_var', landmark_var)
-        self.log('total variance', total_var)
-        
-        if len(self.val_loss) > 6: 
-            x = np.array(self.val_loss)
-            y = np.array(self.val_landmark_metric)
-            indices = np.where((x != np.inf) &(x != np.nan))[0]
-            pcorr = pearsonr(x[indices], y[indices])
-            self.log('pearson-correlation', torch.tensor(pcorr[0]))       
 
-        
+
+
     def test_step(self, batch, batch_idx):
         loss, loss_order, loss_dist, loss_l2 = self.base_step(batch, batch_idx)
         dataloader = self.test_dataloader()
@@ -215,28 +214,34 @@ class BodyPartRegression(pl.LightningModule):
         total_var = np.nanvar(landmark_prediction)
         return np.nanmean(landmark_vars/total_var), np.nanstd(landmark_vars/total_var), total_var
     
-    def estimate_total_var_prediction(self, dataset): 
-        with torch.no_grad():  
-            self.eval()
+
+    def compute_slice_score_matrix(self, dataset): 
+        with torch.no_grad(): 
+            self.eval() 
             self.to("cuda")
-            data_points = 0
-            preds = []
-            for i in range(20):
-                i = random.randint(0, len(dataset)-1)
-                x = dataset.get_full_volume(i)
-                random_slice_indices = np.array(np.random.sample(25)*x.shape[0], dtype=int)
-                x = torch.tensor(x[random_slice_indices, :, :])[:, np.newaxis, :, :]
-                data_points += x.shape[0]
+            slice_score_matrix = np.full(dataset.landmark_matrix.shape, np.nan)
 
-                # calculate prediciton
-                ys = self(x.cuda())
-                ys = [y.item() for y in ys]    
-                preds = preds + ys
-        return np.var(preds)
+            for i, slices, defined_landmarks in zip(np.arange(0, slice_score_matrix.shape[0]), 
+                                                    dataset.landmark_slices_per_volume,
+                                                    dataset.defined_landmarks_per_volume): 
+                scores = self(torch.tensor(slices[:, np.newaxis, :, :]).cuda())
+                slice_score_matrix[i, defined_landmarks] = scores[0].cpu().detach().numpy()
+        return slice_score_matrix
 
+    def normalized_mse(self, val_dataset, train_dataset): 
+        val_slice_score_matrix = self.compute_slice_score_matrix(val_dataset)
+        train_slice_score_matrix = self.compute_slice_score_matrix(train_dataset)
+        expected_slice_scores = np.nanmean(train_slice_score_matrix, axis=0) 
+        d = (expected_slice_scores[-1] - expected_slice_scores[1]) 
 
+        mse_values = ((val_slice_score_matrix - expected_slice_scores)/d)**2
+        mse = np.nanmean(mse_values)
+        counts = np.sum(np.where(~np.isnan(mse_values), 1, 0))
+        mse_std = np.nanstd(mse_values)/np.sqrt(counts)
+        
+        return mse, mse_std, d
 
-# TODO 
+############################## TODO ################################################################################
 """
     def get_resnet(self): 
         resnet50 = models.resnet50(pretrained=self.pretrained)

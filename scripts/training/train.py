@@ -31,32 +31,30 @@ def get_dataframe(config):
 
 
 def get_datasets(config, df):
-    train_filenames = df[df.train_data == 1].filename.values
-    val_filenames = df[df.val_data == 1].filename.values
-    test_filenames = df[df.test_data == 1].filename.values
+    train_filenames = df.loc[df.train_data == 1, "filename"].values
+    val_filenames =   df.loc[df.val_data == 1, "filename"].values
+    test_filenames =  df.loc[df.test_data == 1, "filename"].values
 
-    train_filepaths = [config["data_path"] + f for f in train_filenames]
-    val_filepaths = [config["data_path"] + f for f in val_filenames]
-    test_filepaths = [config["data_path"] + f for f in test_filenames]
-
-    train_zspacings = df[df.filename.isin(train_filenames)]["pixel_spacingz"].values
-    val_zspacings = df[df.filename.isin(val_filenames)]["pixel_spacingz"].values
-    test_zspacings = df[df.filename.isin(test_filenames)]["pixel_spacingz"].values
+    train_zspacings = df.loc[df.train_data == 1, "pixel_spacingz"].values
+    val_zspacings =   df.loc[df.val_data == 1, "pixel_spacingz"].values
+    test_zspacings =  df.loc[df.test_data == 1, "pixel_spacingz"].values
     
     
-    train_dataset = BPRDataset(train_filepaths,  
-                           train_zspacings, 
-                           landmark_path=config["landmark_path"], 
-                           landmark_sheet_name="landmarks-train", # TODO -without-merge
-                           random_seed=config["random_seed"], 
-                           custom_transform=config["custom_transform"], 
-                           albumentation_transform=config["albumentation_transform"],
-                           equidistance_range=config["equidistance_range"], 
-                           num_slices=config["num_slices"])
+    train_dataset = BPRDataset(data_path=config["data_path"], 
+                               filenames=train_filenames, 
+                                z_spacings=train_zspacings, 
+                                landmark_path=config["landmark_path"], 
+                                landmark_sheet_name="landmarks-train", # TODO -without-merge
+                                random_seed=config["random_seed"], 
+                                custom_transform=config["custom_transform"], 
+                                albumentation_transform=config["albumentation_transform"],
+                                equidistance_range=config["equidistance_range"], 
+                                num_slices=config["num_slices"])
     
     
-    val_dataset = BPRDataset(val_filepaths,  
-                             val_zspacings,
+    val_dataset = BPRDataset(data_path=config["data_path"], 
+                             filenames=val_filenames, 
+                             z_spacings=val_zspacings,
                             landmark_path=config["landmark_path"], 
                             landmark_sheet_name="landmarks-val",                         
                              random_seed=config["random_seed"],  
@@ -65,15 +63,16 @@ def get_datasets(config, df):
                              equidistance_range=config["equidistance_range"], 
                              num_slices=config["num_slices"])
     
-    test_dataset = BPRDataset(test_filepaths, 
-                          test_zspacings,
-                          landmark_path=config["landmark_path"], 
-                          landmark_sheet_name="landmarks-test",                          
-                          random_seed=config["random_seed"],
-                          custom_transform=config["custom_transform"], 
-                          albumentation_transform=config["albumentation_transform"],
-                          equidistance_range=config["equidistance_range"], 
-                          num_slices=config["num_slices"])
+    test_dataset = BPRDataset(data_path=config["data_path"], 
+                              filenames=test_filenames, 
+                                z_spacings=test_zspacings,
+                                landmark_path=config["landmark_path"], 
+                                landmark_sheet_name="landmarks-test",                          
+                                random_seed=config["random_seed"],
+                                custom_transform=config["custom_transform"], 
+                                albumentation_transform=config["albumentation_transform"],
+                                equidistance_range=config["equidistance_range"], 
+                                num_slices=config["num_slices"])
     
     return train_dataset, val_dataset, test_dataset
 

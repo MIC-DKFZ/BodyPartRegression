@@ -10,7 +10,8 @@ cv2.setNumThreads(1)
 class BPRDataset(Dataset):
 
     def __init__(self, 
-                 filepaths, 
+                 data_path, 
+                 filenames,
                  z_spacings,
                  landmark_path=None, 
                  landmark_sheet_name=False,
@@ -22,16 +23,28 @@ class BPRDataset(Dataset):
                  random_seed=0,
                  drop_landmarks=[]):
         
-        self.filepaths = filepaths
+        self.data_path = data_path
+        self.filenames = filenames
+        self.filepaths = [data_path + f for f in filenames]
         self.z_spacings = z_spacings # in mm
-        self.filenames = np.array([f.split("/")[-1] for f in filepaths])
         self.length = len(self.filepaths)
         self.num_slices = num_slices
         self.equidistance_range = equidistance_range
         self.custom_transform = custom_transform
+        self.random_seed = random_seed
+        random.seed(random_seed)
+
+        # define landmark related 
+        self.landmark_df = pd.read_excel(landmark_path, sheet_name=landmark_sheet_name, engine='openpyxl', index_col="filename")
+        self.landmark_matrix = np.array(self.landmark_df)
+        self.landmark_names = self.landmark_df.columns
+        self.landmark_files = [f + ".npy" for f in self.landmark_df.index]
+        self.landmark_slices_per_volume, self.defined_landmarks_per_volume = self.get_landmark_slices()
+
         if landmark_path:
             self.landmarks = self.get_landmarks_dict(landmark_path, landmark_sheet_name, drop_landmarks=drop_landmarks)
     
+        # define augmentations 
         if custom_transform: 
             self.custom_transform = custom_transform
         
@@ -44,8 +57,8 @@ class BPRDataset(Dataset):
         # Use identity function, if no transformation is defined 
         else: self.albumentation_transform =  A.Compose([A.Transpose(p=0)])
             
-        self.random_seed = random_seed
-        random.seed(random_seed)
+    def _swap_axis(self, x): 
+        return x.swapaxes(2, 1).swapaxes(1, 0)
         
     def __len__(self):
         return self.length
@@ -62,8 +75,19 @@ class BPRDataset(Dataset):
             x[:, :, i] = self.custom_transform(x[:, :, i])
             x[:, :, i] = self.albumentation_transform(image=x[:, :, i])["image"]
                 
-        return x.swapaxes(2, 1).swapaxes(1, 0), indices, physical_distance
+        return self._swap_axis(x), indices, physical_distance
     
+
+    def get_slices(self, filename, indices): 
+        volume = np.load(self.data_path + filename, mmap_mode='r')
+        x = volume[:, :, indices]
+        return self._swap_axis(x)
+
+    def get_full_volume(self, idx: int): 
+        filepath = self.filepaths[idx]
+        volume = np.load(filepath)
+        return self._swap_axis(volume)
+
     def get_random_slice_indices(self, z, z_spacing):
         
         # convert equidistance range in slice index difference s
@@ -84,13 +108,29 @@ class BPRDataset(Dataset):
         slice_indices = np.arange(starting_slice, starting_slice + self.num_slices * dist, dist)
         return slice_indices, np.array([physical_distance]* (self.num_slices - 1))
 
-    # @multimethod()   # TODO 
-    def get_full_volume(self, idx: int): 
-        filepath = self.filepaths[idx]
-        volume = np.load(filepath)
-        return volume.swapaxes(2, 1).swapaxes(1, 0)
-    
-    
+    def get_landmark_slices(self): 
+        landmark_slices_per_volume =  []
+        defined_landmarks_per_volume = []
+
+        for i, file in enumerate(self.landmark_files): 
+            # get slice indices of defined landmarks for file
+            landmark_indices = self.landmark_matrix[i, :]
+
+            # get information about which landmarks are defined e.g. 0, 1, 2, 3
+            defined_landmarks = np.where(~np.isnan(landmark_indices))[0]
+
+            # only save indices of defined landmarks to drop missing values and convert to int
+            landmark_indices = landmark_indices[defined_landmarks].astype(int)
+
+            # extract slices of landmark positions for file 
+            slices = self.get_slices(file, landmark_indices)
+
+            landmark_slices_per_volume.append(slices)
+            defined_landmarks_per_volume.append(defined_landmarks)
+
+        return landmark_slices_per_volume, defined_landmarks_per_volume
+
+    ############################### TODO ################################################## 
     def get_landmarks_dict(self, path, sheet_name=False, drop_landmarks=[]):
         def isnan(x): 
             return not (x==x)

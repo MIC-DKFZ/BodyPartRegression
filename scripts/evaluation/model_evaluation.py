@@ -280,7 +280,8 @@ class Evaluation:
 
         return myDict
 
-    def mean_relative_deviation(self, landmark_preds, reference_results):
+    def normalized_mse(self, landmark_preds, reference_results):        
+        # TODO -- umschreiben -- siehe bpr_model -> diese Funktion nutzen     
         deviations = []
 
         # normalize deviations
@@ -297,7 +298,7 @@ class Evaluation:
             deviations += list(landmark_deviations)
 
         mse = np.mean(deviations)
-        mse_std = np.std(deviations) / np.sqrt(len(deviations))
+        mse_std = np.std(deviations) / np.sqrt(len(deviations)) # TODO Fehler !!! 
         return mse, mse_std
 
     def accuracy(self, dataset, predictions, reference_results, reverse=False):
@@ -436,9 +437,6 @@ class ModelEvaluation(Evaluation):
         self.overwrite_df_data_source_path = overwrite_df_data_source_path
         self.overwrite_landmark_path = overwrite_landmark_path
         self.overwrite_data_path = overwrite_data_path
-        # self.landmark_names = names = ["pelvis-start", "pelvis-end", "kidney", "lung-start",
-        #                               "liver-end", "lung-end", "teeth", "nose", "eyes-end"]
-        # self.landmarkToClassMapping = {0: 0, 1: 1, 2: 2, 3: 2, 4: 2, 5: 3, 6: 4, 7: 5, 8: 5}
 
         # setup model
         with open(self.config_filepath, "rb") as f:
@@ -482,7 +480,7 @@ class ModelEvaluation(Evaluation):
         self.val_acc, self.val_std = self.accuracy(
             self.val_dataset, self.val_preds, self.train_lm_summary
         )
-        self.mse, self.mse_std = self.mean_relative_deviation(
+        self.mse, self.mse_std = self.normalized_mse(
             self.val_landmark_preds, self.train_lm_summary
         )
 
