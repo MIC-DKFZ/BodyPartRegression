@@ -84,7 +84,7 @@ def test_ground_truth_class():
     acc = Accuracy(estimated_landmark_slice_scores, class_to_landmark)
     ground_truth_classes = acc.ground_truth_class(landmark_positions, max_slices=10)
     np.testing.assert_equal(ground_truth_classes, 
-                            np.array([ 1.,  1.,  1.,  1.,  1.,  2.,  2.,  2., np.nan, np.nan])) 
+                            np.array([ np.nan, np.nan, np.nan, np.nan, np.nan,  2.,  2.,  2., np.nan, np.nan])) 
 
 def test_volume(): 
     class_to_landmark = {0: [0, 1], 

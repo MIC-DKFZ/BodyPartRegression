@@ -50,26 +50,19 @@ class Accuracy:
         classes = np.full((max_slices), np.nan)
         max_class = np.max(list(self.class_to_landmark.keys()))
         min_class = np.min(list(self.class_to_landmark.keys()))
+        first_ground_truth_class = np.nan 
         for myClass, landmarks in self.class_to_landmark.items(): 
             # get start and end slice index position of class
             positions = landmark_positions[landmarks]
 
-            if np.isnan(positions[0]): 
-                # if beginning of first class is unknown --> skip first class
-                if (myClass == min_class): continue
-                # if start and end of class is unknown --> skip class
-                if np.isnan(positions[1]): continue
-                positions[0] = 0
-
-            if np.isnan(positions[1]): 
-                # if end of last class is unknown --> skip last class
-                if (myClass == max_class): continue
-                positions[1] = max_slices
+            # if class start or end is not defined --> skip 
+            if np.isnan(positions[0]) or np.isnan(positions[1]): continue
 
             # get slice indices for start and end of class
             class_indices = np.arange(positions[0], positions[1], dtype=int)
 
             # set class for slice index range of class 
             classes[class_indices] = myClass
+            if np.isnan(first_ground_truth_class): first_ground_truth_class = myClass
 
         return classes
