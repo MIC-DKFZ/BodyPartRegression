@@ -21,6 +21,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 sys.path.append("../../")
 from scripts.network_architecture.bpr_model import BodyPartRegression
 from scripts.dataset.bpr_dataset import BPRDataset
+from scripts.postprocessing.lookup import LookUp
 
 np.seterr(divide='ignore', invalid='ignore') #TODO
 
@@ -88,17 +89,14 @@ def run_fast_dev(config, train_dataloader, val_dataloader):
     trainer_dev =  pl.Trainer(gpus=1, fast_dev_run=True, precision=16)
     trainer_dev.fit(model, train_dataloader, val_dataloader)
 
-def save_model(trainer, model, config, test_dataloader, logger): 
-    results = trainer.test(model, test_dataloader) 
+def save_model(trainer, model, config, train_dataloader, logger): 
+    # save lookuptable
+    lookup = LookUp(model, train_dataloader.dataset)
 
-    # save configs
-    config.update(results[0])
     log_dir = logger.log_dir + "/"
     print("save model at: ", log_dir)
 
-    config["validation loss"] = model.val_loss
-    config["landmark metric"] = model.val_landmark_metric
-
+    lookup.save(log_dir)
     with open(log_dir + 'config.p', 'wb') as f:
         pickle.dump(config, f)
 
@@ -214,7 +212,7 @@ def train_config(config):
                          accumulate_grad_batches=int(config["effective_batch_size"]/config["batch_size"])) 
 
     trainer.fit(model, train_dataloader, val_dataloader) 
-    save_model(trainer, model, config, test_dataloader, logger_uar)
+    save_model(trainer, model, config, train_dataloader, logger_uar)
 
 def train(): 
     # get arguments

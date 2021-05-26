@@ -3,13 +3,12 @@ import numpy as np
 import sys, os
 
 sys.path.append("../../")
-from scripts.inference.predict_volume import PredictVolume
+from scripts.inference.predict_volume import 
 
-class SliceScoreProcessing(PredictVolume): 
+class SliceScoreProcessing: 
     def __init__(self, base_dir, gpu=1): 
         self.base_dir = base_dir
-        PredictVolume.__init__(self, base_dir, gpu=gpu)
-    
+            
     def cut_window(self, y: np.array, min_value: int, max_value: int):
         smaller_min_cut = np.where(y < min_value)[0]
         greater_max_cut = np.where(y > max_value)[0]

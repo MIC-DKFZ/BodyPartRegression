@@ -9,9 +9,8 @@ sys.path.append("../../")
 
 from scripts.postprocessing.datasanitychecks import DataSanityCheck
 from scripts.preprocessing.nifti2npy import Nifti2Npy
-from scripts.inference.predict_volume import PredictVolume
 
-class Predict(PredictVolume):
+class Predict:
     """Get body part examined estimate for CT volume.
     Predict slice scores for a given 3D CT nifti-file.
     Get information about the seen bodypart in the CT file based on the look up table,
@@ -29,9 +28,8 @@ class Predict(PredictVolume):
         model_dir: str,
         gpu: bool = 1, 
         smoothing_sigma: float = 10,
-    ):
-        PredictVolume.__init__(self, model_dir, gpu=gpu)
-        
+    ):  
+        self.model = self._load_model(model_dir)
         # load settings
         with open(model_dir + "settings.json", "r") as f:
             settings = json.load(f)
@@ -50,6 +48,21 @@ class Predict(PredictVolume):
         self.n2n = Nifti2Npy(
             target_pixel_spacing=3.5, min_hu=-1000, max_hu=1500, size=128
         )
+
+    def _load_model(self, base_dir): 
+	        self.base_filepath = base_dir
+	        self.config_filepath = base_dir + "config.p"
+	        self.model_filepath = base_dir + "model.pt"
+	
+	        with open(self.config_filepath, "rb") as f: 
+	            self.config = pickle.load(f)
+	            
+	        self.model = BodyPartRegression(alpha=self.config["alpha"], 
+	                                        lr=self.config["lr"], 
+	                                        base_model=self.config["base_model"])
+	        self.model.load_state_dict(torch.load(self.model_filepath))
+	        self.model.eval()
+	        self.model.to(self.device)
 
     def _body_range(self, slice_scores, lower_slice_index, upper_bound_score):
         body_region = np.where(slice_scores < upper_bound_score)[0]

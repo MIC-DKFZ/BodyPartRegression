@@ -17,3 +17,11 @@
 
 - src
     - addapt slope-mean and slope-std value
+
+
+
+26.05.2021
+- mse class 
+- accuracy class 
+- test mse and accuracy class 
+- tdd

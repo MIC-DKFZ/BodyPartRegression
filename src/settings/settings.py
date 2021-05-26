@@ -32,11 +32,15 @@ LANDMARK_CLASS_MAPPING = { # TODO ######
     10: CLASSES["neck"],
     11: CLASSES["head"]}
 
-CLASS_TO_LANDMARK = {CLASSES["pelvis"]: [0, 2], 
+CLASS_TO_LANDMARK_5 = {CLASSES["pelvis"]: [0, 2], 
                              CLASSES["abdomen"]: [2, 5], 
                              CLASSES["thorax"]: [5, 8], 
                              CLASSES["neck"]: [8, 10], 
                              CLASSES["head"]: [10, 11]}
+
+CLASS_TO_LANDMARK_3 = {CLASSES["pelvis"]: [0, 2], 
+                             CLASSES["abdomen"]: [2, 5], 
+                             CLASSES["thorax"]: [5, 8]}
 
 # define colors for plots
 COLORS = [
