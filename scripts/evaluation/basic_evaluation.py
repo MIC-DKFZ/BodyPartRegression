@@ -37,7 +37,8 @@ def grid_plot(X: np.ndarray,
     if len(save_path) > 0:
         plt.savefig(save_path)
     plt.show()
-    
+
+###################### TODO ################################################
 class Evaluation:
     """General evaluation of slice score predictions.
 

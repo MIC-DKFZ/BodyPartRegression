@@ -217,18 +217,18 @@ class BodyPartRegression(pl.LightningModule):
         return slice_score_matrix
 
     def normalized_mse(self, val_dataset, train_dataset): 
-        val_slice_score_matrix = self.compute_slice_score_matrix(val_dataset)
-        train_slice_score_matrix = self.compute_slice_score_matrix(train_dataset)
-        mse, mse_std, d = normalized_mse_from_matrices(val_slice_score_matrix, train_slice_score_matrix)
+        val_score_matrix = self.compute_slice_score_matrix(val_dataset)
+        train_score_matrix = self.compute_slice_score_matrix(train_dataset)
+        mse, mse_std, d = normalized_mse_from_matrices(val_score_matrix, train_score_matrix)
         
         return mse, mse_std, d
 
 
-def normalized_mse_from_matrices(val_slice_score_matrix, train_slice_score_matrix): 
-    expected_slice_scores = np.nanmean(train_slice_score_matrix, axis=0) 
+def normalized_mse_from_matrices(val_score_matrix, train_score_matrix): 
+    expected_slice_scores = np.nanmean(train_score_matrix, axis=0) 
     d = (expected_slice_scores[-1] - expected_slice_scores[0]) 
 
-    mse_values = ((val_slice_score_matrix - expected_slice_scores)/d)**2
+    mse_values = ((val_score_matrix - expected_slice_scores)/d)**2
     mse = np.nanmean(mse_values)
     counts = np.sum(np.where(~np.isnan(mse_values), 1, 0))
     mse_std = np.nanstd(mse_values)/np.sqrt(counts)

@@ -15,6 +15,7 @@ from scripts.training.train import get_dataframe, get_datasets
 from scripts.evaluation.basic_evaluation import Evaluation, grid_plot
 from src.settings.settings import *
 
+###################### TODO ################################################
 
 class ModelEvaluation(Evaluation):
     """
@@ -65,8 +66,8 @@ class ModelEvaluation(Evaluation):
         self._setup_data(val_dataset=val_dataset)
 
         # get train and val slice score matrix
-        self.val_slice_score_matrix = self.model.compute_slice_score_matrix(self.val_dataset)
-        self.train_slice_score_matrix = self.model.compute_slice_score_matrix(self.train_dataset)
+        self.val_score_matrix = self.model.compute_slice_score_matrix(self.val_dataset)
+        self.train_score_matrix = self.model.compute_slice_score_matrix(self.train_dataset)
         self.mse, self.mse_std, self.d = self.model.normalized_mse(self.val_dataset, self.train_dataset)
         
         # get look-up table

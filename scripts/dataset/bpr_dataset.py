@@ -39,6 +39,7 @@ class BPRDataset(Dataset):
         self.landmark_matrix = np.array(self.landmark_df)
         self.landmark_names = self.landmark_df.columns
         self.landmark_files = [f + ".npy" for f in self.landmark_df.index]
+        self.landmark_ids = [np.where(f == filenames)[0][0] for f in self.landmark_files]
         self.landmark_slices_per_volume, self.defined_landmarks_per_volume = self.get_landmark_slices()
 
         if landmark_path:
@@ -87,6 +88,13 @@ class BPRDataset(Dataset):
         filepath = self.filepaths[idx]
         volume = np.load(filepath)
         return self._swap_axis(volume)
+
+    def get_landmark_idx(self, idx: int): 
+        filename = self.filenames[idx]
+        idx =np.where(filename == np.array(self.landmark_files))[0]
+        if len(idx) == 1: 
+            return idx[0]
+        return np.nan
 
     def get_random_slice_indices(self, z, z_spacing):
         
