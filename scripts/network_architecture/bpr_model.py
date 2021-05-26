@@ -10,36 +10,12 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import torchvision.models as models
-
 cv2.setNumThreads(1)
 
 sys.path.append("../../")
+from scripts.evaluation.normalized_mse import NormalizedMSE
+from scripts.network_architecture.loss_functions import * 
 
-
-class loss_order_h: 
-    """
-    Heuristic order loss
-    """
-    def __init__(self, alpha, beta): 
-        self.alpha = alpha
-        self.beta = beta
-    def __call__(self, scores_pred, z): 
-        scores_diff = scores_pred[:, 1:] - scores_pred[:, :-1]
-        p_pred = torch.sigmoid(self.alpha*scores_diff)
-        p_obs = torch.sigmoid(self.beta*z)
-        loss = torch.mean((p_obs - p_pred)**2) #TODO *6! 
-        return loss
-
-class loss_order_c: #TODO add 
-    """
-    Classification order loss
-    """
-    def __init__(self): 
-        pass
-    def __call__(self, scores_pred, _): 
-        scores_diff = scores_pred[:, 1:] - scores_pred[:, :-1]
-        loss = - torch.mean(torch.log(torch.sigmoid(scores_diff)))
-        return loss
 
 class BodyPartRegression(pl.LightningModule):
     """
@@ -55,7 +31,7 @@ class BodyPartRegression(pl.LightningModule):
                  loss_order="h", 
                  beta_h=0.025, 
                  alpha_h=0.5,
-                 base_model="vgg", 
+                 base_model="vgg",
                  weight_decay=0):
 
         super().__init__()
@@ -79,15 +55,13 @@ class BodyPartRegression(pl.LightningModule):
                         "alpha_h": alpha_h, "lr": lr}
 
         self.model = self.get_vgg()
+        self.mse = NormalizedMSE()
         
         if loss_order == "h": 
             self.loss_order = loss_order_h(alpha=self.alpha_h, beta=self.beta_h)
         elif loss_order == "c": 
             self.loss_order = loss_order_c()
         else: raise ValueError(f"Unknown loss parameter {loss_order}")
-
-
-
 
     def get_vgg(self):
         vgg16 = models.vgg16(pretrained=self.pretrained)
@@ -136,16 +110,10 @@ class BodyPartRegression(pl.LightningModule):
         val_dataloader = self.val_dataloader()
         train_dataloader = self.train_dataloader()
 
-        landmark_mean, landmark_var, total_var = self.landmark_metric(val_dataloader.dataset)
-        mse_t, mse_t_std, d = self.normalized_mse(val_dataloader.dataset, train_dataloader.dataset)
-        mse_v, mse_v_std, d = self.normalized_mse(val_dataloader.dataset, val_dataloader.dataset)
+        mse, mse_std, d = self.mse.from_dataset(val_dataloader.dataset, train_dataloader.dataset)
 
-        self.log('val_landmark_metric_mean', landmark_mean)
-        self.log('val_landmark_metric_var', landmark_var)
-        self.log('total variance', total_var)
-        self.log('mse_t', mse_t)
-        self.log('mse_v', mse_v)
-
+        self.log('mse', mse)
+        self.log('mse_std', mse_std)
         self.log('d', d)
       
     def validation_step(self, batch, batch_idx):
@@ -155,27 +123,16 @@ class BodyPartRegression(pl.LightningModule):
         self.log('val_loss_dist', loss_dist)
         self.log('val_loss_l2', loss_l2)
 
-
-
     def test_step(self, batch, batch_idx):
-        loss, loss_order, loss_dist, loss_l2 = self.base_step(batch, batch_idx)
-        dataloader = self.test_dataloader()
-        landmark_mean, landmark_var, total_var = self.landmark_metric(dataloader.dataset)
-        
-        self.log('test_loss', loss)
-        self.log('test_loss_order', loss_order)
-        self.log('test_loss_dist', loss_dist)
-        self.log('test_loss_l2', loss_l2)
-        self.log('test_landmark_metric_mean', landmark_mean)
-        self.log('test_landmark_metric_var', landmark_var)
-     
-        if len(self.val_loss) > 6: 
-            x = np.array(self.val_loss)
-            y = np.array(self.val_landmark_metric)
-            indices = np.where((x != np.inf) &(x != np.nan))[0]
-            pcorr = pearsonr(x[indices], y[indices])
-            self.log('pearson-correlation', torch.tensor(pcorr[0]))    
-            
+        test_dataloader = self.test_dataloader()
+        train_dataloader = self.train_dataloader()
+
+        mse, mse_std, d = self.mse.from_dataset(test_dataloader.dataset, train_dataloader.dataset)
+
+        self.log('mse', mse)
+        self.log('mse_std', mse_std)
+        self.log('d', d)
+
     def loss(self, scores_pred, slice_indices, z): 
         l2_norm = 0 
         ldist_reg = 0
@@ -196,13 +153,6 @@ class BodyPartRegression(pl.LightningModule):
         optimizer = optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         return optimizer
     
-    def landmark_metric(self, dataset): 
-        slice_score_matrix = self.compute_slice_score_matrix(dataset)
-        landmark_vars = np.nanvar(slice_score_matrix, axis=0)
-        total_var = np.nanvar(slice_score_matrix)
-        return np.nanmean(landmark_vars/total_var), np.nanstd(landmark_vars/total_var), total_var
-    
-
     def compute_slice_score_matrix(self, dataset): 
         with torch.no_grad(): 
             self.eval() 
@@ -216,28 +166,24 @@ class BodyPartRegression(pl.LightningModule):
                 slice_score_matrix[i, defined_landmarks] = scores[:, 0].cpu().detach().numpy()
         return slice_score_matrix
 
-    def normalized_mse(self, val_dataset, train_dataset): 
-        val_score_matrix = self.compute_slice_score_matrix(val_dataset)
-        train_score_matrix = self.compute_slice_score_matrix(train_dataset)
-        mse, mse_std, d = normalized_mse_from_matrices(val_score_matrix, train_score_matrix)
-        
-        return mse, mse_std, d
 
+    def predict_tensor(self, tensor, n_splits=200, inference_device="cuda"): 
+        scores = []
+        n = tensor.shape[0]
+        slice_splits = list(np.arange(0, n, n_splits)) 
+        slice_splits.append(n)
 
-def normalized_mse_from_matrices(val_score_matrix, train_score_matrix): 
-    expected_slice_scores = np.nanmean(train_score_matrix, axis=0) 
-    d = (expected_slice_scores[-1] - expected_slice_scores[0]) 
+        with torch.no_grad(): 
+            self.eval() 
+            self.to(inference_device)
+            for i in range(len(slice_splits) - 1): 
+                min_index = slice_splits[i]
+                max_index = slice_splits[i+1]
+                score = self(tensor[min_index:max_index,:, :, :].to(inference_device))
+                scores += [s.item() for s in score]
 
-    mse_values = ((val_score_matrix - expected_slice_scores)/d)**2
-    mse = np.nanmean(mse_values)
-    counts = np.sum(np.where(~np.isnan(mse_values), 1, 0))
-    mse_std = np.nanstd(mse_values)/np.sqrt(counts)
-
-    return mse, mse_std, d
-
-
-
-
+        scores = np.array(scores)
+        return scores
 
 
 
