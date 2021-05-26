@@ -41,9 +41,6 @@ class BPRDataset(Dataset):
         self.landmark_files = [f + ".npy" for f in self.landmark_df.index]
         self.landmark_ids = [np.where(f == filenames)[0][0] for f in self.landmark_files]
         self.landmark_slices_per_volume, self.defined_landmarks_per_volume = self.get_landmark_slices()
-
-        if landmark_path:
-            self.landmarks = self.get_landmarks_dict(landmark_path, landmark_sheet_name, drop_landmarks=drop_landmarks)
     
         # define augmentations 
         if custom_transform: 
@@ -137,45 +134,3 @@ class BPRDataset(Dataset):
             defined_landmarks_per_volume.append(defined_landmarks)
 
         return landmark_slices_per_volume, defined_landmarks_per_volume
-
-    ############################### TODO ################################################## 
-    def get_landmarks_dict(self, path, sheet_name=False, drop_landmarks=[]):
-        def isnan(x): 
-            return not (x==x)
-
-        if sheet_name: dfl = pd.read_excel(path, sheet_name=sheet_name, engine='openpyxl')
-        else: dfl = pd.read_excel(path, engine='openpyxl')
-        dfl.drop(drop_landmarks, axis=1, inplace=True)
-        if "Unnamed: 0" in dfl.columns: dfl.drop("Unnamed: 0" , axis=1, inplace=True)
-        dfl = dfl.dropna(how="all")
-        landmark_filenames = dfl.filename.values + ".npy"
-
-        landmarks = {key: {} for key in range(len(dfl))}
-
-        self.landmark_names = [col for col in dfl.columns if col != "filename"]
-        for i, f in enumerate(landmark_filenames): 
-            # fix autocorrectur of CT-COLON files 
-            f = f.replace("—","--")
-            landmarks[i]["filename"] = f
-            
-            # get index of landmark in current dataset
-            try: index = np.where(self.filenames == f)[0][0]
-            except: 
-                print(f, np.where(self.filenames == f)) 
-                raise ValueError(f"Filename {f} from landmark-file {path} not found.")
-           
-            landmarks[i]["dataset_index"] = index
-            
-            defined_landmarks = np.full(len(self.landmark_names), np.nan)
-            landmark_slice_indices = []
-
-            for j, col in enumerate(self.landmark_names): 
-                if not (isnan(dfl.loc[i, col])): 
-                    defined_landmarks[j] = 1 
-                    landmark_slice_indices.append(int(dfl.loc[i, col]))
-
-            landmarks[i]["slice_indices"] = landmark_slice_indices
-            landmarks[i]["defined_landmarks"] = defined_landmarks
-            landmarks[i]["defined_landmarks_i"] = np.where(landmarks[i]["defined_landmarks"] == 1)[0]
-
-        return landmarks

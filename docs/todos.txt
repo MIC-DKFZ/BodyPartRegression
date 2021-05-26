@@ -20,8 +20,8 @@
 
 
 
-26.05.2021
-- mse class 
-- accuracy class 
-- test mse and accuracy class 
+27.05.2021
+- inference model instead of predict.py + load_model
+     - use in modelEval class 
+- plots  
 - tdd

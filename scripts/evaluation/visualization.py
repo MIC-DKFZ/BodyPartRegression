@@ -204,7 +204,7 @@ def plot_pred2expected_scores(self, save_path=False, ids=np.arange(0, 65)):
         label = (
             str(i)
             + "_"
-            + self.val_dataset.landmarks[i]["filename"][0:8]
+            + self.val_dataset.landmarks[i]["filename"][0:8] # TODO Outdated
             + self.val_dataset.landmarks[i]["filename"][-10:]
             .replace(".npy", "")
             .replace("0", "")

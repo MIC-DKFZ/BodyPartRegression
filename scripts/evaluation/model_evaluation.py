@@ -141,10 +141,10 @@ class ModelEvaluation:
         print(
             f"\nNormalized MSE [1e-3]:\t{self.mse*1e3:<1.3f} +- {self.mse_std*1e3:<1.3f}")
         print(
-            f"\nAccuracy (5 classes): \t{self.acc5*100:<1.2f}%"
+            f"Accuracy (5 classes) : \t{self.acc5*100:<1.2f}%"
         )
         print("\nLookup Table\n*******************************")
-        self.lut.print()
+        self.lookup.print()
 
 
 if __name__ == "__main__": 
