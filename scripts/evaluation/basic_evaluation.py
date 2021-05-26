@@ -10,7 +10,7 @@ import torch
 
 sys.path.append("../../")
 from scripts.network_architecture.bpr_model import BodyPartRegression
-from scripts.postprocessing.lookuptable import LookUpTable
+from scripts.postprocessing.lookup import LookUp
 from scripts.training.train import get_dataframe, get_datasets
 from src.settings.settings import *
 
@@ -113,26 +113,6 @@ class Evaluation:
                 bbox_inches="tight",
             )
 
-    def get_landmark_prediction(self, dataset, dataset_preds: dict):
-        """
-        return {landmark: [landmark-scores] for landmark in landmarks} dictionary
-        """
-        landmark_preds = {i: [] for i in range(0, 12)}
-        landmark_preds_ids = {i: [] for i in range(0, 12)}
-        for i, myDict in dataset.landmarks.items():
-            index = myDict["dataset_index"]
-            if index not in dataset_preds.keys():
-                continue
-            ys = dataset_preds[index]
-            for landmark in myDict["defined_landmarks_i"]:
-                lm_idx = myDict["slice_indices"][
-                    np.where(myDict["defined_landmarks_i"] == landmark)[0][0]
-                ]
-                lm_y = ys[lm_idx]
-                landmark_preds[landmark].append(lm_y)
-                landmark_preds_ids[landmark].append(index)
-        return landmark_preds, landmark_preds_ids
-
     def plot_similar_images(
         self,
         dataset,
@@ -227,103 +207,6 @@ class Evaluation:
 
         ax.tick_params(axis="both", which="major", labelsize=labelsize)
 
-    def get_landmark_prediction_summary(self, dataset, model):
-        """
-        return {landmark: {lm: landmark-metric, mean: mean-prediction, var: variance-of-prediction}
-        for landmark in landmarks}
-        """
-        with torch.no_grad():
-            model.eval()
-            model.to("cuda")
-            landmark_prediction = np.full(
-                (len(dataset.landmarks), len(dataset.landmark_names)), np.nan
-            )
-            for i, landmark_dir in dataset.landmarks.items():
-                x = dataset.get_full_volume(landmark_dir["dataset_index"])
-                x = torch.tensor(x[landmark_dir["slice_indices"], :, :])[
-                    :, np.newaxis, :, :
-                ]
-                # calculate prediction
-                ys = self.model(x.cuda())
-                ys = np.array([y.item() for y in ys])
-
-                landmark_prediction[(i, landmark_dir["defined_landmarks_i"])] = ys
-
-        landmark_vars = np.nanvar(landmark_prediction, axis=0)
-        total_var = np.nanvar(landmark_prediction)
-        landmark_predictions = np.nanmean(landmark_prediction, axis=0)
-        results = {
-            i: {
-                "lm": np.round(landmark_vars[i] / total_var, 4),
-                "mean": np.round(landmark_predictions[i], 3),
-                "var": np.round(landmark_vars[i], 3),
-            }
-            for i in range(len(landmark_vars))
-        }
-        return results
-
-    def landmark_dict_summary(self, landmark_predictions):
-        total_predictions = []
-        for myList in landmark_predictions.values():
-            total_predictions += myList
-        total_var = np.nanvar(total_predictions)
-
-        myDict = {
-            key: {
-                "lm": np.round(np.var(landmark_predictions[key]) / total_var, 4),
-                "mean": np.round(np.mean(landmark_predictions[key]), 2),
-                "var": np.round(np.var(landmark_predictions[key]), 2),
-            }
-            for key in landmark_predictions.keys()
-            if not len(landmark_predictions[key]) == 0
-        }
-
-        return myDict
-
-    def normalized_mse(self, landmark_preds, reference_results):        
-        # TODO -- umschreiben -- siehe bpr_model -> diese Funktion nutzen     
-        deviations = []
-
-        # normalize deviations
-        max_value = reference_results[8]["mean"]  # pelvis-start landmark
-        min_value = reference_results[0]["mean"]  # eyes-end landmark
-
-        for landmark in landmark_preds.keys():
-            if not landmark in reference_results.keys():
-                continue
-            landmark_deviations = (
-                (np.array(landmark_preds[landmark]) - reference_results[landmark]["mean"])
-                / (max_value - min_value)
-            ) ** 2
-            deviations += list(landmark_deviations)
-
-        mse = np.mean(deviations)
-        mse_std = np.std(deviations) / np.sqrt(len(deviations)) # TODO Fehler !!! 
-        return mse, mse_std
-
-    def accuracy(self, dataset, predictions, reference_results, reverse=False):
-        preds = []
-        obs = []
-        s = []
-        for key, landmark_dict in dataset.landmarks.items():
-            obs_classes, pred_classes, scores, volume_accuracy, _ = self.classify_volume(
-                landmark_dict, predictions, reference_results, reverse=reverse
-            )
-            preds += list(pred_classes)
-            obs += list(obs_classes)
-            s += list(scores)
-
-        if len(np.array(obs)) != len(np.array(preds)):
-            print(len(np.array(obs)), len(np.array(preds)))
-            print(obs)
-            print(preds)
-            raise ValueError("Unequal lengths. Can't compute the accuracy. ")
-
-        evaluation = (np.array(obs) == np.array(preds)) * 1
-
-        acc = np.sum(evaluation) / len(obs)
-        std = np.std(evaluation) / np.sqrt(len(obs))
-        return acc, std
 
     def predict_dataset(self, dataset, model):
         preds = {}
@@ -345,57 +228,6 @@ class Evaluation:
                     continue
                 preds[i] = [y.item() for y in ys]
         return preds, zs
-
-    def classify_volume(
-        self, landmark_dict, predictions, reference_results, reverse=False
-    ):
-        vol_idx = landmark_dict["dataset_index"]
-        if not vol_idx in predictions.keys():
-            return [], [], [], 0, None
-        analyzed_indices, obs_classes = self.observed_classes(landmark_dict)
-        scores = np.array(predictions[vol_idx])[analyzed_indices]
-        pred_classes = np.array(
-            [self.score_to_class(y, reference_results, reverse=reverse) for y in scores]
-        )
-        accuracy = np.sum((obs_classes == pred_classes) * 1) / len(pred_classes)
-        return obs_classes, pred_classes, scores, accuracy, analyzed_indices
-
-    def observed_classes(self, myDict):
-        analyzed_indices = np.arange(
-            min(myDict["slice_indices"]), max(myDict["slice_indices"])
-        )
-        start_slice = min(myDict["slice_indices"])
-        obs_classes = []
-        for landmark in myDict["defined_landmarks_i"]:
-            index = int(np.where(myDict["defined_landmarks_i"] == landmark)[0])
-            stop_slice = myDict["slice_indices"][index]
-            myClass = self.landmarkToClassMapping[landmark]
-            if (stop_slice - start_slice) < 0:
-                continue
-            obs_classes += [myClass] * (stop_slice - start_slice)
-            start_slice = stop_slice
-
-        return analyzed_indices, np.array(obs_classes)
-
-    def score_to_class(self, score, results, reverse):
-        if not reverse:
-            for l_idx, map_value in  self.landmarkToClassMapping.items(): 
-                upper_condition = (score < results[l_idx]["mean"])
-                lower_condition = 1
-                if l_idx > 0: 
-                    lower_condition = (score > results[l_idx - 1]["mean"])
-                if (lower_condition & upper_condition): 
-                    return map_value
-
-        else:
-            for l_idx, map_value in  self.landmarkToClassMapping.items(): 
-                upper_condition = (score > results[l_idx]["mean"])
-                lower_condition = 1
-                if l_idx > 0: 
-                    lower_condition = (score < results[l_idx - 1]["mean"])
-                if (lower_condition & upper_condition): 
-                    return map_value
-
 
     def plot_slope_histogramm(
         self, filename="slope-histogramm-2.png", bin_width=0.00025
