@@ -69,43 +69,6 @@ class ModelEvaluation:
         # calculate accuracy for 5 and 4 distinct classes
         self._set_accuracies()
         
-        """
-        # get look-up table
-        self.train_lm_summary = self.lut.get_lookup_table(self.train_dataset)
-
-        # get metrics
-        self.val_metrics = self.trainer.test(self.model, self.val_dataloader)
-        self.train_metrics = self.trainer.test(self.model, self.train_dataloader)
-
-        # get validation_predictions
-        self.val_preds, self.val_zs = self.predict_dataset(self.val_dataset, self.model)
-        (
-            self.val_landmark_preds,
-            self.val_landmark_preds_ids,
-        ) = self.get_landmark_prediction(self.val_dataset, self.val_preds)
-
-        self.val_acc, self.val_std = self.accuracy(
-            self.val_dataset, self.val_preds, self.train_lm_summary
-        )
-        self.mse, self.mse_std = self.normalized_mse(
-            self.val_landmark_preds, self.train_lm_summary
-        )
-
-        self.min_value = min(
-            [self.train_lm_summary[key]["mean"] for key in self.train_lm_summary.keys()]
-        )
-        self.max_value = max(
-            [self.train_lm_summary[key]["mean"] for key in self.train_lm_summary.keys()]
-        )
-        # setup trainer
-        self.trainer = pl.Trainer(
-            gpus=1,
-            max_epochs=self.config["epochs"],
-            precision=16,
-            deterministic=self.config["deterministic"],
-        )
-
-        """
 
     def _setup_data(self, val_dataset=False):
         path = "/home/AD/s429r/Documents/Code/s429r/trainings/configs/local/standard-config.p"
@@ -172,66 +135,17 @@ class ModelEvaluation:
         self.acc5 = np.nanmean(accuracies_5classes)
         self.acc3 = np.nanmean(accuracies_3classes)
 
-
-
-
-    def landmarks2score(self, i, dataset, train_results):
-        myDict = dataset.landmarks[i]
-        index = myDict["dataset_index"]
-        slice_idx = myDict["slice_indices"]
-        landmarks_idx = myDict["defined_landmarks_i"]
-
-        volume = dataset.get_full_volume(index)
-        x = np.arange(min(slice_idx), max(slice_idx) + 1)
-
-        predicted_scores = self.predict_image(volume, x)
-        expected_scores = [
-            train_results[key]["mean"]
-            for key in train_results.keys()
-            if key in landmarks_idx
-        ]
-        errors = [
-            train_results[key]["std"]
-            for key in train_results.keys()
-            if key in landmarks_idx
-        ]
-
-        return slice_idx, landmarks_idx, x, predicted_scores, expected_scores, errors
-
     def print_summary(self):
         print("Model summary\n*******************************")
-        print(
-            f"Landmark metric for validation set:\t{self.val_metrics[0]['test_landmark_metric_mean']:<1.4f}"
-        )
-        print(
-            f"Landmark metric for train set:     \t{self.train_metrics[0]['test_landmark_metric_mean']:<1.4f}"
-        )
-        print(
-            f"\nValidation accuracy:             \t{self.val_acc*100:<1.2f}% +- {self.val_std*100:<1.2f}%"
-        )
-        print(
-            f"Mean relative deviation (in 1e-3): \t{self.mse*1e3:1.3f} +- {self.mse_std*1e3:1.3f}"
-        )
-        print("\nTraining-set prediction summary\n*******************************")
-        self.lut.print(self.train_lm_summary)
 
-    def mse_for_volume(self, vol_idx):
-        """
-        Notice: mse values are not normalized
-        """
-        (
-            slice_idx,
-            landmarks_idx,
-            x,
-            y_estimated,
-            expected_scores,
-            errors,
-        ) = self.landmarks2score(vol_idx, self.val_dataset, self.train_lm_summary)
-        expected_f = interpolate.interp1d(slice_idx, expected_scores, kind="linear")
-        y_expected = expected_f(x)
-        mse = np.mean(np.sqrt((np.array(y_estimated) - np.array(y_expected)) ** 2))
+        print(
+            f"\nNormalized MSE [1e-3]:\t{self.mse*1e3:<1.3f} +- {self.mse_std*1e3:<1.3f}")
+        print(
+            f"\nAccuracy (5 classes): \t{self.acc5*100:<1.2f}%"
+        )
+        print("\nLookup Table\n*******************************")
+        self.lut.print()
 
-        return mse
 
 if __name__ == "__main__": 
     base_dir = "/home/AD/s429r/Documents/Code/bodypartregression/src/models/loh-ldist-l2/sigma-dataset-v11-v2/"
