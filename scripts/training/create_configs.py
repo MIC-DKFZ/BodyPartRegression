@@ -59,12 +59,12 @@ config = {
     "shuffle_train_dataloader": True,
     "random_seed": 0, 
     "deterministic": True, 
-    "save_model": True, # TODO 
+    "save_model": True, 
     "base_model": "vgg", 
     "   ": "\n*******************************************************", 
 
-    "batch_size": 21, # TODO
-    "effective_batch_size": 21, # TODO 
+    "batch_size": 21, 
+    "effective_batch_size": 21, 
     "equidistance_range": [5, 100], # in mmm 
     "num_slices": 12, 
 
@@ -75,11 +75,11 @@ config = {
     "lambda": 0, # 0.0001, 
     "alpha": 0, #0.2,    
     "lr": 1e-4, 
-    "epochs": 160, # TODO 
+    "epochs": 160, 
     
     "     ": "\n*******************************************************", 
-    "description": "", # TODO
-    "name": "standard-config-01.p" # TODO 
+    "description": "",
+    "name": "standard-config-01.p" 
 }
 
 config["accumulate_grad_batches"] = int(config["effective_batch_size"]/config["batch_size"])
@@ -286,6 +286,7 @@ if __name__ == "__main__":
                       'alpha': 1.2,
                       'model_name': 'order-loss-experiment',
                       'name': 'order-loss-c-16m-1.2a.p'}}
+                
 
     experiments = {0: {'alpha_h': 1, 'beta_h': 0.001, 'name': 'loh-1a-0.001b.p', 'model_name':'loh-experiment'},
                1: {'alpha_h': 1, 'beta_h': 0.01, 'name': 'loh-1a-0.01b.p', 'model_name':'loh-experiment'},
@@ -299,19 +300,85 @@ if __name__ == "__main__":
 
     experiments = {0: { 'name': 'test.p', 'model_name':'test'}}
 
+    experiments = {0: {'num_slices': 4,
+                        'batch_size': 64,
+                        'effective_batch_size': 64,
+                        'epochs': 480,
+                        'loss_order': 'h',
+                        'alpha': 0,
+                        'model_name': 'order-loss-experiment',
+                        'name': 'order-loss-h-4m-0.000a.p'},
+                        1: {'num_slices': 4,
+                        'batch_size': 64,
+                        'effective_batch_size': 64,
+                        'epochs': 480,
+                        'loss_order': 'h',
+                        'alpha': 0.005,
+                        'model_name': 'order-loss-experiment',
+                        'name': 'order-loss-h-4m-0.005a.p'},
+                        2: {'num_slices': 4,
+                        'batch_size': 64,
+                        'effective_batch_size': 64,
+                        'epochs': 480,
+                        'loss_order': 'h',
+                        'alpha': 0.01,
+                        'model_name': 'order-loss-experiment',
+                        'name': 'order-loss-h-4m-0.010a.p'},
+                        3: {'num_slices': 4,
+                        'batch_size': 64,
+                        'effective_batch_size': 64,
+                        'epochs': 480,
+                        'loss_order': 'h',
+                        'alpha': 0.05,
+                        'model_name': 'order-loss-experiment',
+                        'name': 'order-loss-h-4m-0.050a.p'},
+                        4: {'num_slices': 4,
+                        'batch_size': 64,
+                        'effective_batch_size': 64,
+                        'epochs': 480,
+                        'loss_order': 'c',
+                        'alpha': 0,
+                        'model_name': 'order-loss-experiment',
+                        'name': 'order-loss-c-4m-0.0a.p'},
+                        5: {'num_slices': 4,
+                        'batch_size': 64,
+                        'effective_batch_size': 64,
+                        'epochs': 480,
+                        'loss_order': 'c',
+                        'alpha': 0.8,
+                        'model_name': 'order-loss-experiment',
+                        'name': 'order-loss-c-4m-0.8a.p'},
+                        6: {'num_slices': 4,
+                        'batch_size': 64,
+                        'effective_batch_size': 64,
+                        'epochs': 480,
+                        'loss_order': 'c',
+                        'alpha': 1,
+                        'model_name': 'order-loss-experiment',
+                        'name': 'order-loss-c-4m-1.0a.p'},
+                        7: {'num_slices': 4,
+                        'batch_size': 64,
+                        'effective_batch_size': 64,
+                        'epochs': 480,
+                        'loss_order': 'c',
+                        'alpha': 1.2,
+                        'model_name': 'order-loss-experiment',
+                        'name': 'order-loss-c-4m-1.2a.p'}}
+
     for idx, data in experiments.items(): 
         print("Idx: ", idx)
         for key in data.keys(): 
             config[key] = data[key]
             print(key, data[key])
 
-    save_path_folder = "../../src/configs/" + mode + "/" +  config["model_name"] + "/" 
-    if not os.path.exists(save_path_folder): os.mkdir(save_path_folder)
-    save_path = save_path_folder + config["name"]
-    # Save file 
-    with open(save_path, 'wb') as f:
-        print("save file: ", save_path)
-        pickle.dump(config, f)
+        save_path_folder = "../../src/configs/" + mode + "/" +  config["model_name"] + "/" 
+        if not os.path.exists(save_path_folder): os.mkdir(save_path_folder)
+        save_path = save_path_folder + config["name"]
+        
+        # Save file 
+        with open(save_path, 'wb') as f:
+            print("save file: ", save_path)
+            pickle.dump(config, f)
 
 
 
