@@ -9,6 +9,8 @@ class ValidationVolume:
         self.data_idx = val_dataset.landmark_ids[idx]
         
         self.landmarks = val_dataset.landmark_matrix[self.landmark_idx, :]
+        self.landmark_names = val_dataset.landmark_names 
+
         self.nonempty = np.where(~np.isnan(self.landmarks))[0]
         self.filename =  val_dataset.filenames[self.data_idx]
         self.expected_scores = expected_scores
@@ -29,14 +31,16 @@ class ValidationVolume:
         plt.plot(self.z_array, self.scores)
         
         # plot landmarks
-        for i, landmark, score in zip(np.arange(len(self.nonempty)),
+        for i, name, landmark, score in zip(np.arange(len(self.nonempty)),
+                                       self.landmark_names[self.nonempty],
                                        self.landmarks[self.nonempty], 
                                        self.scores[self.landmarks[self.nonempty].astype(int)]): 
-            plt.plot(landmark, 
+            plt.plot(landmark*self.z, 
                      score,
                      linestyle="", 
                      marker=self.markerstyles[i],
-                     color="black")
+                     color="black", 
+                     label=name)
         
         plt.xlabel("$\Delta$z [mm]", fontsize=self.fontsize)
         plt.ylabel("Score", fontsize=self.fontsize)
@@ -51,7 +55,7 @@ class ValidationVolume:
     
     def get_interpolated_scores(self, landmarks, expected_scores): 
         nonempty = np.where(~np.isnan(landmarks))
-        x = np.arange(min(landmarks), max(landmarks) + 1)
+        x = np.arange(np.nanmin(landmarks), np.nanmax(landmarks) + 1)
         
         func = interpolate.interp1d(landmarks[nonempty], expected_scores[nonempty], kind="linear")
         interpolated_scores = func(x)
