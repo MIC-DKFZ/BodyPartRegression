@@ -4,7 +4,6 @@ import json
 import os, sys
 
 sys.path.append("../")
-from scripts.inference.predict_volume import PredictVolume
 
 class LookUp(): 
     def __init__(self, model, dataset):
