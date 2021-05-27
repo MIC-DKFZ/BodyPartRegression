@@ -1,5 +1,6 @@
 import torch
 
+import numpy as np
 class loss_order_h: 
     """
     Heuristic order loss
@@ -20,7 +21,24 @@ class loss_order_c: #TODO add
     """
     def __init__(self): 
         pass
+
     def __call__(self, scores_pred, _): 
         scores_diff = scores_pred[:, 1:] - scores_pred[:, :-1]
-        loss = - torch.mean(torch.log(torch.sigmoid(scores_diff)))
+        sigmoid = torch.sigmoid(scores_diff)
+        # remove zeros --> they can lead to nan values 
+        sigmoid = sigmoid[sigmoid > 0]
+        loss = - torch.mean(torch.log(sigmoid))
+        return loss
+
+class loss_order_c_plain: #TODO add 
+    """
+    Classification order loss
+    """
+    def __init__(self): 
+        pass
+
+    def __call__(self, scores_pred, _): 
+        scores_diff = scores_pred[:, 1:] - scores_pred[:, :-1]
+        sigmoid = torch.sigmoid(scores_diff)
+        loss = - torch.mean(torch.log(sigmoid))
         return loss
