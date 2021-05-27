@@ -15,6 +15,7 @@ import torchvision.models as models
 import pytorch_lightning as pl
 from pytorch_lightning import seed_everything
 from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 
 
@@ -204,7 +205,9 @@ def train_config(config):
 
 
     logger_uar = TensorBoardLogger(save_dir=config["save_dir"], name=config["model_name"])
+    checkpoint_callback = ModelCheckpoint(monitor='mse')
     trainer = pl.Trainer(gpus=1, 
+                         callbacks=[checkpoint_callback],
                          max_epochs=config["epochs"], 
                          precision=16,
                          logger=logger_uar, deterministic=config["deterministic"], 
