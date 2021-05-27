@@ -153,16 +153,16 @@ class BodyPartRegression(pl.LightningModule):
         optimizer = optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         return optimizer
     
-    def compute_slice_score_matrix(self, dataset): 
+    def compute_slice_score_matrix(self, dataset, inference_device="cuda"): 
         with torch.no_grad(): 
             self.eval() 
-            self.to("cuda")
+            self.to(inference_device)
             slice_score_matrix = np.full(dataset.landmark_matrix.shape, np.nan)
 
             for i, slices, defined_landmarks in zip(np.arange(0, slice_score_matrix.shape[0]), 
                                                     dataset.landmark_slices_per_volume,
                                                     dataset.defined_landmarks_per_volume): 
-                scores = self(torch.tensor(slices[:, np.newaxis, :, :]).cuda())
+                scores = self(torch.tensor(slices[:, np.newaxis, :, :]).to(inference_device))
                 slice_score_matrix[i, defined_landmarks] = scores[:, 0].cpu().detach().numpy()
         return slice_score_matrix
 
@@ -187,7 +187,7 @@ class BodyPartRegression(pl.LightningModule):
 
     def predict_npy(self, x, inference_device="cuda"): 
         x_tensor = torch.tensor(x[:, np.newaxis, :, :]).to(inference_device)
-        scores = self.predict_tensor(x_tensor)
+        scores = self.predict_tensor(x_tensor, inference_device=inference_device)
         return scores
     
 

@@ -12,12 +12,9 @@ sys.path.append("../../")
 from scripts.network_architecture.bpr_model import BodyPartRegression
 from scripts.postprocessing.lookup import LookUp
 from scripts.training.train import get_dataframe, get_datasets
-from scripts.evaluation.basic_evaluation import Evaluation, grid_plot
 from scripts.evaluation.accuracy import Accuracy
 from scripts.evaluation.normalized_mse import NormalizedMSE 
 from src.settings.settings import *
-
-###################### TODO ################################################
 
 class ModelEvaluation:
     """
@@ -30,11 +27,13 @@ class ModelEvaluation:
                  val_dataset=False, 
                  overwrite_df_data_source_path="", 
                  overwrite_landmark_path="", 
-                 overwrite_data_path=""):
+                 overwrite_data_path="", 
+                 device="cuda"):
 
         self.normalizedMSE = NormalizedMSE()
+        self.device = device
         self.base_filepath = base_filepath
-        self.config_filepath = base_filepath + "config.p"
+        self.config_filepath = base_filepath + "config.p"  # TODO Use Inference Model and load model from there 
         self.model_filepath = base_filepath + "model.pt"
 
         self.overwrite_df_data_source_path = overwrite_df_data_source_path
@@ -53,15 +52,15 @@ class ModelEvaluation:
 
         self.model.load_state_dict(torch.load(self.model_filepath))
         self.model.eval()
-        self.model.to("cuda")
+        self.model.to(self.device)
 
         # setup data
         self._setup_data(val_dataset=val_dataset)
         self.lookup = LookUp(self.model, self.train_dataset)
 
         # get train and val slice score matrix
-        self.val_score_matrix = self.model.compute_slice_score_matrix(self.val_dataset)
-        self.train_score_matrix = self.model.compute_slice_score_matrix(self.train_dataset)
+        self.val_score_matrix = self.model.compute_slice_score_matrix(self.val_dataset, inference_device=self.device)
+        self.train_score_matrix = self.model.compute_slice_score_matrix(self.train_dataset, inference_device=self.device)
 
         # get mse 
         self.mse, self.mse_std, self.d = self.normalizedMSE.from_dataset(self.model, self.val_dataset, self.train_dataset)
@@ -127,7 +126,7 @@ class ModelEvaluation:
         for i in range(0, 100): 
             landmark_positions = self.val_dataset.landmark_matrix[i, :]
             x = self.val_dataset.get_full_volume(ids[i])
-            scores = self.model.predict_tensor(torch.tensor(x[:, np.newaxis, :, :]))
+            scores = self.model.predict_tensor(torch.tensor(x[:, np.newaxis, :, :]), inference_device=self.device)
 
             accuracies_5classes.append(acc5.volume(scores, landmark_positions))
             accuracies_3classes.append(acc3.volume(scores, landmark_positions))
