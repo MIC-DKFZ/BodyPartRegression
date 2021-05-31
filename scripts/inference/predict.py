@@ -7,7 +7,7 @@ import numpy as np
 
 sys.path.append("../../")
 
-from scripts.postprocessing.datasanitychecks import DataSanityCheck
+from scripts.score_processing.datasanitychecks import DataSanityCheck
 from scripts.preprocessing.nifti2npy import Nifti2Npy
 
 class Predict:

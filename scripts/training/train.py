@@ -22,7 +22,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 sys.path.append("../../")
 from scripts.network_architecture.bpr_model import BodyPartRegression
 from scripts.dataset.bpr_dataset import BPRDataset
-from scripts.postprocessing.lookup import LookUp
+from scripts.score_processing.lookup import LookUp
 
 np.seterr(divide='ignore', invalid='ignore') #TODO
 

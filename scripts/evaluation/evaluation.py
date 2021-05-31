@@ -10,18 +10,14 @@ import torch
 
 sys.path.append("../../")
 from scripts.network_architecture.bpr_model import BodyPartRegression
-from scripts.postprocessing.lookup import LookUp
+from scripts.score_processing.lookup import LookUp
 from scripts.training.train import get_dataframe, get_datasets
 from scripts.evaluation.accuracy import Accuracy
 from scripts.evaluation.normalized_mse import NormalizedMSE 
+from scripts.evaluation.visualization import Visualization
 from src.settings.settings import *
 
-class ModelEvaluation:
-    """
-    Todo:
-    - allgemeine Klasse mit Funktionen, die nicht nur auf spezielles Modell angewendet werden kann
-    - BPREvaluation soll von dieser Klasse erben
-    """
+class Evaluation(Visualization):
 
     def __init__(self, base_filepath,  
                  val_dataset=False, 
@@ -29,7 +25,7 @@ class ModelEvaluation:
                  overwrite_landmark_path="", 
                  overwrite_data_path="", 
                  device="cuda"):
-
+        Visualization.__init__(self)
         self.normalizedMSE = NormalizedMSE()
         self.device = device
         self.base_filepath = base_filepath
@@ -145,6 +141,8 @@ class ModelEvaluation:
         print("\nLookup Table\n*******************************")
         self.lookup.print()
 
+    def plot_landmarks(self):
+        super(Evaluation, self).plot_landmarks(self.val_score_matrix, self.lookup.expected_scores) 
 
 if __name__ == "__main__": 
     base_dir = "/home/AD/s429r/Documents/Code/bodypartregression/src/models/loh-ldist-l2/sigma-dataset-v11-v2/"

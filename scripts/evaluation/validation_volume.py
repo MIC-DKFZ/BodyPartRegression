@@ -24,23 +24,25 @@ class ValidationVolume:
         self.figsize=(14, 8)
         self.markerstyles = np.array([".", "v", "*", "p", "D", "X", "h", "P", "+", "^", "x", "d"])
         
-    def plot_scores(self, set_figsize=False):
+    def plot_scores(self, set_figsize=False, legend=None):
         if set_figsize: plt.figure(figsize=self.figsize)
-        
+        label = None
+
         # plot scores 
         plt.plot(self.z_array, self.scores)
         
         # plot landmarks
-        for i, name, landmark, score in zip(np.arange(len(self.nonempty)),
+        for style, name, landmark, score in zip(self.markerstyles[self.nonempty],
                                        self.landmark_names[self.nonempty],
                                        self.landmarks[self.nonempty], 
                                        self.scores[self.landmarks[self.nonempty].astype(int)]): 
+            if legend: label = name
             plt.plot(landmark*self.z, 
                      score,
                      linestyle="", 
-                     marker=self.markerstyles[i],
+                     marker=style,
                      color="black", 
-                     label=name)
+                     label=label)
         
         plt.xlabel("$\Delta$z [mm]", fontsize=self.fontsize)
         plt.ylabel("Score", fontsize=self.fontsize)

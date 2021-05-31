@@ -10,7 +10,7 @@ import torch
 
 sys.path.append("../../")
 from scripts.network_architecture.bpr_model import BodyPartRegression
-from scripts.postprocessing.lookup import LookUp
+from scripts.score_processing.lookup import LookUp
 from scripts.training.train import get_dataframe, get_datasets
 from src.settings.settings import *
 

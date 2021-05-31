@@ -1,3 +1,23 @@
+import matplotlib.pyplot as plt 
+import numpy as np 
+
+
+
+class Visualization: 
+    def __init__(self): 
+        pass
+
+    def plot_landmarks(self, score_matrix, expected_scores, figsize=(14, 8)): 
+        plt.figure(figsize=figsize)
+
+        for idx in range(score_matrix.shape[1]): 
+            x = score_matrix[:, idx]
+            plt.hist(x, density=True, alpha=0.7)
+            
+            mean = expected_scores[idx]
+            plt.plot([mean, mean], [0, 1], color="black", linestyle="--", linewidth=0.5)
+            plt.ylim((0, 0.9))
+
 
 ######################### TODO ##############################
 def plot_score2index_xyfix( # TODO 

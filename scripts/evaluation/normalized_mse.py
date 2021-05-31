@@ -12,11 +12,12 @@ class NormalizedMSE:
         
         return mse, mse_std, d
 
+
     def from_matrices(self, val_score_matrix, train_score_matrix): 
         expected_scores = np.nanmean(train_score_matrix, axis=0) 
         d = expected_scores[-1] - expected_scores[0]
-
         mse_values = self.from_instance(expected_scores, val_score_matrix, d)
+        print(mse_values)
         mse = np.nanmean(mse_values)
         counts = np.sum(np.where(~np.isnan(mse_values), 1, 0))
         mse_std = np.nanstd(mse_values)/np.sqrt(counts)
@@ -26,7 +27,9 @@ class NormalizedMSE:
 
     def from_volume(self, landmarks, scores, expected_scores): 
         d = expected_scores[-1] - expected_scores[0]
-
+        expected_scores = expected_scores[~np.isnan(landmarks)]
+        landmarks = np.array(landmarks[~np.isnan(landmarks)]).astype(int)
+        scores = scores[landmarks]
         return self.from_instance(scores, expected_scores, d)
 
     def from_instance(self, y_truth, y_pred, d): 
