@@ -3,9 +3,9 @@ import numpy as np
 
 sys.path.append("../../")
 from scripts.score_processing.datasanitychecks import DataSanityCheck
+from scripts.score_processing.bodypartexamined import BodyPartExamined
 from scripts.preprocessing.nifti2npy import Nifti2Npy
 from scripts.model_architecture.bpr_model import BodyPartRegression
-
 
 # TODO Use InferenceModel in modelEvaluation 
 # TODO put prediction code from bpr_model --> InferenceModel 
@@ -26,7 +26,22 @@ class InferenceModel:
         self.n2n = Nifti2Npy(
             target_pixel_spacing=3.5, min_hu=-1000, max_hu=1500, size=128
         )
-
+        self.bodyparts = ["legs", "pelvis", "abdomen", "thorax", "head"]
+        self.class2landmark= {"legs": [np.nan, "pelvis-start"],
+                            "pelvis": ["pelvis-start", "pelvis-end"], 
+                            "abdomen": ["pelvis-end", "L1"], 
+                            "chest": ["L1", "Th1"], 
+                            "shoulder-neck": ["Th1", "C6"], 
+                            "head": ["C6", np.nan]} # TODO 
+        self.lookuptable = {} # TODO 
+        self.bpe = BodyPartExamined(self.bodyparts,
+                                    self.class2landmark, 
+                                    self.lookuptable)
+        self.slope_mean = 0 # TODO 
+        self.slope_std = 0
+        self.lower_bound_score = 0
+        self.upper_bound_score = 0
+        self.smoothing_sigma = 0
 
     def load_model(self, 
                    base_dir, 
@@ -81,19 +96,11 @@ class InferenceModel:
         scores = self.predict_tensor(x_tensor)
         return scores, pixel_spacings      
 
-    def scores2bodyrange(): 
-        pass
-
-    def datasanitychecks(): 
-        pass 
-
-    def predict_nifti2json(self,  nifti_path, output_path): 
-        scores, pixel_spacings = self.predict_nifti(nifti_path)
-
+    def datasanitychecks(self, scores, z_spacing): 
         # validation
         dsc = DataSanityCheck(
             scores,
-            pixel_spacings[2],
+            z_spacing, 
             self.slope_mean,
             self.slope_std,
             self.lower_bound_score,
@@ -104,26 +111,44 @@ class InferenceModel:
         reverse_zordering = dsc.is_reverse_zordering()
         valid_zspacing = dsc.is_valid_zspacing()
 
+        return {
+            "slice scores": list(cleaned_scores), 
+            "valid indices": list(valid_indices.astype(float)), 
+            "unprocessed slice scores": list(scores), 
+            "reverse z-ordering": reverse_zordering, 
+            "valid z-spacing": valid_zspacing, 
+            "z-spacing": np.round(float(z_spacing), 2)
+            "expected z-spacing": np.round(float(dsc.z_hat), 2)
+        }
+
+    def trainsform_0to100(self, score): 
+        min_value = self.lookup_table["pelvis_start"]["mean"]
+        max_value = self.lookup_table["eyes_end"]["mean"]
+
+        score = score - min_value
+        score = score * 100 / (max_value - min_value)
+
+        return score
+
+    def predict_nifti2json(self,  nifti_path, output_path): 
+        scores, pixel_spacings = self.predict_nifti(nifti_path)
+
         # estimate BodyPartExamined
-        body_part_examined = self._get_body_part_examined(cleaned_scores)
+        body_part_examined = self.bpr.get_body_part_examined(cleaned_scores)
+
+        lookup_transformed = self._transform_lookup() # TODO transform lookup at init 
 
         # transform to 0-100
-        cleaned_scores = self._transform_0_100(cleaned_scores)
-        scores = self._transform_0_100(scores)
-        lookup_transformed = self._transform_lookup()
+        scores = self.transform_0to100(scores)
+        # data sanity checks 
+        datasanitydict = self.datasanitychecks(scores, pixel_spacings[2]) # TODO slope and transformation! 
 
         # write output json file
-        json_output = {
-            "slice scores": list(cleaned_scores),
-            "valid indices": list(valid_indices.astype(float)),
-            "unprocessed slice scores": list(scores),
+        output = {
             "body part examined": body_part_examined,
             "look-up table": lookup_transformed,
-            "reverse z-ordering": reverse_zordering,
-            "valid z-spacing": valid_zspacing,
-            "z-spacing": np.round(float(pixel_spacings[2]), 2),
-            "expected z-spacig": np.round(dsc.zhat, 2),
         }
+        datasanitydict.update(output)
         
         with open(output_path, "w") as f:
             json.dump(json_output, f)

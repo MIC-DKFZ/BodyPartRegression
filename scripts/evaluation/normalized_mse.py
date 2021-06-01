@@ -17,7 +17,6 @@ class NormalizedMSE:
         expected_scores = np.nanmean(train_score_matrix, axis=0) 
         d = expected_scores[-1] - expected_scores[0]
         mse_values = self.from_instance(expected_scores, val_score_matrix, d)
-        print(mse_values)
         mse = np.nanmean(mse_values)
         counts = np.sum(np.where(~np.isnan(mse_values), 1, 0))
         mse_std = np.nanstd(mse_values)/np.sqrt(counts)
