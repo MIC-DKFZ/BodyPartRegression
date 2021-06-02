@@ -62,7 +62,7 @@ class BodyPartRegression(pl.LightningModule):
         elif loss_order == "c": 
             self.loss_order = order_loss_c()
 
-        else: 
+        elif loss_order == "": 
             self.loss_order = no_order_loss()
         else: raise ValueError(f"Unknown loss parameter {loss_order}")
 
