@@ -48,4 +48,4 @@ class no_order_loss:
         pass
 
     def __call__(self, scores_pred, _): 
-        return 0 
+        return 0.0
