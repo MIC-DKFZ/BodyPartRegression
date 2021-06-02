@@ -58,9 +58,12 @@ class BodyPartRegression(pl.LightningModule):
         self.mse = NormalizedMSE()
         
         if loss_order == "h": 
-            self.loss_order = loss_order_h(alpha=self.alpha_h, beta=self.beta_h)
+            self.loss_order = order_loss_h(alpha=self.alpha_h, beta=self.beta_h)
         elif loss_order == "c": 
-            self.loss_order = loss_order_c()
+            self.loss_order = order_loss_c()
+
+        else: 
+            self.loss_order = no_order_loss()
         else: raise ValueError(f"Unknown loss parameter {loss_order}")
 
     def get_vgg(self):

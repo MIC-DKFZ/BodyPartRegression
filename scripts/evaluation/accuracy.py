@@ -9,17 +9,23 @@ class Accuracy:
         self.class_to_score_mapping = self.get_class_to_score_mapping()
         
     def volume(self, scores, landmark_positions): 
+        _, accuracies = self.slice_accuracies(scores, landmark_positions)
+        if len(accuracies) == 0: return np.nan
+        
+        return np.mean(accuracies)
+    
+    def slice_accuracies(self, scores, landmark_positions): 
         ground_truth_classes = self.ground_truth_class(landmark_positions, max_slices=len(scores))
         predicted_classes = self.class_prediction(scores)
         
         indices = np.where(~np.isnan(ground_truth_classes)) 
         ground_truth_classes = ground_truth_classes[indices]
         predicted_classes = predicted_classes[indices]
-        
-        accuracy = np.sum((ground_truth_classes == predicted_classes)*1)/len(predicted_classes)
 
-        return accuracy
-    
+        accuracies = np.array((ground_truth_classes == predicted_classes)*1)
+
+        return indices[0], accuracies
+
     def get_class_to_score_mapping(self): 
         class_to_score_mapping = {myClass: [] for myClass in self.class_to_landmark.keys()}
         

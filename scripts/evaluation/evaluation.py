@@ -119,7 +119,7 @@ class Evaluation(Visualization):
         # define accuracy class with 3 classes
         acc3 = Accuracy(expected_scores, CLASS_TO_LANDMARK_3)
 
-        for i in range(0, 100): 
+        for i in range(0, len(self.val_dataset)): 
             landmark_positions = self.val_dataset.landmark_matrix[i, :]
             x = self.val_dataset.get_full_volume(ids[i])
             scores = self.model.predict_tensor(torch.tensor(x[:, np.newaxis, :, :]), inference_device=self.device)

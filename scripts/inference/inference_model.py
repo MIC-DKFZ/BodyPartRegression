@@ -121,14 +121,27 @@ class InferenceModel:
             "expected z-spacing": np.round(float(dsc.z_hat), 2)
         }
 
-    def trainsform_0to100(self, score): 
-        min_value = self.lookup_table["pelvis_start"]["mean"]
-        max_value = self.lookup_table["eyes_end"]["mean"]
+    def trainsform_0to100(self, score, min_value=np.nan): 
+        if np.isnan(min_value): min_value = self.lookuptable["pelvis_start"]["mean"]
+        max_value = self.lookuptable["eyes_end"]["mean"]
 
         score = score - min_value
         score = score * 100 / (max_value - min_value)
 
         return score
+
+
+    def transform_lookup(self):
+        lookup_copy = {key: {} for key in self.lookuptable}
+        for key in self.lookuptable:
+            lookup_copy[key]["mean"] = np.round(
+                self.transform_0_100(self.lookuptable[key]["mean"]), 3
+            )
+            lookup_copy[key]["std"] = np.round(
+                self.transform_0_100(self.lookuptable[key]["std"], min_value=0), 3
+            )
+
+        return lookup_copy
 
     def predict_nifti2json(self,  nifti_path, output_path): 
         scores, pixel_spacings = self.predict_nifti(nifti_path)

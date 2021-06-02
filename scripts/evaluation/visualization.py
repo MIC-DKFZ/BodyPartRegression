@@ -9,14 +9,14 @@ class Visualization:
 
     def plot_landmarks(self, score_matrix, expected_scores, figsize=(14, 8)): 
         plt.figure(figsize=figsize)
-
+        max_value = 0
         for idx in range(score_matrix.shape[1]): 
             x = score_matrix[:, idx]
-            plt.hist(x, density=True, alpha=0.7)
-            
+            bins, _, _ = plt.hist(x, density=True, alpha=0.7)
             mean = expected_scores[idx]
-            plt.plot([mean, mean], [0, 1], color="black", linestyle="--", linewidth=0.5)
-            plt.ylim((0, 0.9))
+            plt.plot([mean, mean], [0, 100], color="black", linestyle="--", linewidth=0.5)
+            if np.max(bins) > max_value: max_value = np.max(bins)
+        plt.ylim((0, 1.1*max_value))
 
 
 ######################### TODO ##############################
