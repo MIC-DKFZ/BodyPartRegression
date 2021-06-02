@@ -47,5 +47,5 @@ class no_order_loss:
     def __init__(self): 
         pass
 
-    def __call_(self, scores_pred, _): 
+    def __call__(self, scores_pred, _): 
         return 0 
