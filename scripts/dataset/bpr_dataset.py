@@ -86,6 +86,10 @@ class BPRDataset(Dataset):
         volume = np.load(filepath)
         return self._swap_axis(volume)
 
+    def get_full_volume_from_filepath(self, filepath:str): 
+        volume = np.load(filepath)
+        return self._swap_axis(volume)
+
     def get_landmark_idx(self, idx: int): 
         filename = self.filenames[idx]
         idx =np.where(filename == np.array(self.landmark_files))[0]

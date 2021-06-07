@@ -532,6 +532,34 @@ if __name__ == "__main__":
                         'model_name': 'order-loss-experiment',
                         'name': 'no-order-loss-12m.p'}}
 
+    experiments = {0: {'num_slices': 4,
+                        'batch_size': 64,
+                        'effective_batch_size': 64,
+                        'epochs': 480,
+                        'alpha': 1,
+                        'lambda': 0,
+                        'loss_order': '',
+                        'model_name': 'order-loss-experiment',
+                        'name': 'no-order-loss-4m.p'},
+                        1: {'num_slices': 8,
+                        'batch_size': 32,
+                        'effective_batch_size': 32,
+                        'epochs': 240,
+                        'alpha': 1,
+                        'lambda': 0,
+                        'loss_order': '',
+                        'model_name': 'order-loss-experiment',
+                        'name': 'no-order-loss-8m.p'},
+                        2: {'num_slices': 12,
+                        'batch_size': 21,
+                        'effective_batch_size': 21,
+                        'epochs': 160,
+                        'alpha': 1,
+                        'lambda': 0,
+                        'loss_order': '',
+                        'model_name': 'order-loss-experiment',
+                        'name': 'no-order-loss-12m.p'}}
+
     for idx, data in experiments.items(): 
         print("Idx: ", idx)
         for key in data.keys(): 
