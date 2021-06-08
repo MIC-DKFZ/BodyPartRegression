@@ -21,7 +21,9 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 
 sys.path.append("../../")
 from scripts.network_architecture.bpr_model import BodyPartRegression
+from scripts.network_architecture.ssbr_model import SSBR 
 from scripts.dataset.bpr_dataset import BPRDataset
+from scripts.dataset.ssbr_dataset import SSBRDataset
 from scripts.score_processing.lookup import LookUp
 
 np.seterr(divide='ignore', invalid='ignore') #TODO
@@ -105,46 +107,49 @@ def save_model(trainer, model, config, train_dataloader, logger):
 
 
 def data_preprocessing_ssbr(df, config): 
-    train_filenames = df[df.train_data == 1].filename.values
-    val_filenames = df[df.val_data == 1].filename.values
-    test_filenames = df[df.test_data == 1].filename.values
+    train_filenames = df.loc[df.train_data == 1, "filename"].values
+    val_filenames =   df.loc[df.val_data == 1, "filename"].values
+    test_filenames =  df.loc[df.test_data == 1, "filename"].values
 
-    train_filepaths = [config["data_path"] + f for f in train_filenames]
-    val_filepaths = [config["data_path"] + f for f in val_filenames]
-    test_filepaths = [config["data_path"] + f for f in test_filenames]
+    train_zspacings = df.loc[df.train_data == 1, "pixel_spacingz"].values
+    val_zspacings =   df.loc[df.val_data == 1, "pixel_spacingz"].values
+    test_zspacings =  df.loc[df.test_data == 1, "pixel_spacingz"].values
 
-
-    train_zspacings = df[df.filename.isin(train_filenames)]["pixel_spacingz"].values
-    val_zspacings = df[df.filename.isin(val_filenames)]["pixel_spacingz"].values
-    test_zspacings = df[df.filename.isin(test_filenames)]["pixel_spacingz"].values
-
-    train_dataset = SSBRDataset(train_filepaths,  
-                        landmark_path=config["landmark_path"], 
-                        landmark_sheet_name="landmarks-train", # TODO -without-merge
-                        random_seed=config["random_seed"], 
-                        custom_transform=config["custom_transform"], 
-                        albumentation_transform=config["albumentation_transform"],
-                        equidistance_range=config["equidistance_range"], 
-                        num_slices=config["num_slices"])
-
-
-    val_dataset = SSBRDataset(val_filepaths,  
+    
+    train_dataset = SSBRDataset(data_path=config["data_path"], 
+                               filenames=train_filenames, 
+                                z_spacings=train_zspacings, 
+                                landmark_path=config["landmark_path"], 
+                                landmark_sheet_name="landmarks-train", # TODO -without-merge
+                                random_seed=config["random_seed"], 
+                                custom_transform=config["custom_transform"], 
+                                albumentation_transform=config["albumentation_transform"],
+                                equidistance_range=config["equidistance_range"], 
+                                num_slices=config["num_slices"])
+    
+    
+    val_dataset = SSBRDataset(data_path=config["data_path"], 
+                             filenames=val_filenames, 
+                             z_spacings=val_zspacings,
                             landmark_path=config["landmark_path"], 
                             landmark_sheet_name="landmarks-val",                         
-                            random_seed=config["random_seed"],  
-                            custom_transform=config["custom_transform"], 
-                            albumentation_transform=config["albumentation_transform"],
-                            equidistance_range=config["equidistance_range"], 
-                            num_slices=config["num_slices"])
+                             random_seed=config["random_seed"],  
+                             custom_transform=config["custom_transform"], 
+                             albumentation_transform=config["albumentation_transform"],
+                             equidistance_range=config["equidistance_range"], 
+                             num_slices=config["num_slices"])
+    
+    test_dataset = SSBRDataset(data_path=config["data_path"], 
+                              filenames=test_filenames, 
+                                z_spacings=test_zspacings,
+                                landmark_path=config["landmark_path"], 
+                                landmark_sheet_name="landmarks-test",                          
+                                random_seed=config["random_seed"],
+                                custom_transform=config["custom_transform"], 
+                                albumentation_transform=config["albumentation_transform"],
+                                equidistance_range=config["equidistance_range"], 
+                                num_slices=config["num_slices"])
 
-    test_dataset = SSBRDataset(test_filepaths, 
-                        landmark_path=config["landmark_path"], 
-                        landmark_sheet_name="landmarks-test",                          
-                        random_seed=config["random_seed"],
-                        custom_transform=config["custom_transform"], 
-                        albumentation_transform=config["albumentation_transform"],
-                        equidistance_range=config["equidistance_range"], 
-                        num_slices=config["num_slices"])
 
     train_dataloader = torch.utils.data.DataLoader(train_dataset, 
                                                 batch_size=config["batch_size"], 
@@ -160,7 +165,7 @@ def data_preprocessing_ssbr(df, config):
                                                 num_workers=20)
 
     return train_dataloader, val_dataloader, test_dataloader
-
+    
 def train_config(config): 
     # print configurations 
     seed_everything(config["random_seed"])
@@ -174,8 +179,9 @@ def train_config(config):
     # load data 
     df = get_dataframe(config)
 
-    if "model" in config.keys(): 
-        if config["model"] != "SSBR": train_dataloader, val_dataloader, test_dataloader = data_preprocessing_ssbr(df, config)
+    if "model" in config.keys() and config["model"] == "SSBR": 
+        train_dataloader, val_dataloader, test_dataloader = data_preprocessing_ssbr(df, config)
+        model = SSBR(alpha=config["alpha"], lr=config["lr"])    
     
     else: 
         train_dataset, val_dataset, test_dataset = get_datasets(config, df)
@@ -195,19 +201,17 @@ def train_config(config):
         # run model 
         run_fast_dev(config, train_dataloader, val_dataloader)
     
-    model = BodyPartRegression(alpha=config["alpha"], 
-                                lr=config["lr"], 
-                                lambda_=config["lambda"], 
-                                alpha_h=config["alpha_h"], 
-                                beta_h=config["beta_h"],
-                                base_model=config["base_model"], 
-                                loss_order=config["loss_order"])    
+        model = BodyPartRegression(alpha=config["alpha"], 
+                                    lr=config["lr"], 
+                                    lambda_=config["lambda"], 
+                                    alpha_h=config["alpha_h"], 
+                                    beta_h=config["beta_h"],
+                                    base_model=config["base_model"], 
+                                    loss_order=config["loss_order"])    
 
 
     logger_uar = TensorBoardLogger(save_dir=config["save_dir"], name=config["model_name"])
-    checkpoint_callback = ModelCheckpoint(monitor='mse')
     trainer = pl.Trainer(gpus=1, 
-                         callbacks=[checkpoint_callback],
                          max_epochs=config["epochs"], 
                          precision=16,
                          logger=logger_uar, deterministic=config["deterministic"], 
@@ -222,11 +226,14 @@ def train():
     parser = argparse.ArgumentParser()
     parser.add_argument("--list", nargs="+", default=[])
     parser.add_argument('--path', default="/home/AD/s429r/Documents/Code/s429r/trainings/configs/test/" )
+    parser.add_argument('--model', default="" )
+
     sys.path.append("../../../s429r/") # TODO Pfad ändern! 
     value = parser.parse_args()
     config_filenames = value.list
     config_filepath = value.path 
-    
+    config_model = value.model 
+
     if len(config_filenames) == 0: 
         config_filenames = np.sort(os.listdir(config_filepath))
     
