@@ -1,9 +1,126 @@
 import torch
 import numpy as np 
 import sys, os
+from scipy.ndimage import gaussian_filter
 
 sys.path.append("../../")
-from scripts.inference.predict_volume import 
+
+class Scores: 
+    def __init__(self, 
+                 scores,
+                 zspacing, 
+                 lower_bound=0, 
+                 upper_bound=100, 
+                 smoothing_sigma=10): 
+        scores = np.array(scores).astype(float)
+        self.original_values = scores
+        self.length = len(scores)
+        self.zspacing = zspacing
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound 
+        self.smoothing_sigma = smoothing_sigma
+
+        self.smoothed_values = self.smooth_scores(scores)
+        self.valid_region = self.identify_valid_range()
+        self.values = self.set_invalid_region_to_nan(self.smoothed_values, self.valid_region)
+        self.z = np.arange(len(scores))*zspacing
+
+        self.valid_values = self.values[~np.isnan(self.values)]
+        self.valid_z = self.z[~np.isnan(self.values)]
+
+        self.a, self.b = self.fit_linear_line()
+
+    def __len__(self): 
+        return len(self.original_values)
+
+    def smooth_scores(self, scores): 
+        smoothed_values = gaussian_filter(scores, 
+                                          sigma=self.smoothing_sigma/self.zspacing)
+        return np.array(smoothed_values)
+
+    def set_invalid_region_to_nan(self, scores, valid_indices): 
+        min_valid_index = np.min(valid_indices)
+        max_valid_index = np.max(valid_indices)
+
+        scores[0:min_valid_index] = np.nan
+        scores[max_valid_index+1:] = np.nan
+        return scores 
+
+    def identify_valid_range(self): 
+        diff = self.smoothed_values[1:] - self.smoothed_values[:-1]
+        negative_slope_indices = np.where(diff < 0)[0]
+
+        # get max valid lower boundary and min valid upper boundary index 
+        lower_bound_index = self.calculate_boundary_index(self.smoothed_values, self.lower_bound, kind="lower")
+        upper_bound_index = self.calculate_boundary_index(self.smoothed_values, self.upper_bound, kind="upper", min_boundary=lower_bound_index)
+        
+        # correct lower boundary, if it is not smaller than the upper boundary 
+        if not (lower_bound_index < upper_bound_index): 
+            lower_bound_index = self.calculate_boundary_index(self.smoothed_values, self.lower_bound, kind="lower", max_boundary=upper_bound_index)
+
+        # get min and max valid boundary, depending on the slope
+        critical_lower_indices = negative_slope_indices[negative_slope_indices < lower_bound_index]
+        critical_upper_indices = negative_slope_indices[negative_slope_indices > upper_bound_index]
+
+        if len(critical_lower_indices) == 0: 
+            min_valid_index = 0
+        else: 
+            min_valid_index = np.max(critical_lower_indices)+1
+
+        if len(critical_upper_indices) == 0: 
+            max_valid_index = self.length - 1
+        else: 
+            max_valid_index = np.min(critical_upper_indices)
+
+        return np.arange(min_valid_index, max_valid_index+1)
+
+    def calculate_boundary_index(self, scores, bound, kind, max_boundary=np.nan, min_boundary=np.nan): 
+        if kind == "lower": 
+            lower_indices = np.where(scores < bound)[0]
+            if (~np.isnan(max_boundary)) and (len(lower_indices[lower_indices < max_boundary]) > 0): 
+                lower_indices = lower_indices[lower_indices < max_boundary]
+            if len(lower_indices) == 0: 
+                return 0 
+            return np.max(lower_indices) + 1
+        if kind == "upper": 
+            upper_indices = np.where(scores > bound)[0]
+            upper_indices = upper_indices[upper_indices > 0]
+            if (~np.isnan(min_boundary)) and (len(upper_indices[upper_indices > min_boundary]) > 0):
+                upper_indices = upper_indices[upper_indices > min_boundary]
+            if len(upper_indices) == 0: 
+                return len(scores) - 1
+            return np.min(upper_indices) - 1
+
+    def fit_linear_line(self): 
+        X = np.full((len(self.valid_z), 2), 1.0, dtype=float)
+        X[:, 1] = self.valid_z
+        b, a = np.linalg.inv(X.T @ X) @ X.T @ self.valid_values
+
+        return a, b
+
+    def transform_scores(self): 
+        pass 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ########## TODO #######################################
 class SliceScoreProcessing: 
