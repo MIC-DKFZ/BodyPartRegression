@@ -7,6 +7,7 @@ sys.path.append("../../")
 from scripts.dataset.base_dataset import get_full_volume_from_filepath, get_slices
 from scripts.evaluation.normalized_mse import NormalizedMSE
 from scripts.evaluation.accuracy import Accuracy
+from scripts.utils.linear_transformations import * 
 from src.settings.settings import * 
 import json 
 
@@ -33,7 +34,8 @@ class LandmarkScores:
         self.expected_scores = np.nanmean(self.score_matrix, axis=0)
         self.expected_scores_std = np.nanstd(self.score_matrix, axis=0)
 
-        self.lookuptable = transform_lookuptable(self.create_lookuptable())
+        self.lookuptable = self.create_lookuptable()
+        self.transformed_lookuptable = transform_lookuptable(self.lookuptable)
         
     def create_score_matrix(self): 
         with torch.no_grad(): 
@@ -67,8 +69,10 @@ class LandmarkScores:
             print(f"{landmark:<15}:\t {mean}+-{std}")    
 
     def save_lookuptable(self, filepath): # TODO 
+        jsonDict = {"original": self.lookuptable, 
+        "transformed": self.transformed_lookuptable}
         with open(filepath, "w") as f:
-            json.dump(self.lookuptable, f)
+            json.dump(jsonDict, f)
 
             
 class LandmarkScoreBundle: 
@@ -102,24 +106,3 @@ class LandmarkScoreBundle:
 
 
 
-def transform_0to100(score, lookuptable, min_value=np.nan): 
-    if np.isnan(min_value): min_value = lookuptable["pelvis_start"]["mean"]
-    max_value = lookuptable["eyes_end"]["mean"]
-
-    score = score - min_value
-    score = score * 100 / (max_value - min_value)
-
-    return score
-
-
-def transform_lookuptable(lookuptable):
-    lookup_copy = {key: {} for key in lookuptable}
-    for key in lookuptable:
-        lookup_copy[key]["mean"] = np.round(
-            transform_0to100(lookuptable[key]["mean"], lookuptable), 3
-        )
-        lookup_copy[key]["std"] = np.round(
-            transform_0to100(lookuptable[key]["std"], lookuptable, min_value=0.0), 3
-        )
-
-    return lookup_copy

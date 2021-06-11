@@ -29,6 +29,11 @@ def test_valid_range():
 def test_slope(): 
     pass
 
+def test_transform(): 
+    pass
+
+def test_cut_extreme_diffs(): 
+    pass
 
 if __name__ == "__main__": 
     test_valid_range()

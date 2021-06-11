@@ -30,7 +30,7 @@ class BodyPartExamined:
         return np.arange(lower_slice_index, upper_slice_index), upper_slice_index
 
     def cut_scores(self, slice_scores, lower_slice_score, upper_slice_score): 
-        score_window = np.where((slice_scores => lower_slice_score) & (slice_scores < upper_slice_score))
+        score_window = np.where((slice_scores >= lower_slice_score) & (slice_scores < upper_slice_score))
         return score_window 
 
     def get_body_part_examined(self, slice_scores):
@@ -44,7 +44,7 @@ class BodyPartExamined:
 
 
 
-def test_bodypartexamined() 
+def test_bodypartexamined(): 
     scores = [-10, -8.5, -7, -4, -1, 0, 2, 3, 5, 8, 9]
     bpe = {"1": [0, 1, 2, 3], 
             "2": [4, 5, 6], 

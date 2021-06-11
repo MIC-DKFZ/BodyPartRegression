@@ -1,66 +1,70 @@
-import pickle
 import numpy as np 
+import os, sys
+import torch 
+import json, pickle
 
 sys.path.append("../../")
 from scripts.score_processing.datasanitychecks import DataSanityCheck
 from scripts.score_processing.bodypartexamined import BodyPartExamined
 from scripts.preprocessing.nifti2npy import Nifti2Npy
-from scripts.model_architecture.bpr_model import BodyPartRegression
+from scripts.network_architecture.bpr_model import BodyPartRegression
+from scripts.score_processing.scores import Scores
 
 # TODO Use InferenceModel in modelEvaluation 
 # TODO put prediction code from bpr_model --> InferenceModel 
 # TODO convert Dockercontainer again and starter.py
 # TODO remove predict.py
 # TODO Use InferenceModel for SliceScoreProcessing 
-# TODO Save in InferenceModel Lookup Table for all defined landmarks from val. dataset 
-# TODO Use nifti2npy for preprocessing 
 # TODO Write Tests for scores2bodyrange 
+# TODO Include data sanity checks 
+# TODO BodyPartExamined hinzufügen 
+# TODO DataSanityChecks: expected z-spacing
 
 class InferenceModel: 
+    """
+    Body Part Regression Model for inference purposes. 
+    
+    Args:
+        base_dir (str]): Path which includes model related file. 
+        Structure of base_dir: 
+        base_dir/ 
+            model.pt - includes model 
+            settings.json - includes mean slope and mean slope std
+            lookuptable.json - includes lookuptable as reference 
+        device (str, optional): [description]. "cuda" or "cpu" 
+    """
     def __init__(self, base_dir, device="cuda"): 
-        self.landmark_matrix = ""
-        self.landmark_files = ""
-        self.lookup = ""
+
+        self.base_dir = base_dir
         self.device = device
-        self.model = self.load_model(base_dir)
+
+        self.model = load_model(base_dir, device=self.device)
+        self.load_lookuptable()
+        self.load_settings()
         self.n2n = Nifti2Npy(
             target_pixel_spacing=3.5, min_hu=-1000, max_hu=1500, size=128
         )
-        self.bodyparts = ["legs", "pelvis", "abdomen", "thorax", "head"]
-        self.class2landmark= {"legs": [np.nan, "pelvis-start"],
-                            "pelvis": ["pelvis-start", "pelvis-end"], 
-                            "abdomen": ["pelvis-end", "L1"], 
-                            "chest": ["L1", "Th1"], 
-                            "shoulder-neck": ["Th1", "C6"], 
-                            "head": ["C6", np.nan]} # TODO 
-        self.lookuptable = {} # TODO 
-        self.bpe = BodyPartExamined(self.bodyparts,
-                                    self.class2landmark, 
-                                    self.lookuptable)
-        self.slope_mean = 0 # TODO 
-        self.slope_std = 0
-        self.lower_bound_score = 0
-        self.upper_bound_score = 100
-        self.smoothing_sigma = 0
 
-    def load_model(self, 
-                   base_dir, 
-                   model_file="model.pt", 
-                   config_file="config.p"): 
-        self.base_filepath = base_dir
-        self.config_filepath = base_dir + config_file # TODO
-        self.model_filepath = base_dir + model_file # TODO verallgemeinern
+    def load_lookuptable(self): 
+        path = self.base_dir + "lookuptable.json"
+        if not os.path.exists: 
+            return np.nan 
 
-        with open(self.config_filepath, "rb") as f: 
-            self.config = pickle.load(f)
-            
-        self.model = BodyPartRegression(alpha=self.config["alpha"], 
-                                        lr=self.config["lr"], 
-                                        base_model=self.config["base_model"])
-        self.model.load_state_dict(torch.load(self.model_filepath))
-        self.model.eval()
-        self.model.to(self.device)
+        with open(path, "rb") as f: 
+            lookuptable = json.load(f)
 
+        self.lookuptable_original = lookuptable["original"]
+        self.lookuptable = lookuptable["transformed"]
+
+    def load_settings(self): 
+        path = self.base_dir + "settings.json"
+        if not os.path.exists: return np.nan 
+
+        with open(path, "rb") as f: 
+            mySettings = json.load(f)
+
+        self.slope_mean = mySettings["slope_mean"]
+        self.slope_std = mySettings["slope_std"]
 
     def predict_tensor(self, tensor, n_splits=200): 
         scores = []
@@ -69,12 +73,12 @@ class InferenceModel:
         slice_splits.append(n)
 
         with torch.no_grad(): 
-            self.eval() 
-            self.to(inference_device)
+            self.model.eval() 
+            self.model.to(self.device)
             for i in range(len(slice_splits) - 1): 
                 min_index = slice_splits[i]
                 max_index = slice_splits[i+1]
-                score = self(tensor[min_index:max_index,:, :, :].to(self.device))
+                score = self.model(tensor[min_index:max_index,:, :, :].to(self.device))
                 scores += [s.item() for s in score]
 
         scores = np.array(scores)
@@ -85,7 +89,7 @@ class InferenceModel:
         scores = self.predict_tensor(x_tensor, n_splits=n_splits)
         return scores
 
-    def predict_nifti(self): 
+    def predict_nifti(self, nifti_path): 
         # get nifti file as tensor
         x, pixel_spacings = self.n2n.preprocess_nifti(nifti_path)
         x = np.transpose(x, (2, 0, 1))[:, np.newaxis, :, :]
@@ -117,53 +121,86 @@ class InferenceModel:
             "unprocessed slice scores": list(scores), 
             "reverse z-ordering": reverse_zordering, 
             "valid z-spacing": valid_zspacing, 
-            "z-spacing": np.round(float(z_spacing), 2)
+            "z-spacing": np.round(float(z_spacing), 2), 
             "expected z-spacing": np.round(float(dsc.z_hat), 2)
         }
 
-    def trainsform_0to100(self, score, min_value=np.nan): 
-        if np.isnan(min_value): min_value = self.lookuptable["pelvis_start"]["mean"]
-        max_value = self.lookuptable["eyes_end"]["mean"]
+    def nifti2json(self, nifti_path, output_path): 
+        slice_score_values, pixel_spacings = self.predict_nifti(nifti_path)
+        slice_scores = Scores(slice_score_values, 
+                              pixel_spacings[2], 
+                              transform_min = self.lookuptable_original["pelvis_start"]["mean"], 
+                              transform_max = self.lookuptable_original["eyes_end"]["mean"])
 
-        score = score - min_value
-        score = score * 100 / (max_value - min_value)
+        output = {"slice scores": list(slice_scores.values.astype(np.float64)), 
+            "z": list(slice_scores.z.astype(np.float64)), 
+            "valid z": list(slice_scores.valid_z.astype(np.float64)), 
+            "unprocessed slice scores": list(slice_scores.original_transformed_values.astype(np.float64)), 
+            "look-up table": self.lookuptable, 
+            "z-spacing": pixel_spacings[2].astype(np.float64)}
 
-        return score
+        if len(output_path) == 0: return output
 
+        with open(output_path, "w") as f: 
+            json.dump(output, f)
 
-    def transform_lookup(self):
-        lookup_copy = {key: {} for key in self.lookuptable}
-        for key in self.lookuptable:
-            lookup_copy[key]["mean"] = np.round(
-                self.transform_0_100(self.lookuptable[key]["mean"]), 3
-            )
-            lookup_copy[key]["std"] = np.round(
-                self.transform_0_100(self.lookuptable[key]["std"], min_value=0), 3
-            )
+        return output
 
-        return lookup_copy
+def load_model(base_dir, 
+                model_file="model.pt", 
+                config_file="config.p", 
+                device="cuda"): 
+    config_filepath = base_dir + config_file # TODO
+    model_filepath = base_dir + model_file # TODO verallgemeinern
 
-    def predict_nifti2json(self,  nifti_path, output_path): 
-        scores, pixel_spacings = self.predict_nifti(nifti_path)
-
-        # estimate BodyPartExamined
-        body_part_examined = self.bpr.get_body_part_examined(cleaned_scores)
-
-        lookup_transformed = self._transform_lookup() # TODO transform lookup at init 
-
-        # transform to 0-100
-        scores = self.transform_0to100(scores)
-        # data sanity checks 
-        datasanitydict = self.datasanitychecks(scores, pixel_spacings[2]) # TODO slope and transformation! 
-
-        # write output json file
-        output = {
-            "body part examined": body_part_examined,
-            "look-up table": lookup_transformed,
-        }
-        datasanitydict.update(output)
+    with open(config_filepath, "rb") as f: 
+        config = pickle.load(f)
         
-        with open(output_path, "w") as f:
-            json.dump(json_output, f)
+    model = BodyPartRegression(alpha=config["alpha"], 
+                                    lr=config["lr"]) 
+    model.load_state_dict(torch.load(model_filepath))
+    model.eval()
+    model.to(device)
 
-        return json_output
+    return model
+
+# TODO 
+"""
+json_output = {
+"slice scores": list(cleaned_scores),
+"valid indices": list(valid_indices.astype(float)),
+"unprocessed slice scores": list(scores),
+"body part examined": body_part_examined,
+"look-up table": lookup_transformed,
+"reverse z-ordering": reverse_zordering,
+"valid z-spacing": valid_zspacing,
+"z-spacing": np.round(float(pixel_spacings[2]), 2),
+"expected z-spacig": np.round(dsc.zhat, 2),
+}
+"""
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--i", default="")
+    parser.add_argument("--o", default="")
+    parser.add_argument("--g", default=1) 
+
+    value = parser.parse_args()
+    ipath = value.i
+    opath = value.o
+    gpu = value.g
+
+    base_dir = "../../src/models/loh-ldist-l2/sigma-dataset-v11/"
+    model = Predict(
+        base_dir,
+        smoothing_sigma=10,
+        gpu=gpu
+    )
+
+    data_path = "../../data/test_cases/"
+    nifti_paths = [data_path + f for f in os.listdir(data_path) if f.endswith(".nii.gz")]
+    for nifti_path in tqdm(nifti_paths): 
+        output_path = nifti_path.replace("test_cases", "test_results").replace(".nii.gz", ".json")
+        model.predict(nifti_path, output_path)
+    

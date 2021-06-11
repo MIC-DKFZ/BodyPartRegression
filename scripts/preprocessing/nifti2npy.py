@@ -41,8 +41,8 @@ class Nifti2Npy:
         reverse_zaxis: list = [],
         sigma: tuple = (0.8, 0.8, 0),
         reference_downscaling_factor: float = 0.25,
-        rescale_max=1, 
-        rescale_min=-1, 
+        rescale_max=1.0, 
+        rescale_min=-1.0, 
     ):
         self.ipath = ipath
         self.opath = opath
@@ -50,12 +50,15 @@ class Nifti2Npy:
         self.min_hu = min_hu
         self.max_hu = max_hu
         self.size = size
-        self.padding = A.PadIfNeeded(
-            min_height=size,
-            min_width=size,
-            always_apply=True,
-            border_mode=cv2.BORDER_CONSTANT,
-        )
+        #self.padding = A.PadIfNeeded(
+        #    min_height=size,
+         #   min_width=size,
+        #    always_apply=True,
+        #    border_mode=cv2.BORDER_CONSTANT,
+        #    value=rescale_min, 
+        #    p=1
+        #)
+    
         self.center_crop = A.CenterCrop(p=1, height=size, width=size)
         self.corrputed_files = corrupted_files
         self.reverse_zaxis = reverse_zaxis
@@ -65,6 +68,14 @@ class Nifti2Npy:
 
         self.sigma = sigma
         self.reference_downscaling_factor = reference_downscaling_factor
+
+    def padding(self, x):
+        pad_width = (((self.size-x.shape[0])//2, (self.size-x.shape[0]+1)//2), 
+                     ((self.size-x.shape[1])//2, (self.size-x.shape[1]+1)//2), 
+                     (0, 0))
+        x_pad = np.pad(x,pad_width=pad_width, mode="constant", constant_values=self.rescale_min)
+
+        return x_pad
 
     def reorder_volume(self, x, pixel_spacings, affine, filename):
         axis_ordering = self.get_axis_ordering(affine)
@@ -134,19 +145,18 @@ class Nifti2Npy:
 
     def padding3d(self, x):
         if x.shape[2] > 800:
-            y1 = self.padding(image=x[:, :, :400])["image"]
-            y2 = self.padding(image=x[:, :, 400:800])["image"]
-            y3 = self.padding(image=x[:, :, 800:])["image"]
+            y1 = self.padding(x[:, :, :400])
+            y2 = self.padding(x[:, :, 400:800])
+            y3 = self.padding(x[:, :, 800:])
             y = np.concatenate((y1, y2, y3), axis=2)
 
         elif x.shape[2] > 400:
-            y1 = self.padding(image=x[:, :, :400])["image"]
-            y2 = self.padding(image=x[:, :, 400:800])["image"]
-            y3 = self.padding(image=x[:, :, 800:])["image"]
+            y1 = self.padding(x[:, :, :400])
+            y2 = self.padding(x[:, :, 400:800])
+            y3 = self.padding(x[:, :, 800:])
             y = np.concatenate((y1, y2), axis=2)
         else:
-            y = self.padding(image=x)["image"]
-
+            y = self.padding(x)
         return y
 
     def rescale_xy(self, x):
@@ -267,3 +277,16 @@ class Nifti2Npy:
                 df = self.add_info2df(df, filename, x, pixel_spacings)
 
         return df
+
+
+def load_nifti_volume(filepath):
+    img_nii = nib.load(filepath)
+    try:
+        x = img_nii.get_fdata(dtype=np.float32)
+    except EOFError:
+        print(f"Corrupted file {filepath}")
+        return None, None, None
+    pixel_spacings = np.array(list(img_nii.header.get_zooms()))
+    affine = img_nii.affine[:3, :3]
+
+    return x, pixel_spacings
