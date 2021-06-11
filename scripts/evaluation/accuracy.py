@@ -26,6 +26,7 @@ class Accuracy:
 
         return indices[0], accuracies
 
+
     def get_class_to_score_mapping(self): 
         class_to_score_mapping = {myClass: [] for myClass in self.class_to_landmark.keys()}
         
@@ -72,3 +73,17 @@ class Accuracy:
             if np.isnan(first_ground_truth_class): first_ground_truth_class = myClass
 
         return classes
+
+    def from_dataset(self, model, dataset, device="cuda"): 
+        accuracies= []
+        ids = dataset.landmark_ids
+
+        for i in range(0, len(dataset)): 
+            landmark_positions = dataset.landmark_matrix[i, :]
+            x = dataset.get_full_volume(ids[i])
+            scores = model.predict_tensor(torch.tensor(x[:, np.newaxis, :, :]), inference_device=device)
+
+            accuracies.append(self.volume(scores, landmark_positions))
+            
+        accuracy = np.nanmean(accuracies)
+        return accuracy

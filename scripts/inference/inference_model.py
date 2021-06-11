@@ -40,7 +40,7 @@ class InferenceModel:
         self.slope_mean = 0 # TODO 
         self.slope_std = 0
         self.lower_bound_score = 0
-        self.upper_bound_score = 0
+        self.upper_bound_score = 100
         self.smoothing_sigma = 0
 
     def load_model(self, 

@@ -35,13 +35,14 @@ class BaseDataset(Dataset):
         random.seed(random_seed)
 
         # define landmark related 
-        self.landmark_df = pd.read_excel(landmark_path, sheet_name=landmark_sheet_name, engine='openpyxl', index_col="filename")
-        self.landmark_matrix = np.array(self.landmark_df)
-        self.landmark_names = self.landmark_df.columns
-        self.landmark_files = [f + ".npy" for f in self.landmark_df.index]
-        self.landmark_ids = [np.where(f == filenames)[0][0] for f in self.landmark_files]
-        self.landmark_slices_per_volume, self.defined_landmarks_per_volume = self.get_landmark_slices()
-    
+        if landmark_path: 
+            self.landmark_df = pd.read_excel(landmark_path, sheet_name=landmark_sheet_name, engine='openpyxl', index_col="filename")
+            self.landmark_matrix = np.array(self.landmark_df)
+            self.landmark_names = self.landmark_df.columns
+            self.landmark_files = [f + ".npy" for f in self.landmark_df.index]
+            self.landmark_ids = [np.where(f == filenames)[0][0] for f in self.landmark_files]
+            self.landmark_slices_per_volume, self.defined_landmarks_per_volume = self.get_landmark_slices()
+        
         # define augmentations 
         if custom_transform: 
             self.custom_transform = custom_transform
@@ -55,25 +56,17 @@ class BaseDataset(Dataset):
         # Use identity function, if no transformation is defined 
         else: self.albumentation_transform =  A.Compose([A.Transpose(p=0)])
             
-    def _swap_axis(self, x): 
-        return x.swapaxes(2, 1).swapaxes(1, 0)
+
         
     def __len__(self):
         return self.length
 
-    def get_slices(self, filename, indices): 
-        volume = np.load(self.data_path + filename, mmap_mode='r')
-        x = volume[:, :, indices]
-        return self._swap_axis(x)
+
 
     def get_full_volume(self, idx: int): 
         filepath = self.filepaths[idx]
         volume = np.load(filepath)
-        return self._swap_axis(volume)
-
-    def get_full_volume_from_filepath(self, filepath:str): 
-        volume = np.load(filepath)
-        return self._swap_axis(volume)
+        return swap_axis(volume)
 
     def get_landmark_idx(self, idx: int): 
         filename = self.filenames[idx]
@@ -97,9 +90,22 @@ class BaseDataset(Dataset):
             landmark_indices = landmark_indices[defined_landmarks].astype(int)
 
             # extract slices of landmark positions for file 
-            slices = self.get_slices(file, landmark_indices)
+            slices = get_slices(self.data_path + file, landmark_indices)
 
             landmark_slices_per_volume.append(slices)
             defined_landmarks_per_volume.append(defined_landmarks)
 
         return landmark_slices_per_volume, defined_landmarks_per_volume
+
+def get_full_volume_from_filepath(filepath:str): 
+    volume = np.load(filepath)
+    return swap_axis(volume)
+
+def get_slices(filepath, indices): 
+    volume = np.load(filepath, mmap_mode='r')
+    x = volume[:, :, indices]
+    return swap_axis(x)
+
+def swap_axis(x): 
+    return x.swapaxes(2, 1).swapaxes(1, 0)
+

@@ -8,7 +8,7 @@ from torch.utils.data import Dataset
 cv2.setNumThreads(1)
 
 sys.path.append("../../")
-from scripts.dataset.base_dataset import BaseDataset
+from scripts.dataset.base_dataset import BaseDataset, swap_axis
 
 class BPRDataset(BaseDataset):
 
@@ -43,7 +43,7 @@ class BPRDataset(BaseDataset):
             x[:, :, i] = self.custom_transform(x[:, :, i])
             x[:, :, i] = self.albumentation_transform(image=x[:, :, i])["image"]
                 
-        return self._swap_axis(x), indices, physical_distance
+        return swap_axis(x), indices, physical_distance
    
     def get_random_slice_indices(self, z, z_spacing):
         # set z-distance sampling range in terms of slices in between 

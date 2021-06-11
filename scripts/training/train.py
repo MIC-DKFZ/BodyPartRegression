@@ -30,8 +30,11 @@ np.seterr(divide='ignore', invalid='ignore') #TODO
 
 def get_dataframe(config): 
     df = pd.read_excel(config["df_data_source_path"], sheet_name="data", engine='openpyxl')
+
+    # only use volumes with more than 30 slices 
     df = df[(df["z"] >= 30)]
     return df
+
 
 
 def get_datasets(config, df):

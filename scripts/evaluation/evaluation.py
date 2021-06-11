@@ -52,7 +52,7 @@ class Evaluation(Visualization):
 
         # setup data
         self._setup_data(val_dataset=val_dataset)
-        self.lookup = LookUp(self.model, self.train_dataset)
+        self.lookup = LookUp(self.model, self.train_dataset) # TODO ändern zu landmark_scores
 
         # get train and val slice score matrix
         self.val_score_matrix = self.model.compute_slice_score_matrix(self.val_dataset, inference_device=self.device)
@@ -108,16 +108,20 @@ class Evaluation(Visualization):
         )
 
     def _set_accuracies(self): 
-        accuracies_5classes = []
-        accuracies_3classes = []
-        ids = self.val_dataset.landmark_ids
-
         expected_scores = np.nanmean(self.train_score_matrix, axis=0) 
+
         # define accuracy class with 5 classes
         acc5 = Accuracy(expected_scores, CLASS_TO_LANDMARK_5)
+        self.acc5 = acc5.from_dataset(self.model, self.val_dataset)
 
         # define accuracy class with 3 classes
         acc3 = Accuracy(expected_scores, CLASS_TO_LANDMARK_3)
+        self.acc5 = acc3.from_dataset(self.model, self.val_dataset)
+
+        """
+        accuracies_5classes = []
+        accuracies_3classes = []
+        ids = self.val_dataset.landmark_ids
 
         for i in range(0, len(self.val_dataset)): 
             landmark_positions = self.val_dataset.landmark_matrix[i, :]
@@ -129,7 +133,7 @@ class Evaluation(Visualization):
             
         self.acc5 = np.nanmean(accuracies_5classes)
         self.acc3 = np.nanmean(accuracies_3classes)
-
+        """
     def print_summary(self):
         print("Model summary\n*******************************")
 

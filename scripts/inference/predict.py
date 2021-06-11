@@ -1,6 +1,7 @@
 import sys, os
 import argparse, json
 import torch
+import pickle
 from tqdm import tqdm
 import numpy as np
 
@@ -9,6 +10,7 @@ sys.path.append("../../")
 
 from scripts.score_processing.datasanitychecks import DataSanityCheck
 from scripts.preprocessing.nifti2npy import Nifti2Npy
+from scripts.network_architecture.bpr_model import BodyPartRegression
 
 class Predict:
     """Get body part examined estimate for CT volume.
@@ -26,9 +28,12 @@ class Predict:
     def __init__(
         self,
         model_dir: str,
-        gpu: bool = 1, 
+        device: str = "cuda",
         smoothing_sigma: float = 10,
     ):  
+        self.device = device        
+        self.smoothing_sigma = smoothing_sigma
+
         self.model = self._load_model(model_dir)
         # load settings
         with open(model_dir + "settings.json", "r") as f:
@@ -44,7 +49,6 @@ class Predict:
             # convert to integer keys
             self.lookup_table = {int(key): table[key] for key in table.keys()}
 
-        self.smoothing_sigma = smoothing_sigma
         self.n2n = Nifti2Npy(
             target_pixel_spacing=3.5, min_hu=-1000, max_hu=1500, size=128
         )
