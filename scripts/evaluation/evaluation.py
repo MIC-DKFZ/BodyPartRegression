@@ -10,64 +10,41 @@ import torch
 
 sys.path.append("../../")
 from scripts.network_architecture.bpr_model import BodyPartRegression
-from scripts.score_processing.lookup import LookUp
 from scripts.training.train import get_dataframe, get_datasets
 from scripts.evaluation.accuracy import Accuracy
 from scripts.evaluation.normalized_mse import NormalizedMSE 
 from scripts.evaluation.visualization import Visualization
+from scripts.inference.inference_model import InferenceModel
+from scripts.score_processing.landmark_scores import LandmarkScoreBundle, LandmarkScores
 from src.settings.settings import *
 
 class Evaluation(Visualization):
 
     def __init__(self, base_filepath,  
                  val_dataset=False, 
-                 overwrite_df_data_source_path="", 
-                 overwrite_landmark_path="", 
-                 overwrite_data_path="", 
+                 df_data_source_path="", 
+                 landmark_path="", 
+                 data_path="", 
                  device="cuda"):
         Visualization.__init__(self)
-        self.normalizedMSE = NormalizedMSE()
         self.device = device
         self.base_filepath = base_filepath
-        self.config_filepath = base_filepath + "config.p"  # TODO Use Inference Model and load model from there 
-        self.model_filepath = base_filepath + "model.pt"
-
-        self.overwrite_df_data_source_path = overwrite_df_data_source_path
-        self.overwrite_landmark_path = overwrite_landmark_path # TODO --> model dataclass with all attributes and _load_model function 
-        self.overwrite_data_path = overwrite_data_path
-
-        # setup model
-        with open(self.config_filepath, "rb") as f:
-            self.config = pickle.load(f)
-
-        self.model = BodyPartRegression(
-            alpha=self.config["alpha"],
-            lr=self.config["lr"],
-            base_model=self.config["base_model"],
-        )
-
-        self.model.load_state_dict(torch.load(self.model_filepath))
-        self.model.eval()
-        self.model.to(self.device)
+        self.inference_model = InferenceModel(base_filepath)
+        self.normalizedMSE = NormalizedMSE()
+        self.landmark_score_bundle = LandmarkScoreBundle(data_path, landmark_path, self.inference_model.model)
 
         # setup data
+        self.df_data_source_path = df_data_source_path
+        self.landmark_path = landmark_path # TODO --> model dataclass with all attributes and _load_model function 
+        self.data_path = data_path
         self._setup_data(val_dataset=val_dataset)
-        self.lookup = LookUp(self.model, self.train_dataset) # TODO ändern zu landmark_scores
 
-        # get train and val slice score matrix
-        self.val_score_matrix = self.model.compute_slice_score_matrix(self.val_dataset, inference_device=self.device)
-        self.train_score_matrix = self.model.compute_slice_score_matrix(self.train_dataset, inference_device=self.device)
-
-        # get mse 
-        self.mse, self.mse_std, self.d = self.normalizedMSE.from_dataset(self.model, self.val_dataset, self.train_dataset)
-        
-        # calculate accuracy for 5 and 4 distinct classes
-        self._set_accuracies()
-        
+        self.mse, self.mse_std = self.landmark_score_bundle.nMSE(target="validation", reference="train")
+        self.acc5 = self.landmark_score_bundle.accuracy(self.val_dataset, reference="train", class2landmark=CLASS_TO_LANDMARK_5)
+                
 
     def _setup_data(self, val_dataset=False):
-        path = "/home/AD/s429r/Documents/Code/s429r/trainings/configs/local/standard-config.p"
-        path = self.config_filepath  # TODO !
+        path = self.base_filepath + "config.p"  # TODO !
 
         with open(path, "rb") as f:
             config = pickle.load(f)
@@ -76,12 +53,14 @@ class Evaluation(Visualization):
         config["batch_size"] = 32
         config["shuffle_train_dataloader"] = False
 
-        if len(self.overwrite_df_data_source_path) > 0: 
-            config["df_data_source_path"] = self.overwrite_df_data_source_path
-        if len(self.overwrite_landmark_path) > 0: 
-            config["landmark_path"] = self.overwrite_landmark_path
-        if len(self.overwrite_data_path) > 0: 
-            config["data_path"] = self.overwrite_data_path
+        self.config = config 
+
+        if len(self.df_data_source_path) > 0: 
+            config["df_data_source_path"] = self.df_data_source_path
+        if len(self.landmark_path) > 0: 
+            config["landmark_path"] = self.landmark_path
+        if len(self.data_path) > 0: 
+            config["data_path"] = self.data_path
 
         df_data = get_dataframe(config)
         if val_dataset:
@@ -107,33 +86,7 @@ class Evaluation(Visualization):
             self.test_dataset, batch_size=config["batch_size"], num_workers=20
         )
 
-    def _set_accuracies(self): 
-        expected_scores = np.nanmean(self.train_score_matrix, axis=0) 
 
-        # define accuracy class with 5 classes
-        acc5 = Accuracy(expected_scores, CLASS_TO_LANDMARK_5)
-        self.acc5 = acc5.from_dataset(self.model, self.val_dataset)
-
-        # define accuracy class with 3 classes
-        acc3 = Accuracy(expected_scores, CLASS_TO_LANDMARK_3)
-        self.acc5 = acc3.from_dataset(self.model, self.val_dataset)
-
-        """
-        accuracies_5classes = []
-        accuracies_3classes = []
-        ids = self.val_dataset.landmark_ids
-
-        for i in range(0, len(self.val_dataset)): 
-            landmark_positions = self.val_dataset.landmark_matrix[i, :]
-            x = self.val_dataset.get_full_volume(ids[i])
-            scores = self.model.predict_tensor(torch.tensor(x[:, np.newaxis, :, :]), inference_device=self.device)
-
-            accuracies_5classes.append(acc5.volume(scores, landmark_positions))
-            accuracies_3classes.append(acc3.volume(scores, landmark_positions))
-            
-        self.acc5 = np.nanmean(accuracies_5classes)
-        self.acc3 = np.nanmean(accuracies_3classes)
-        """
     def print_summary(self):
         print("Model summary\n*******************************")
 
@@ -142,13 +95,17 @@ class Evaluation(Visualization):
         print(
             f"Accuracy (5 classes) : \t{self.acc5*100:<1.2f}%"
         )
-        print("\nLookup Table\n*******************************")
-        self.lookup.print()
+        print("\nLook-up table for training data \n*******************************")
+        self.landmark_score_bundle.dict["train"].print_lookuptable()
 
     def plot_landmarks(self):
-        super(Evaluation, self).plot_landmarks(self.val_score_matrix, self.lookup.expected_scores) 
+        validation_score_matrix = self.landmark_score_bundle.dict["validation"].score_matrix 
+        expected_scores = self.landmark_score_bundle.dict["train"].expected_scores
+
+        super(Evaluation, self).plot_landmarks(validation_score_matrix, 
+                                               expected_scores=expected_scores) 
 
 if __name__ == "__main__": 
     base_dir = "/home/AD/s429r/Documents/Code/bodypartregression/src/models/loh-ldist-l2/sigma-dataset-v11-v2/"
-    modelEval = ModelEvaluation(base_dir)
+    modelEval = Evaluation(base_dir)
 

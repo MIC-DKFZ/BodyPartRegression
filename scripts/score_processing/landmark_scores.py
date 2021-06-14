@@ -82,21 +82,23 @@ class LandmarkScoreBundle:
         df_val = pd.read_excel(landmark_path, sheet_name="landmarks-val")
         df_test = pd.read_excel(landmark_path, sheet_name="landmarks-test")
 
-        self.landmark_scores = {
+        self.dict = {
             "validation":  LandmarkScores(data_path, df_val, model), 
             "train":  LandmarkScores(data_path, df_train, model),  
             "test":  LandmarkScores(data_path, df_test, model), 
             "train+val":  LandmarkScores(data_path, df_database, model), 
         }
         self.nmse = NormalizedMSE()
+        self.model = model 
+
     def nMSE(self, target="validation", reference="train"): 
         nmse, nmse_std, _ = self.nmse.from_matrices(
-                                self.landmark_scores[target].score_matrix, 
-                                self.landmark_scores[reference].score_matrix)
+                                self.dict[target].score_matrix, 
+                                self.dict[reference].score_matrix)
         return nmse, nmse_std
     
     def accuracy(self, target_dataset, reference="train", class2landmark=CLASS_TO_LANDMARK_5): 
-        acc = Accuracy(self.landmark_scores[reference].expected_scores, class2landmark)
+        acc = Accuracy(self.dict[reference].expected_scores, class2landmark)
         myAccuracy = acc.from_dataset(self.model, target_dataset)
         return myAccuracy 
     

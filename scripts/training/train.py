@@ -24,7 +24,6 @@ from scripts.network_architecture.bpr_model import BodyPartRegression
 from scripts.network_architecture.ssbr_model import SSBR 
 from scripts.dataset.bpr_dataset import BPRDataset
 from scripts.dataset.ssbr_dataset import SSBRDataset
-from scripts.score_processing.lookup import LookUp
 
 np.seterr(divide='ignore', invalid='ignore') #TODO
 
@@ -96,13 +95,10 @@ def run_fast_dev(config, train_dataloader, val_dataloader):
     trainer_dev.fit(model, train_dataloader, val_dataloader)
 
 def save_model(trainer, model, config, train_dataloader, logger): 
-    # save lookuptable
-    lookup = LookUp(model, train_dataloader.dataset)
 
     log_dir = logger.log_dir + "/"
     print("save model at: ", log_dir)
 
-    lookup.save(log_dir)
     with open(log_dir + 'config.p', 'wb') as f:
         pickle.dump(config, f)
 

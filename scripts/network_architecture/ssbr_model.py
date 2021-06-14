@@ -18,13 +18,18 @@ from scripts.network_architecture.loss_functions import *
 from scripts.network_architecture.base_model import BodyPartRegressionBase
 
 class SSBR(BodyPartRegressionBase):
+    """[summary]
+    SSBR model from Yan at. al with corrected classification order loss (no nan-values can be calculated). 
+    Args:
+        BodyPartRegressionBase ([type]): [description]
+    """
     def __init__(self, 
                  lr=1e-4, 
                  alpha=0):
 
         super().__init__()
         BodyPartRegressionBase.__init__(self, lr=lr, lambda_=0, alpha=alpha, pretrained=False, 
-                                   delta_z_max=np.inf, loss_order="", beta_h=np.nan, 
+                                   delta_z_max=np.inf, loss_order="c", beta_h=np.nan, 
                                    alpha_h=np.nan, weight_decay=0)
 
         # load vgg base model 
@@ -33,7 +38,7 @@ class SSBR(BodyPartRegressionBase):
         self.model = self.get_vgg()
 
         # overwrite order loss argument for SSBR model
-        self.loss_order = order_loss_c_plain()
+        # self.loss_order = order_loss_c_plain()
 
     def get_vgg(self):
         vgg16 = models.vgg16(pretrained=self.pretrained)

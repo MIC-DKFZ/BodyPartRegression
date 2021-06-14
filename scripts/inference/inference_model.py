@@ -19,6 +19,9 @@ from scripts.score_processing.scores import Scores
 # TODO Include data sanity checks 
 # TODO BodyPartExamined hinzufügen 
 # TODO DataSanityChecks: expected z-spacing
+# TODO predict_tensor sonst überall rausnehmen 
+# TODO predict_npy rausnehmen 
+
 
 class InferenceModel: 
     """
@@ -48,17 +51,20 @@ class InferenceModel:
     def load_lookuptable(self): 
         path = self.base_dir + "lookuptable.json"
         if not os.path.exists: 
-            return np.nan 
+            return  
 
         with open(path, "rb") as f: 
             lookuptable = json.load(f)
 
-        self.lookuptable_original = lookuptable["original"]
-        self.lookuptable = lookuptable["transformed"]
+        try: 
+            self.lookuptable_original = lookuptable["original"]
+            self.lookuptable = lookuptable["transformed"]
+        except: 
+            return 
 
     def load_settings(self): 
         path = self.base_dir + "settings.json"
-        if not os.path.exists: return np.nan 
+        if not os.path.exists(path): return  
 
         with open(path, "rb") as f: 
             mySettings = json.load(f)
@@ -101,6 +107,7 @@ class InferenceModel:
         return scores, pixel_spacings      
 
     def datasanitychecks(self, scores, z_spacing): 
+        # TODO !!! 
         # validation
         dsc = DataSanityCheck(
             scores,
@@ -179,7 +186,7 @@ json_output = {
 }
 """
 
-
+# TODO 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--i", default="")

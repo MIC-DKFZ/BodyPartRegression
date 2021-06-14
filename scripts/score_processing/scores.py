@@ -7,6 +7,9 @@ from scipy.ndimage import gaussian_filter
 sys.path.append("../../")
 from scripts.utils.linear_transformations import * 
 
+# TODO drop slicescoreprocessing
+# TODO add description to Score class 
+
 class Scores: 
     def __init__(self, 
                  scores,
@@ -60,7 +63,7 @@ class Scores:
                                                max_value=self.transform_max)
         return np.array(smoothed_values)
 
-    def remove_extrem_slopes(self, x, diff_cut=0.5): 
+    def remove_extrem_slopes(self, x, diff_cut=1): 
         diffs = np.abs(np.array( list(np.diff(x)) + [0]))/self.zspacing
         clean_x = x.copy()
         clean_x[diffs > diff_cut] = np.nan
@@ -127,9 +130,6 @@ class Scores:
         b, a = np.linalg.inv(X.T @ X) @ X.T @ self.valid_values
 
         return a, b
-
-    def transform_scores(self): 
-        pass 
 
 
 def calculate_boundary_index(scores, bound, kind, max_boundary=np.nan, min_boundary=np.nan): 

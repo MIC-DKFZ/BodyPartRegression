@@ -1,5 +1,7 @@
 import numpy as np 
+import torch 
 
+# TODO inference model nutzen 
 class Accuracy: 
     def __init__(self, 
                  estimated_landmark_scores, 
@@ -55,8 +57,6 @@ class Accuracy:
     
     def ground_truth_class(self, landmark_positions, max_slices): 
         classes = np.full((max_slices), np.nan)
-        max_class = np.max(list(self.class_to_landmark.keys()))
-        min_class = np.min(list(self.class_to_landmark.keys()))
         first_ground_truth_class = np.nan 
         for myClass, landmarks in self.class_to_landmark.items(): 
             # get start and end slice index position of class
