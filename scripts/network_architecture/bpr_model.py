@@ -30,9 +30,9 @@ class BodyPartRegression(BodyPartRegressionBase):
                  base_model="vgg", # TODO löschen
                  weight_decay=0):
 
-        BodyPartRegressionBase.__init__(self, lr=lr, lambda_=0, alpha=alpha, pretrained=False, 
-                                   delta_z_max=np.inf, loss_order="h", beta_h=np.nan, 
-                                   alpha_h=np.nan, weight_decay=0)
+        BodyPartRegressionBase.__init__(self, lr=lr, lambda_=lambda_, alpha=alpha, pretrained=pretrained, 
+                                   delta_z_max=delta_z_max, loss_order=loss_order, beta_h=beta_h, 
+                                   alpha_h=alpha_h, weight_decay=weight_decay)
         # load vgg base model 
         self.conv6 = nn.Conv2d(512, 512, 1, stride=1, padding=0) # in_channel, out_channel, kernel_size
         self.fc7 = nn.Linear(512, 1)

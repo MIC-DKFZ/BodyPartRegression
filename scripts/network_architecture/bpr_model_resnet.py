@@ -29,9 +29,10 @@ class BodyPartRegressionResNet(BodyPartRegressionBase):
                  alpha_h=0.5,
                  weight_decay=0):
 
-        BodyPartRegressionBase.__init__(self, lr=lr, lambda_=0, alpha=alpha, pretrained=False, 
-                                   delta_z_max=np.inf, loss_order="h", beta_h=np.nan, 
-                                   alpha_h=np.nan, weight_decay=0)
+        BodyPartRegressionBase.__init__(self, lr=lr, lambda_=lambda_, alpha=alpha, pretrained=pretrained, 
+                                   delta_z_max=delta_z_max, loss_order=loss_order, beta_h=beta_h, 
+                                   alpha_h=alpha_h, weight_decay=weight_decay)
+                                   
         # load resnet base model 
         self.fc7_res = nn.Linear(2048, 1)
         self.model = self.get_resnet()
