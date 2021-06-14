@@ -65,7 +65,7 @@ config = {
 
     "batch_size": 64, 
     "effective_batch_size": 64, 
-    "equidistance_range": [5, 100], # [2, 30], # in mmm # TODO !!! 
+    "equidistance_range": [2, 30], # in mmm # TODO SSBR !!! [5, 100]
     "num_slices": 4, 
 
     "    ": "\n*******************************************************", 
