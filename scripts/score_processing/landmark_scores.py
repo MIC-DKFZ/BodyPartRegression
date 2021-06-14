@@ -92,7 +92,7 @@ class LandmarkScoreBundle:
         self.model = model 
 
     def nMSE(self, target="validation", reference="train"): 
-        nmse, nmse_std, _ = self.nmse.from_matrices(
+        nmse, nmse_std = self.nmse.from_matrices(
                                 self.dict[target].score_matrix, 
                                 self.dict[reference].score_matrix)
         return nmse, nmse_std
@@ -111,7 +111,7 @@ class LandmarkScoreBundle:
 
         nmse_per_lanmdark = {landmark_name: {} for landmark_name in landmark_names}
         for i, landmark_name in enumerate(landmark_names): 
-            nmse, nmse_std, _ = self.nmse.from_matrices(score_matrix[:, i:i+1], reference_matrix[:, i:i+1], d=d)
+            nmse, nmse_std = self.nmse.from_matrices(score_matrix[:, i:i+1], reference_matrix[:, i:i+1], d=d)
             nmse_per_lanmdark[landmark_name]["mean"] = nmse
             nmse_per_lanmdark[landmark_name]["std"] = nmse_std
 

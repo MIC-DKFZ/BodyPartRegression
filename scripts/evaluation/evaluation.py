@@ -41,19 +41,19 @@ class Evaluation(Visualization):
 
         self.mse, self.mse_std = self.landmark_score_bundle.nMSE(target="validation", reference="train")
         self.acc5 = self.landmark_score_bundle.accuracy(self.val_dataset, reference="train", class2landmark=CLASS_TO_LANDMARK_5)
-                
+
 
     def _setup_data(self, val_dataset=False):
         path = self.base_filepath + "config.p"  # TODO !
 
         with open(path, "rb") as f:
-            config = pickle.load(f)
+            self.config = pickle.load(f)
 
+        config = self.config.copy()
         config["num_slices"] = 8
         config["batch_size"] = 32
         config["shuffle_train_dataloader"] = False
 
-        self.config = config 
 
         if len(self.df_data_source_path) > 0: 
             config["df_data_source_path"] = self.df_data_source_path

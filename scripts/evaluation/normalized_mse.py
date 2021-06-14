@@ -1,8 +1,6 @@
 import numpy as np 
 from scipy import interpolate
-
-############ TODO ####################################### 
-# mean landmarks -> nmse 
+from scipy.ndimage.measurements import mean
 
 class NormalizedMSE: 
     def __init__(self): 
@@ -11,24 +9,35 @@ class NormalizedMSE:
     def from_dataset(self, model, val_dataset, train_dataset): 
         val_score_matrix = model.compute_slice_score_matrix(val_dataset)
         train_score_matrix = model.compute_slice_score_matrix(train_dataset)
-        mse, mse_std, d = self.from_matrices(val_score_matrix, train_score_matrix)
+        mse, mse_std = self.from_matrices(val_score_matrix, train_score_matrix)
         
-        return mse, mse_std, d
+        return mse, mse_std
 
 
-    def from_matrices(self, val_score_matrix, train_score_matrix, d=False): 
-        expected_scores = np.nanmean(train_score_matrix, axis=0) 
-        if not d: d = self.get_normalizing_constant(expected_scores) 
-        square_error_matrix = self.from_instance(expected_scores, val_score_matrix, d)
-        
+    def from_matrices(self, score_matrix, reference_matrix, d=False): 
+        square_error_matrix = self.get_square_error_matrix(score_matrix, reference_matrix, d=d)
+
         mean_square_error_per_landmark = np.nanmean(square_error_matrix, axis=0)
         mse = np.nanmean(mean_square_error_per_landmark)
 
-        square_error_variance_per_landmark = np.nanvar(square_error_matrix, ddof=1, axis=0)
-        mse_std = np.sqrt(np.sum(square_error_variance_per_landmark)/len(square_error_variance_per_landmark))
+        counts = np.sum(np.where(~np.isnan(square_error_matrix), 1, 0), axis=0)
+        error_of_the_mean = np.nanstd(square_error_matrix, ddof=1, axis=0)/np.sqrt(counts)
+        
+        # calculate nmse error for one landmark
+        if len(mean_square_error_per_landmark) == 1: 
+            mean_error = np.sqrt(np.sum(error_of_the_mean**2)/len(error_of_the_mean)) 
+        
+        # add up errors of nMSE per landmark 
+        else: 
+            mean_error = np.std(mean_square_error_per_landmark, ddof=1)/np.sqrt(len(mean_square_error_per_landmark))
 
-        return mse, mse_std, d
+        return mse, mean_error
 
+    def get_square_error_matrix(self, score_matrix, reference_matrix, d=False): 
+        expected_scores = np.nanmean(reference_matrix, axis=0) 
+        if not d: d = self.get_normalizing_constant(expected_scores) 
+        square_error_matrix = self.from_instance(expected_scores, score_matrix, d)
+        return square_error_matrix
 
     def from_volume(self, landmarks, scores, expected_scores): 
         d = self.get_normalizing_constant(expected_scores) 
