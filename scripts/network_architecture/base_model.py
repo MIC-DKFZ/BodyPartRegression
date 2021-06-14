@@ -89,7 +89,7 @@ class BodyPartRegressionBase(pl.LightningModule):
         val_dataloader = self.val_dataloader()
         train_dataloader = self.train_dataloader()
 
-        mse, mse_std = self.mse.from_dataset(self, val_dataloader.dataset, train_dataloader.dataset)
+        mse, mse_std, d = self.mse.from_dataset(self, val_dataloader.dataset, train_dataloader.dataset)
 
         self.log('mse', mse)
         self.log('mse_std', mse_std)
@@ -106,7 +106,7 @@ class BodyPartRegressionBase(pl.LightningModule):
         test_dataloader = self.test_dataloader()
         train_dataloader = self.train_dataloader()
 
-        mse, mse_std = self.mse.from_dataset(self, test_dataloader.dataset, train_dataloader.dataset)
+        mse, mse_std, d = self.mse.from_dataset(self, test_dataloader.dataset, train_dataloader.dataset)
 
         self.log('mse', mse)
         self.log('mse_std', mse_std)

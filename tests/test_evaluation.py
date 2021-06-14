@@ -12,9 +12,8 @@ def test_normalized_mse():
     normMSE = NormalizedMSE()
     mse, mse_std  = normMSE.from_matrices(vm, tm)
 
-    assert d == 2.7
     assert np.round(mse, 5) == 0.00587
-    assert np.round(mse_std, 5) == 0.00319
+    assert np.round(mse_std, 5) == 0.00279
 
     # test normalized mse with nan-values
     tm = np.array([[1, 2, 4], [np.nan, 2.2, 3.5], [1, 1.9, 4.1]])
@@ -22,9 +21,8 @@ def test_normalized_mse():
 
     mse, mse_std = normMSE.from_matrices(vm, tm)
 
-    assert np.round(d, 2) == 2.87 
-    assert np.round(mse, 4) == 0.0041
-    assert np.round(mse_std, 4) == 0.0022
+    assert np.round(mse, 4) == 0.0056
+    assert np.round(mse_std, 4) == 0.0040
 
 def test_accuracy_class_initalization(): 
     estimated_landmark_slice_scores = np.array([-10, -7.5, -6, -5.5, -4, -3.5, -2, 0, 2, 4.5, 6, 8])
