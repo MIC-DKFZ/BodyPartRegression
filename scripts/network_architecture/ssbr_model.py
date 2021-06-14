@@ -37,8 +37,6 @@ class SSBR(BodyPartRegressionBase):
         self.fc7 = nn.Linear(512, 1)
         self.model = self.get_vgg()
 
-        # overwrite order loss argument for SSBR model
-        # self.loss_order = order_loss_c_plain()
 
     def get_vgg(self):
         vgg16 = models.vgg16(pretrained=self.pretrained)
