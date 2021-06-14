@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.linear_model import RANSACRegressor
 from scipy.ndimage import gaussian_filter
 
+# TODO !!! : refactorn ###########################################################
 
 class DataSanityCheck:
     """Class checks if z-ordering is reverse or not and 

@@ -103,7 +103,20 @@ class LandmarkScoreBundle:
         return myAccuracy 
     
     def nMSE_per_landmark(self, target="validation", reference="train"): 
-        pass
+        score_matrix = self.dict[target].score_matrix
+        reference_matrix = self.dict[reference].score_matrix
+        expected_scores = self.dict[reference].expected_scores
+        d = self.nmse.get_normalizing_constant(expected_scores)
+        landmark_names = self.dict[reference].landmark_names
+
+        nmse_per_lanmdark = {landmark_name: {} for landmark_name in landmark_names}
+        for i, landmark_name in enumerate(landmark_names): 
+            nmse, nmse_std, _ = self.nmse.from_matrices(score_matrix[:, i:i+1], reference_matrix[:, i:i+1], d=d)
+            nmse_per_lanmdark[landmark_name]["mean"] = nmse
+            nmse_per_lanmdark[landmark_name]["std"] = nmse_std
+
+        return nmse_per_lanmdark
+
     
 
 

@@ -1,6 +1,9 @@
 import numpy as np 
 from scipy import interpolate
 
+############ TODO ####################################### 
+# mean landmarks -> nmse 
+
 class NormalizedMSE: 
     def __init__(self): 
         pass
@@ -13,13 +16,16 @@ class NormalizedMSE:
         return mse, mse_std, d
 
 
-    def from_matrices(self, val_score_matrix, train_score_matrix): 
+    def from_matrices(self, val_score_matrix, train_score_matrix, d=False): 
         expected_scores = np.nanmean(train_score_matrix, axis=0) 
-        d = self.get_normalizing_constant(expected_scores) 
-        mse_values = self.from_instance(expected_scores, val_score_matrix, d)
-        mse = np.nanmean(mse_values)
-        counts = np.sum(np.where(~np.isnan(mse_values), 1, 0))
-        mse_std = np.nanstd(mse_values)/np.sqrt(counts)
+        if not d: d = self.get_normalizing_constant(expected_scores) 
+        square_error_matrix = self.from_instance(expected_scores, val_score_matrix, d)
+        
+        mean_square_error_per_landmark = np.nanmean(square_error_matrix, axis=0)
+        mse = np.nanmean(mean_square_error_per_landmark)
+
+        square_error_variance_per_landmark = np.nanvar(square_error_matrix, ddof=1, axis=0)
+        mse_std = np.sqrt(np.sum(square_error_variance_per_landmark)/len(square_error_variance_per_landmark))
 
         return mse, mse_std, d
 
