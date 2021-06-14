@@ -65,7 +65,7 @@ config = {
 
     "batch_size": 64, 
     "effective_batch_size": 64, 
-    "equidistance_range": [2, 30], # in mmm # TODO SSBR !!! [5, 100]
+    "equidistance_range": [5, 100], # [2, 30], # in mmm # TODO SSBR !!! [5, 100]
     "num_slices": 4, 
 
     "    ": "\n*******************************************************", 
@@ -86,19 +86,9 @@ config["accumulate_grad_batches"] = int(config["effective_batch_size"]/config["b
 
 
 if __name__ == "__main__":
+
     """
 
-    experiments = {0: {'alpha_h': 1, 'beta_h': 0.001, 'name': 'loh-1a-0.001b-m4.p', 'model_name':'loh-experiment'},
-                   1: {'alpha_h': 1, 'beta_h': 0.01, 'name': 'loh-1a-0.01b-m4.p', 'model_name':'loh-experiment'},
-                   2: {'alpha_h': 1, 'beta_h': 0.1, 'name': 'loh-1a-0.1b-m4.p', 'model_name':'loh-experiment'},
-                   3: {"alpha_h": 1, "beta_h": 0.0001, "name": "loh-1a-0.0001b-m4.p", 'model_name':'loh-experiment'},
-                   4: {"alpha_h": 1, "beta_h": 1, "name": "loh-1a-1b-m4.p", 'model_name':'loh-experiment'},
-                   5: {'alpha_h': 1, 'beta_h': 0.02, 'name': 'loh-1a-0.02b-m4.p', 'model_name':'loh-experiment'},
-                   6: {'alpha_h': 1, 'beta_h': 0.03, 'name': 'loh-1a-0.03b-m4.p', 'model_name':'loh-experiment'},
-                   7: {'alpha_h': 1, 'beta_h': 0.04, 'name': 'loh-1a-0.04b-m4.p', 'model_name':'loh-experiment'},
-                   8: {'alpha_h': 1, 'beta_h': 0.009, 'name': 'loh-1a-0.009b-m4.p', 'model_name':'loh-experiment'},
-                   9: {'alpha_h': 1, 'beta_h': 0.008, 'name': 'loh-1a-0.008b-m4.p', 'model_name':'loh-experiment'},
-                   10: {'alpha_h': 1, 'beta_h': 0.007, 'name': 'loh-1a-0.007b-m4.p', 'model_name':'loh-experiment'}}
     experiments = {0: {'num_slices': 4,
                         'batch_size': 64,
                         'effective_batch_size': 64,
@@ -158,7 +148,6 @@ if __name__ == "__main__":
         experiments[i]["custom_transform_params"] = custom_transform_params
         experiments[i]["albumentation_transform_params"] = albumentation_transforms_params   
         experiments[i]["name"] = myDict["name"]                 
-        """
 
     # SSBR Experiment
     # Data Augmentation 
@@ -235,8 +224,21 @@ if __name__ == "__main__":
                         'model_name': 'ssbr-experiment',
                         'name': 'ssbr-12m-1.2a.p'}}
 
+    """
 
 
+    experiments = {0: {'alpha_h': 1, 'beta_h': 0.001, 'name': 'loh-1a-0.001b-m4.p', 'model_name':'loh-experiment'},
+                   1: {'alpha_h': 1, 'beta_h': 0.01, 'name': 'loh-1a-0.01b-m4.p', 'model_name':'loh-experiment'},
+                   2: {'alpha_h': 1, 'beta_h': 0.1, 'name': 'loh-1a-0.1b-m4.p', 'model_name':'loh-experiment'},
+                   3: {"alpha_h": 1, "beta_h": 0.0001, "name": "loh-1a-0.0001b-m4.p", 'model_name':'loh-experiment'},
+                   4: {"alpha_h": 1, "beta_h": 1, "name": "loh-1a-1b-m4.p", 'model_name':'loh-experiment'},
+                   5: {'alpha_h': 1, 'beta_h': 0.02, 'name': 'loh-1a-0.02b-m4.p', 'model_name':'loh-experiment'},
+                   6: {'alpha_h': 1, 'beta_h': 0.03, 'name': 'loh-1a-0.03b-m4.p', 'model_name':'loh-experiment'},
+                   7: {'alpha_h': 1, 'beta_h': 0.04, 'name': 'loh-1a-0.04b-m4.p', 'model_name':'loh-experiment'},
+                   8: {'alpha_h': 1, 'beta_h': 0.009, 'name': 'loh-1a-0.009b-m4.p', 'model_name':'loh-experiment'},
+                   9: {'alpha_h': 1, 'beta_h': 0.008, 'name': 'loh-1a-0.008b-m4.p', 'model_name':'loh-experiment'},
+                   10: {'alpha_h': 1, 'beta_h': 0.007, 'name': 'loh-1a-0.007b-m4.p', 'model_name':'loh-experiment'}}
+                   
     for idx, data in experiments.items(): 
         print("Idx: ", idx)
         for key in data.keys(): 
