@@ -23,7 +23,6 @@ class NormalizedMSE:
 
         counts = np.sum(np.where(~np.isnan(square_error_matrix), 1, 0), axis=0)
         error_of_the_mean = np.nanstd(square_error_matrix, ddof=1, axis=0)/np.sqrt(counts)
-        print(mean_square_error_per_landmark)
         # calculate nmse error for one landmark
         if len(mean_square_error_per_landmark) == 1: 
             mean_error = np.sqrt(np.sum(error_of_the_mean**2)/len(error_of_the_mean)) 
@@ -38,7 +37,6 @@ class NormalizedMSE:
         expected_scores = np.nanmean(reference_matrix, axis=0) 
         if not d: d = self.get_normalizing_constant(expected_scores) 
         square_error_matrix = self.from_instance(expected_scores, score_matrix, d)
-        print(square_error_matrix)
         return square_error_matrix
 
     def from_volume(self, landmarks, scores, expected_scores): 

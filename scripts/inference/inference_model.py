@@ -50,7 +50,7 @@ class InferenceModel:
 
     def load_lookuptable(self): 
         path = self.base_dir + "lookuptable.json"
-        if not os.path.exists: 
+        if not os.path.exists(path): 
             return  
 
         with open(path, "rb") as f: 
