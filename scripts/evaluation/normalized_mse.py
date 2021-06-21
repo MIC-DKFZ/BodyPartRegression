@@ -15,27 +15,47 @@ class NormalizedMSE:
         return mse, mse_std, d
 
 
-    def from_matrices(self, score_matrix, reference_matrix, d=False): 
+    def nmse_per_landmark_from_matrices(self, score_matrix, reference_matrix, d=False): 
         square_error_matrix = self.get_square_error_matrix(score_matrix, reference_matrix, d=d)
-
-        mean_square_error_per_landmark = np.nanmean(square_error_matrix, axis=0)
-        mse = np.nanmean(mean_square_error_per_landmark)
+        nmse_per_landmark = np.nanmean(square_error_matrix, axis=0)
 
         counts = np.sum(np.where(~np.isnan(square_error_matrix), 1, 0), axis=0)
-        error_of_the_mean = np.nanstd(square_error_matrix, ddof=1, axis=0)/np.sqrt(counts)
-        # calculate nmse error for one landmark
-        if len(mean_square_error_per_landmark) == 1: 
-            mean_error = np.sqrt(np.sum(error_of_the_mean**2)/len(error_of_the_mean)) 
-        
-        # add up errors of nMSE per landmark 
-        else: 
-            mean_error = np.std(mean_square_error_per_landmark, ddof=1)/np.sqrt(len(mean_square_error_per_landmark))
+        nmse_errors = np.nanstd(square_error_matrix, ddof=1, axis=0)/np.sqrt(counts)
 
-        return mse, mean_error
+        return nmse_per_landmark, nmse_errors
+
+    def nmse_per_volume_from_matrices(self, score_matrix, reference_matrix, d=False): 
+        square_error_matrix = self.get_square_error_matrix(score_matrix, reference_matrix, d=d)
+        nmse_per_volume =  np.nanmean(square_error_matrix, axis=1)
+        counts = np.sum(np.where(~np.isnan(square_error_matrix), 1, 0), axis=1)
+        nmse_errors = np.nanstd(square_error_matrix, ddof=1, axis=1)/np.sqrt(counts)
+
+        return nmse_per_volume, nmse_errors
+      
+
+
+    def nmse_per_slice_from_matrices(self, score_matrix, reference_matrix, d=False): 
+        square_error_matrix = self.get_square_error_matrix(score_matrix, reference_matrix, d=d)
+        nmse =  np.nanmean(square_error_matrix)
+        counts = np.sum(np.where(~np.isnan(square_error_matrix), 1, 0))
+        nmse_std = np.nanstd(square_error_matrix, ddof=1)/np.sqrt(counts)
+
+        return nmse, nmse_std 
+
+
+    def from_matrices(self, score_matrix, reference_matrix, d=False):  ####### TODO ###### 
+        nmses, nmse_stds = self.nmse_per_volume_from_matrices(score_matrix, reference_matrix, d=d)
+        return np.mean(nmses), np.std(nmses, ddof=1)/np.sqrt(len(nmses))
+
+        #square_error_matrix = self.get_square_error_matrix(score_matrix, reference_matrix, d=d)
+        #nmse_per_volume =  np.nanmean(square_error_matrix, axis=1)
+
+        #return np.mean(nmse_per_volume), np.std(nmse_per_volume, ddof=1)/ np.sqrt(len(nmse_per_volume))
+
 
     def get_square_error_matrix(self, score_matrix, reference_matrix, d=False): 
         expected_scores = np.nanmean(reference_matrix, axis=0) 
-        if not d: d = self.get_normalizing_constant(expected_scores) 
+        if not d: d = np.abs(self.get_normalizing_constant(expected_scores))
         square_error_matrix = self.from_instance(expected_scores, score_matrix, d)
         return square_error_matrix
 
@@ -51,8 +71,9 @@ class NormalizedMSE:
         return mse 
     
     def get_normalizing_constant(self, expected_scores): 
-        return expected_scores[-1] - expected_scores[0]
-
+        return (expected_scores[-1] - expected_scores[0])/100
+    
+    # TODO 
     def volumes2MSEs(self, model, dataset, reference_dataset): 
         score_matrix = model.compute_slice_score_matrix(dataset)
         reference_score_matrix = model.compute_slice_score_matrix(reference_dataset)

@@ -1,17 +1,10 @@
 import os, sys, pickle, random
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib as mlp
-from tqdm import tqdm
-from scipy import interpolate
-
-import pytorch_lightning as pl
+import matplotlib.pyplot as plt 
 import torch
 
 sys.path.append("../../")
-from scripts.network_architecture.bpr_model import BodyPartRegression
 from scripts.training.train import get_dataframe, get_datasets
-from scripts.evaluation.accuracy import Accuracy
 from scripts.evaluation.normalized_mse import NormalizedMSE 
 from scripts.evaluation.visualization import Visualization
 from scripts.inference.inference_model import InferenceModel
@@ -22,9 +15,9 @@ class Evaluation(Visualization):
 
     def __init__(self, base_filepath,  
                  val_dataset=False, 
-                 df_data_source_path="", 
-                 landmark_path="", 
-                 data_path="", 
+                 df_data_source_path=DF_DATA_SOURCE_PATH, 
+                 landmark_path=LANDMARK_PATH, 
+                 data_path=DATA_PATH, 
                  device="cuda"):
         Visualization.__init__(self)
         self.device = device
@@ -91,19 +84,24 @@ class Evaluation(Visualization):
         print("Model summary\n*******************************")
 
         print(
-            f"\nNormalized MSE [1e-3]:\t{self.mse*1e3:<1.3f} +- {self.mse_std*1e3:<1.3f}")
+            f"\nNormalized MSE:\t{self.mse:<1.3f} +- {self.mse_std:<1.3f}")
         print(
             f"Accuracy (5 classes) : \t{self.acc5*100:<1.2f}%"
         )
         print("\nLook-up table for training data \n*******************************")
         self.landmark_score_bundle.dict["train"].print_lookuptable()
 
-    def plot_landmarks(self):
-        validation_score_matrix = self.landmark_score_bundle.dict["validation"].score_matrix 
-        expected_scores = self.landmark_score_bundle.dict["train"].expected_scores
+    def plot_landmarks(self, alpha=0.7, target="validation"):
+        if target == "validation": score_matrix = self.landmark_score_bundle.dict["validation"].score_matrix_transformed 
+        if target == "test": score_matrix = self.landmark_score_bundle.dict["test"].score_matrix_transformed
+        expected_scores = self.landmark_score_bundle.dict["train"].expected_scores_transformed
 
-        super(Evaluation, self).plot_landmarks(validation_score_matrix, 
-                                               expected_scores=expected_scores) 
+        landmark_names =  self.landmark_score_bundle.dict["validation"].landmark_names
+        super(Evaluation, self).plot_landmarks(score_matrix, 
+                                               expected_scores=expected_scores, 
+                                               landmark_names=landmark_names, 
+                                               alpha=alpha) 
+
 
 if __name__ == "__main__": 
     base_dir = "/home/AD/s429r/Documents/Code/bodypartregression/src/models/loh-ldist-l2/sigma-dataset-v11-v2/"

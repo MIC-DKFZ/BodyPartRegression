@@ -78,7 +78,7 @@ class Accuracy:
         accuracies= []
         ids = dataset.landmark_ids
 
-        for i in range(0, len(dataset)): 
+        for i in range(0, len(dataset.landmark_matrix)): 
             landmark_positions = dataset.landmark_matrix[i, :]
             x = dataset.get_full_volume(ids[i])
             scores = model.predict_tensor(torch.tensor(x[:, np.newaxis, :, :]), inference_device=device)

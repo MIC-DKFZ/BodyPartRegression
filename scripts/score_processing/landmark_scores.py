@@ -4,7 +4,7 @@ import pandas as pd
 import torch 
 
 sys.path.append("../../")
-from scripts.dataset.base_dataset import get_full_volume_from_filepath, get_slices
+from scripts.dataset.base_dataset import get_slices
 from scripts.evaluation.normalized_mse import NormalizedMSE
 from scripts.evaluation.accuracy import Accuracy
 from scripts.utils.linear_transformations import * 
@@ -30,9 +30,12 @@ class LandmarkScores:
 
         self.index_matrix =  np.array(df.drop(["filename"] + drop_cols, axis=1, errors='ignore'))
         self.score_matrix = self.create_score_matrix()
-        
+
         self.expected_scores = np.nanmean(self.score_matrix, axis=0)
-        self.expected_scores_std = np.nanstd(self.score_matrix, axis=0)
+        self.expected_scores_std = np.nanstd(self.score_matrix, axis=0, ddof=1)
+        
+        self.expected_scores_transformed = self.transform(self.expected_scores.copy())
+        self.score_matrix_transformed = self.transform(self.score_matrix.copy())
 
         self.lookuptable = self.create_lookuptable()
         self.transformed_lookuptable = transform_lookuptable(self.lookuptable)
@@ -53,6 +56,11 @@ class LandmarkScores:
 
         return slice_score_matrix
     
+    def transform(self, x): 
+        min_value = self.expected_scores[0]
+        max_value = self.expected_scores[-1]
+        return linear_transform(x, scale=100, min_value=min_value, max_value=max_value)
+
     def create_lookuptable(self): 
         lookuptable = {l: {} for l in self.landmark_names}
 
@@ -86,7 +94,9 @@ class LandmarkScoreBundle:
             "validation":  LandmarkScores(data_path, df_val, model), 
             "train":  LandmarkScores(data_path, df_train, model),  
             "test":  LandmarkScores(data_path, df_test, model), 
-            "train+val":  LandmarkScores(data_path, df_database, model), 
+            "train+val-all-landmarks":  LandmarkScores(data_path, df_database[(df_database.train == 1)|(df_database.val == 1)], model), 
+            "test-all-landmarks": LandmarkScores(data_path, df_database[(df_database.test == 1)], model), 
+            
         }
         self.nmse = NormalizedMSE()
         self.model = model 
@@ -110,10 +120,12 @@ class LandmarkScoreBundle:
         landmark_names = self.dict[reference].landmark_names
 
         nmse_per_lanmdark = {landmark_name: {} for landmark_name in landmark_names}
-        for i, landmark_name in enumerate(landmark_names): 
-            nmse, nmse_std = self.nmse.from_matrices(score_matrix[:, i:i+1], reference_matrix[:, i:i+1], d=d)
-            nmse_per_lanmdark[landmark_name]["mean"] = nmse
-            nmse_per_lanmdark[landmark_name]["std"] = nmse_std
+        nmses, nmses_errors = self.nmse.nmse_per_landmark_from_matrices(score_matrix, reference_matrix) 
+
+
+        for landmark, nmse, nmse_std in zip(landmark_names, nmses, nmses_errors): 
+            nmse_per_lanmdark[landmark]["mean"] = nmse
+            nmse_per_lanmdark[landmark]["std"] = nmse_std
 
         return nmse_per_lanmdark
 

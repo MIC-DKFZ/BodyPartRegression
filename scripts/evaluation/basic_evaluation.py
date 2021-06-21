@@ -3,14 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mlp
 from tqdm import tqdm
-from scipy import interpolate
-
-import pytorch_lightning as pl
 import torch
 
 sys.path.append("../../")
-from scripts.network_architecture.bpr_model import BodyPartRegression
-from scripts.training.train import get_dataframe, get_datasets
 from src.settings.settings import *
 
 def grid_plot(X: np.ndarray, 

@@ -31,7 +31,7 @@ class Scores:
         self.transform_max = transform_max
         self.scale=100
         self.original_values = scores
-        self.original_transformed_values = linear_transform(scores, 
+        self.original_transformed_values = linear_transform(scores.copy(), 
                                                             scale=self.scale, 
                                                             min_value=self.transform_min, 
                                                             max_value=self.transform_max)

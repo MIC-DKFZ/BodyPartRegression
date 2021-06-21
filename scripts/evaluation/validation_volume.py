@@ -1,10 +1,13 @@
 from scipy import interpolate
 import matplotlib.pyplot as plt
 import numpy as np 
+import sys
 
+sys.path.append("../../")
+from scripts.score_processing.scores import Scores
 
 class ValidationVolume: 
-    def __init__(self, model, val_dataset, idx, expected_scores): 
+    def __init__(self, inference_model, val_dataset, idx, expected_scores, fontsize=18): 
         self.landmark_idx = idx
         self.data_idx = val_dataset.landmark_ids[idx]
         
@@ -16,36 +19,41 @@ class ValidationVolume:
         self.expected_scores = expected_scores
         self.X = val_dataset.get_full_volume(self.data_idx)
         self.z = val_dataset.z_spacings[self.data_idx]
-        self.scores = model.predict_npy(self.X)
+        self.scores = inference_model.predict_npy(self.X)
+        self.scores = Scores(self.scores, self.z, transform_min=expected_scores[0], transform_max=expected_scores[-1])
         self.interpolated_x, self.interpolated_scores = self.get_interpolated_scores(self.landmarks, 
                                                                 self.expected_scores)
         self.z_array = np.arange(0, len(self.X))*self.z
-        self.fontsize = 16
+        self.fontsize = fontsize
         self.figsize=(14, 8)
         self.markerstyles = np.array([".", "v", "*", "p", "D", "X", "h", "P", "+", "^", "x", "d"])
-        
+        self.colors = np.array(["firebrick", "sienna", "tan", "olivedrab", 
+                                "lightseagreen", "paleturquoise","royalblue", "navy", 
+                                "mediumpurple", "mediumvioletred", "crimson", "saddlebrown"])
     def plot_scores(self, set_figsize=False, legend=None):
         if set_figsize: plt.figure(figsize=self.figsize)
         label = None
 
         # plot scores 
-        plt.plot(self.z_array, self.scores)
-        
+        plt.plot(self.z_array, self.scores.original_transformed_values, color="black", linewidth=1)
+
         # plot landmarks
-        for style, name, landmark, score in zip(self.markerstyles[self.nonempty],
+        for style, name, landmark, color, score in zip(self.markerstyles[self.nonempty],
                                        self.landmark_names[self.nonempty],
                                        self.landmarks[self.nonempty], 
-                                       self.scores[self.landmarks[self.nonempty].astype(int)]): 
+                                       self.colors[self.nonempty], 
+                                       self.scores.original_transformed_values[self.landmarks[self.nonempty].astype(int)]): 
             if legend: label = name
             plt.plot(landmark*self.z, 
                      score,
                      linestyle="", 
                      marker=style,
-                     color="black", 
+                     markersize=10,
+                     color=color, 
                      label=label)
         
         plt.xlabel("$\Delta$z [mm]", fontsize=self.fontsize)
-        plt.ylabel("Score", fontsize=self.fontsize)
+        plt.ylabel("Slice Score", fontsize=self.fontsize)
         plt.xticks(fontsize=self.fontsize-2)
         plt.yticks(fontsize=self.fontsize-2)
 
