@@ -9,6 +9,8 @@ from scripts.score_processing.bodypartexamined import BodyPartExamined
 from scripts.preprocessing.nifti2npy import Nifti2Npy
 from scripts.network_architecture.bpr_model import BodyPartRegression
 from scripts.score_processing.scores import Scores
+from tqdm import tqdm 
+
 
 # TODO Use InferenceModel in modelEvaluation 
 # TODO put prediction code from bpr_model --> InferenceModel 
@@ -104,7 +106,19 @@ class InferenceModel:
 
         # predict slice-scores
         scores = self.predict_tensor(x_tensor)
-        return scores, pixel_spacings      
+        return scores, pixel_spacings    
+
+    def estimated_slope(self, dataset): 
+        slopes = []
+        for i in tqdm(range(len(dataset))): 
+            X =  dataset.get_full_volume(i)
+            z = dataset.z_spacings[i] 
+            scores = self.predict_npy(X)
+            myScores = self.parse_scores(scores, z)
+            slopes.append(myScores.a)
+        
+        slopes = np.array(slopes)
+        return np.nanmean(slopes), np.nanstd(slopes, ddof=1)
 
     def datasanitychecks(self, scores, z_spacing): 
         # TODO !!! 
@@ -132,12 +146,18 @@ class InferenceModel:
             "expected z-spacing": np.round(float(dsc.z_hat), 2)
         }
 
+    def parse_scores(self, scores_array, pixel_spacing): 
+        
+        scores = Scores(scores_array, 
+                        pixel_spacing, 
+                        transform_min = self.lookuptable_original["pelvis_start"]["mean"], 
+                        transform_max = self.lookuptable_original["eyes_end"]["mean"])
+        return scores 
+
+                              
     def nifti2json(self, nifti_path, output_path): 
         slice_score_values, pixel_spacings = self.predict_nifti(nifti_path)
-        slice_scores = Scores(slice_score_values, 
-                              pixel_spacings[2], 
-                              transform_min = self.lookuptable_original["pelvis_start"]["mean"], 
-                              transform_max = self.lookuptable_original["eyes_end"]["mean"])
+        slice_scores = self.parse_scores(slice_score_values, pixel_spacings[2])
 
         output = {"slice scores": list(slice_scores.values.astype(np.float64)), 
             "z": list(slice_scores.z.astype(np.float64)), 

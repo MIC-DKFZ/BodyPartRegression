@@ -5,6 +5,7 @@ import sys
 
 sys.path.append("../../")
 from scripts.score_processing.scores import Scores
+from scripts.utils.linear_transformations import * 
 
 class ValidationVolume: 
     def __init__(self, inference_model, val_dataset, idx, expected_scores, fontsize=18): 
@@ -52,23 +53,43 @@ class ValidationVolume:
                      color=color, 
                      label=label)
         
-        plt.xlabel("$\Delta$z [mm]", fontsize=self.fontsize)
+        plt.xlabel("z [mm]", fontsize=self.fontsize)
         plt.ylabel("Slice Score", fontsize=self.fontsize)
         plt.xticks(fontsize=self.fontsize-2)
         plt.yticks(fontsize=self.fontsize-2)
 
     
-    def plot_interpolated_scores(self): 
-        self.plot_scores(set_figsize=True)
-        plt.plot(self.interpolated_x*self.z, self.interpolated_scores, linestyle="--", linewidth=2)
+    def transform(self, x): 
+        return linear_transform(x, 
+                                scale=100, 
+                                min_value=self.expected_scores[0], 
+                                max_value = self.expected_scores[-1]) 
 
     
+    def plot_expected_scores(self, ax=False, title=None, legend=True, ylim=(-10, 80), ylabel=True): 
+        if not ax: fig, ax = plt.subplots(figsize=(self.figsize))
+        ax.plot(self.z_array, self.scores.original_transformed_values, linewidth=2, label="predicted scores")
+
+        ax.plot(self.landmark_positions*self.z, self.landmark_scores, linestyle="", marker="+", markersize=15, color= '#ff7f0e') 
+        ax.plot(self.interpolated_x, self.interpolated_scores, linestyle="--", color= '#ff7f0e', linewidth=2, label="expected scores")
+        if legend: ax.legend(fontsize=self.fontsize)
+        ax.tick_params(labelsize=self.fontsize-2)
+        ax.tick_params(labelsize=self.fontsize-2)
+        ax.set_xlabel("z [mm]", fontsize=self.fontsize)
+        if ylabel: ax.set_ylabel("Slice scores", fontsize=self.fontsize)
+        ax.set_title(title, fontsize=self.fontsize)
+        ax.set_ylim(ylim)
+
+
     def get_interpolated_scores(self, landmarks, expected_scores): 
         nonempty = np.where(~np.isnan(landmarks))
         x = np.arange(np.nanmin(landmarks), np.nanmax(landmarks) + 1)
         
-        func = interpolate.interp1d(landmarks[nonempty], expected_scores[nonempty], kind="linear")
+        self.landmark_positions = landmarks[nonempty]
+        self.landmark_scores = self.transform(expected_scores[nonempty]) 
+        self.defined_landmarks = self.landmark_names[nonempty]
+        func = interpolate.interp1d(self.landmark_positions, self.landmark_scores, kind="linear")
         interpolated_scores = func(x)
         
-        return x, interpolated_scores
+        return x*self.z, interpolated_scores
         
