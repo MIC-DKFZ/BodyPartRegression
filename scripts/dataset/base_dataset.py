@@ -40,7 +40,7 @@ class BaseDataset(Dataset):
             self.landmark_matrix = np.array(self.landmark_df)
             self.landmark_names = self.landmark_df.columns
             self.landmark_files = [f + ".npy" for f in self.landmark_df.index]
-            self.landmark_ids = [np.where(f == filenames)[0][0] for f in self.landmark_files]
+            self.landmark_ids = [filename_to_id(f, filenames) for f in self.landmark_files]
             self.landmark_slices_per_volume, self.defined_landmarks_per_volume = self.get_landmark_slices()
         
         # define augmentations 
@@ -109,3 +109,8 @@ def get_slices(filepath, indices):
 def swap_axis(x): 
     return x.swapaxes(2, 1).swapaxes(1, 0)
 
+def filename_to_id(filename, filename_array): 
+    ids = np.where(filename == filename_array)[0]
+    if len(ids) == 0: 
+        raise ValueError(f"filename {filename} is not in the filename list")
+    else: return ids[0]
