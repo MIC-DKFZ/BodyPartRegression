@@ -224,7 +224,7 @@ if __name__ == "__main__":
                         'model_name': 'ssbr-experiment',
                         'name': 'ssbr-12m-1.2a.p'}}
 
-    """
+
 
 
     experiments = {0: {'alpha_h': 1, 'beta_h': 0.001, 'name': 'loh-1a-0.001b-m4.p', 'model_name':'loh-experiment'},
@@ -238,7 +238,12 @@ if __name__ == "__main__":
                    8: {'alpha_h': 1, 'beta_h': 0.009, 'name': 'loh-1a-0.009b-m4.p', 'model_name':'loh-experiment'},
                    9: {'alpha_h': 1, 'beta_h': 0.008, 'name': 'loh-1a-0.008b-m4.p', 'model_name':'loh-experiment'},
                    10: {'alpha_h': 1, 'beta_h': 0.007, 'name': 'loh-1a-0.007b-m4.p', 'model_name':'loh-experiment'}}
-                   
+    """ 
+    experiments = {0: {"model_name": "public-model",
+                       "name": "public-model-v1.p", 
+                       "df_data_source_path": data_path[mode] + "MetaData/meta-data-publish-model.xlsx", 
+                       "data_path":  data_path[mode] + "Arrays-3.5mm-sigma-01/",
+                       "landmark_path": data_path[mode] + "MetaData/landmarks-publish-model.xlsx"}}
     for idx, data in experiments.items(): 
         print("Idx: ", idx)
         for key in data.keys(): 
