@@ -12,7 +12,7 @@ class Visualization:
                        expected_scores, 
                        landmark_names, 
                        figsize=(16, 10), 
-                       fontsize=16, 
+                       fontsize=20, 
                        text_margin_top=0.02, 
                        text_margin_right=2,
                        alpha=0.7,
