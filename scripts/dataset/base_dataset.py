@@ -39,7 +39,7 @@ class BaseDataset(Dataset):
             self.landmark_df = pd.read_excel(landmark_path, sheet_name=landmark_sheet_name, engine='openpyxl', index_col="filename")
             self.landmark_matrix = np.array(self.landmark_df)
             self.landmark_names = self.landmark_df.columns
-            self.landmark_files = [f + ".npy" for f in self.landmark_df.index]
+            self.landmark_files = [f + ".npy" for f in self.landmark_df.index if isinstance(f, str)]
             self.landmark_ids = [filename_to_id(f, filenames) for f in self.landmark_files]
             self.landmark_slices_per_volume, self.defined_landmarks_per_volume = self.get_landmark_slices()
         

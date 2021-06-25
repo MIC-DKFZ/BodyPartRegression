@@ -9,6 +9,8 @@ from scripts.score_processing.bodypartexamined import BodyPartExamined
 from scripts.preprocessing.nifti2npy import Nifti2Npy
 from scripts.network_architecture.bpr_model import BodyPartRegression
 from scripts.score_processing.scores import Scores
+from scripts.score_processing.landmark_scores import get_max_keyof_lookuptable, get_min_keyof_lookuptable
+
 from tqdm import tqdm 
 
 
@@ -23,6 +25,8 @@ from tqdm import tqdm
 # TODO DataSanityChecks: expected z-spacing
 # TODO predict_tensor sonst überall rausnehmen 
 # TODO predict_npy rausnehmen 
+# TODO create Tests to test load_model and InferenceModel 
+# TODO give back transformed slice scores 
 
 
 class InferenceModel: 
@@ -61,7 +65,10 @@ class InferenceModel:
         try: 
             self.lookuptable_original = lookuptable["original"]
             self.lookuptable = lookuptable["transformed"]
+            self.start_landmark = get_min_keyof_lookuptable(self.lookuptable)
+            self.end_landmark = get_max_keyof_lookuptable(self.lookuptable)
         except: 
+
             return 
 
     def load_settings(self): 
@@ -150,8 +157,8 @@ class InferenceModel:
         
         scores = Scores(scores_array, 
                         pixel_spacing, 
-                        transform_min = self.lookuptable_original["pelvis_start"]["mean"], 
-                        transform_max = self.lookuptable_original["eyes_end"]["mean"])
+                        transform_min = self.lookuptable_original[self.start_landmark]["mean"], 
+                        transform_max = self.lookuptable_original[self.end_landmark]["mean"])
         return scores 
 
                               

@@ -13,7 +13,7 @@ import torchvision.models as models
 cv2.setNumThreads(1)
 
 sys.path.append("../../")
-from scripts.evaluation.normalized_mse import NormalizedMSE
+from scripts.evaluation.landmark_mse import LMSE
 from scripts.network_architecture.loss_functions import * 
 
 
@@ -48,7 +48,7 @@ class BodyPartRegressionBase(pl.LightningModule):
                         "alpha_h": alpha_h, "lr": lr}
 
         #self.model = self.get_vgg()
-        self.mse = NormalizedMSE()
+        self.mse = LMSE()
         
         if loss_order == "h": 
             self.loss_order = order_loss_h(alpha=self.alpha_h, beta=self.beta_h)

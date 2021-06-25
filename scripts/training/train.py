@@ -24,11 +24,12 @@ from scripts.network_architecture.bpr_model import BodyPartRegression
 from scripts.network_architecture.ssbr_model import SSBR 
 from scripts.dataset.bpr_dataset import BPRDataset
 from scripts.dataset.ssbr_dataset import SSBRDataset
+from scripts.score_processing.landmark_scores import LandmarkScores
 
 np.seterr(divide='ignore', invalid='ignore') #TODO
 
 def get_dataframe(config): 
-    df = pd.read_excel(config["df_data_source_path"], sheet_name="data", engine='openpyxl')
+    df = pd.read_excel(config["df_data_source_path"], engine='openpyxl') #  sheet_name="data", 
 
     # only use volumes with more than 30 slices 
     df = df[(df["z"] >= 30)]
@@ -94,16 +95,18 @@ def run_fast_dev(config, train_dataloader, val_dataloader):
     trainer_dev =  pl.Trainer(gpus=1, fast_dev_run=True, precision=16)
     trainer_dev.fit(model, train_dataloader, val_dataloader)
 
-def save_model(trainer, model, config, train_dataloader, logger): 
+def save_model(model, config, path): 
+    print("save model at: ", path)
 
-    log_dir = logger.log_dir + "/"
-    print("save model at: ", log_dir)
-
-    with open(log_dir + 'config.p', 'wb') as f:
+    with open(path + 'config.p', 'wb') as f:
         pickle.dump(config, f)
 
-    if config["save_model"]: torch.save(model.state_dict(), log_dir + "model.pt") 
-
+    if config["save_model"]: torch.save(model.state_dict(), path + "model.pt") 
+    
+    # save lookuptable 
+    df_landmarks = pd.read_excel(config["landmark_path"], sheet_name="landmarks-train")
+    lscores = LandmarkScores(config["data_path"], df_landmarks, model, landmark_start=np.nan, landmark_end=np.nan)
+    lscores.save_lookuptable(filepath=path + "lookuptable.json")
 
 def data_preprocessing_ssbr(df, config): 
     train_filenames = df.loc[df.train_data == 1, "filename"].values
@@ -218,7 +221,7 @@ def train_config(config):
                          accumulate_grad_batches=int(config["effective_batch_size"]/config["batch_size"])) 
 
     trainer.fit(model, train_dataloader, val_dataloader) 
-    save_model(trainer, model, config, train_dataloader, logger_uar)
+    save_model(model, config, path=logger_uar.log_dir + "/")
 
 def train(): 
     # get arguments

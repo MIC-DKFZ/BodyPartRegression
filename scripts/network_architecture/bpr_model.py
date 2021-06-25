@@ -13,7 +13,7 @@ import torchvision.models as models
 cv2.setNumThreads(1)
 
 sys.path.append("../../")
-from scripts.evaluation.normalized_mse import NormalizedMSE
+from scripts.evaluation.landmark_mse import LMSE
 from scripts.network_architecture.loss_functions import * 
 from scripts.network_architecture.base_model import BodyPartRegressionBase
 

@@ -50,14 +50,6 @@ class Nifti2Npy:
         self.min_hu = min_hu
         self.max_hu = max_hu
         self.size = size
-        #self.padding = A.PadIfNeeded(
-        #    min_height=size,
-         #   min_width=size,
-        #    always_apply=True,
-        #    border_mode=cv2.BORDER_CONSTANT,
-        #    value=rescale_min, 
-        #    p=1
-        #)
     
         self.center_crop = A.CenterCrop(p=1, height=size, width=size)
         self.corrputed_files = corrupted_files
@@ -120,6 +112,7 @@ class Nifti2Npy:
 
     def dataframe_template(self, filepaths):
         filenames = [f.split("/")[-1] for f in filepaths]
+        filenames = [f.replace(".nii.gz", ".npy") for f in filenames]
         df = pd.DataFrame(
             index=filenames,
             columns=[
@@ -192,11 +185,13 @@ class Nifti2Npy:
         return y
 
     def add_baseinfo2df(self, df, filename, x):
+        filename = filename.replace(".nii", "").replace(".gz", "") + ".npy"
         df.loc[filename, ["x0", "y0", "z0"]] = x.shape
         df.loc[filename, ["min_x", "max_x"]] = np.min(x), np.max(x)
         return df
 
     def add_info2df(self, df, filename, x, pixel_spacings):
+        filename = filename.replace(".nii", "").replace(".gz", "") + ".npy"
         df.loc[
             filename, ["pixel_spacingx", "pixel_spacingy", "pixel_spacingz"]
         ] = pixel_spacings
@@ -217,7 +212,7 @@ class Nifti2Npy:
             x = img_nii.get_fdata(dtype=np.float32)
         except EOFError:
             print(f"Corrupted file {filepath}")
-            return None, None, None
+            return None, None
         pixel_spacings = np.array(list(img_nii.header.get_zooms()))
         affine = img_nii.affine[:3, :3]
 
@@ -231,7 +226,7 @@ class Nifti2Npy:
         x = self.resize_volume(x, pixel_spacings)
         return x, pixel_spacings
 
-    def convert_file(self, filepath, save=False):
+    def convert_file(self, filepath, save=False, skip_existing=False):
         filename = filepath.split("/")[-1]
         ofilepath = (
             self.opath + filename.replace(".nii", "").replace(".gz", "") + ".npy"
@@ -264,7 +259,7 @@ class Nifti2Npy:
             np.save(ofilepath, x.astype(np.float32))
         return x, x0, pixel_spacings
 
-    def convert(self, filepaths, save=False):
+    def convert(self, filepaths, save=False, skip_existing=False):
         df = self.dataframe_template(filepaths)
 
         for filepath in tqdm(filepaths):
@@ -275,7 +270,7 @@ class Nifti2Npy:
             if isinstance(x, np.ndarray):
                 df = self.add_baseinfo2df(df, filename, x0)
                 df = self.add_info2df(df, filename, x, pixel_spacings)
-
+        df["filename"] = df.index
         return df
 
 

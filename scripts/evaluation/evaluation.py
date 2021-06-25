@@ -5,7 +5,7 @@ import torch
 
 sys.path.append("../../")
 from scripts.training.train import get_dataframe, get_datasets
-from scripts.evaluation.normalized_mse import NormalizedMSE 
+from scripts.evaluation.landmark_mse import LMSE 
 from scripts.evaluation.visualization import Visualization
 from scripts.inference.inference_model import InferenceModel
 from scripts.score_processing.landmark_scores import LandmarkScoreBundle, LandmarkScores
@@ -18,13 +18,19 @@ class Evaluation(Visualization):
                  df_data_source_path=DF_DATA_SOURCE_PATH, 
                  landmark_path=LANDMARK_PATH, 
                  data_path=DATA_PATH, 
-                 device="cuda"):
+                 device="cuda", 
+                 landmark_start="pelvis_start", 
+                 landmark_end="eyes_end"):
         Visualization.__init__(self)
         self.device = device
         self.base_filepath = base_filepath
         self.inference_model = InferenceModel(base_filepath)
-        self.normalizedMSE = NormalizedMSE()
-        self.landmark_score_bundle = LandmarkScoreBundle(data_path, landmark_path, self.inference_model.model)
+        self.normalizedMSE = LMSE()
+        self.landmark_score_bundle = LandmarkScoreBundle(data_path,
+                                                         landmark_path, 
+                                                         self.inference_model.model, 
+                                                         landmark_start=landmark_start, 
+                                                         landmark_end=landmark_end)
 
         # setup data
         self.df_data_source_path = df_data_source_path
@@ -84,9 +90,9 @@ class Evaluation(Visualization):
         print("Model summary\n*******************************")
 
         print(
-            f"\nNormalized MSE:\t{self.mse:<1.3f} +- {self.mse_std:<1.3f}")
+            f"\nLandmark Mean Square Error:\t{self.mse:<1.3f} +- {self.mse_std:<1.3f}")
         print(
-            f"Accuracy (5 classes) : \t{self.acc5*100:<1.2f}%"
+            f"Accuracy (5 classes) :        \t{self.acc5*100:<1.2f}%"
         )
         print("\nLook-up table for training data \n*******************************")
         self.landmark_score_bundle.dict["train"].print_lookuptable()
@@ -102,6 +108,35 @@ class Evaluation(Visualization):
                                                landmark_names=landmark_names, 
                                                alpha=alpha) 
 
+    def plot_slices2scores(self, max_cols=4, nearby_values=[0, 25, 50, 75, 100], save_path=""):
+        _, ax = plt.subplots(len(nearby_values), max_cols, figsize=(14, 16))
+        
+        for row, nearby_value in enumerate(nearby_values): 
+            col = 0
+            slice_indices = []
+            while col < max_cols: 
+                idx = np.random.randint(0, len(self.test_dataset))
+                if idx in slice_indices: continue
+                slice_indices.append(idx)
+                
+                filepaths = self.test_dataset.filepaths
+                zspacing = self.test_dataset.z_spacings[idx]
+                X = np.load(filepaths[idx]).transpose(2, 0, 1)
+                scores = self.inference_model.predict_npy(X)
+                myScores = self.inference_model.parse_scores(scores, zspacing)
+                slice_index = np.argmin(np.abs(myScores.original_transformed_values - nearby_value)) 
+                slice_score = myScores.original_transformed_values[slice_index]
+                if np.abs(slice_score - nearby_value) > 1: continue
+
+                ax[row, col].imshow(X[slice_index, :, :], cmap="gray") 
+                ax[row, col].set_title(np.round(slice_score, 2), fontsize=14)
+                ax[row, col].set_yticklabels([])
+                ax[row, col].set_xticklabels([])
+                ax[row, col].set_yticks([])
+                ax[row, col].set_xticks([])
+                col += 1
+        plt.tight_layout()
+        if len(save_path) > 0: plt.savefig(save_path + "model-evaluation-nearby-slices.png")
 
 if __name__ == "__main__": 
     base_dir = "/home/AD/s429r/Documents/Code/bodypartregression/src/models/loh-ldist-l2/sigma-dataset-v11-v2/"

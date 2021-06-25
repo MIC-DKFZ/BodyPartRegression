@@ -13,76 +13,79 @@ from torchvision import transforms
 sys.path.append("../../")
 from scripts.dataset.custom_transformations import *
 
-# Array-3.5 mm pixel spacing setup - 01 scaling
-gaussian_noise = GaussNoise(std_min=0, std_max=0.04, min_value=-1, max_value=1, p=0.5) # equivalent to max gaussian std noise of 50 HU 
-shift_hu = ShiftHU(shift_limit=0.08, min_value=-1, max_value=1, p=0.5) # equivalent to max shift of 100 HU 
-scale_hu = ScaleHU(scale_delta=0.2, min_value=-1, max_value=1, p=0.5)
-add_frame = AddFrame(p=0.25, r_circle=0.75, fill_value=-1)
-flip = A.Flip(p=0.5) # Flip the input either horizontally, vertically or both
-transpose = A.Transpose(p=0.5) 
-shift_scale_rotate = A.ShiftScaleRotate(shift_limit=0, scale_limit=0.2, rotate_limit=10, p=0.5, 
-                                        border_mode=cv2.BORDER_REFLECT_101)
-gaussian_blure = A.GaussianBlur(blur_limit=(3, 7), sigma_limit=0.5, always_apply=False, p=0.5)
-
-custom_transform = transforms.Compose([gaussian_noise, shift_hu, scale_hu, add_frame])
-albumentation_transform =  A.Compose([flip, transpose, shift_scale_rotate, gaussian_blure])
-
-
-custom_transform_params = {}
-for i in range(len(custom_transform.__dict__["transforms"])): 
-        custom_transform_params[custom_transform.__dict__["transforms"][i].__class__] =  custom_transform.__dict__["transforms"][i].__dict__
-
-albumentation_transforms_params = albumentation_transform.__dict__["transforms"].transforms
-
-
 data_path = {"local": "/home/AD/s429r/Documents/Data/DataSet/", 
-             "cluster": "/gpu/data/OE0441/s429r/"}
+            "cluster": "/gpu/data/OE0441/s429r/"}
 
 save_path = {"local":"/home/AD/s429r/Documents/Data/Results/body-part-regression-models/", 
-             "cluster": "/gpu/checkpoints/OE0441/s429r/results/bodypartregression/"}
+            "cluster": "/gpu/checkpoints/OE0441/s429r/results/bodypartregression/"}
+
+def get_basic_config(mode="cluster", size=128): 
+    # Array-3.5 mm pixel spacing setup - 01 scaling
+    gaussian_noise = GaussNoise(std_min=0, std_max=0.04, min_value=-1, max_value=1, p=0.5) # equivalent to max gaussian std noise of 50 HU 
+    shift_hu = ShiftHU(shift_limit=0.08, min_value=-1, max_value=1, p=0.5) # equivalent to max shift of 100 HU 
+    scale_hu = ScaleHU(scale_delta=0.2, min_value=-1, max_value=1, p=0.5)
+    add_frame = AddFrame(p=0.25, r_circle=0.75, fill_value=-1, dimension=size)
+    flip = A.Flip(p=0.5) # Flip the input either horizontally, vertically or both
+    transpose = A.Transpose(p=0.5) 
+    shift_scale_rotate = A.ShiftScaleRotate(shift_limit=0, scale_limit=0.2, rotate_limit=10, p=0.5, 
+                                            border_mode=cv2.BORDER_REFLECT_101)
+    gaussian_blure = A.GaussianBlur(blur_limit=(3, 7), sigma_limit=0.5, always_apply=False, p=0.5)
+
+    custom_transform = transforms.Compose([gaussian_noise, shift_hu, scale_hu, add_frame])
+    albumentation_transform =  A.Compose([flip, transpose, shift_scale_rotate, gaussian_blure])
 
 
-mode = "cluster"
+    custom_transform_params = {}
+    for i in range(len(custom_transform.__dict__["transforms"])): 
+            custom_transform_params[custom_transform.__dict__["transforms"][i].__class__] =  custom_transform.__dict__["transforms"][i].__dict__
 
-config = {
-    "custom_transform": custom_transform, 
-    "custom_transform_params": custom_transform_params, 
-    "albumentation_transform": albumentation_transform,
-    "albumentation_transform_params": albumentation_transforms_params, 
-    
-    " ": "\n*******************************************************", 
-    "df_data_source_path": data_path[mode] + "MetaData/meta-data-public-dataset-npy-arrays-3.5mm-windowing-sigma.xlsx", 
-    "data_path":  data_path[mode] + "Arrays-3.5mm-sigma-01/",
-    "landmark_path": data_path[mode] + "MetaData/landmarks-meta-data-v2.xlsx",
-    "model_name": "loh-experiment", # TODO # l2-experiment
-    "save_dir": save_path[mode], 
-    "shuffle_train_dataloader": True,
-    "random_seed": 0, 
-    "deterministic": True, 
-    "save_model": True, 
-    "base_model": "vgg", 
-    "   ": "\n*******************************************************", 
+    albumentation_transforms_params = albumentation_transform.__dict__["transforms"].transforms
 
-    "batch_size": 64, 
-    "effective_batch_size": 64, 
-    "equidistance_range": [5, 100], # [2, 30], # in mmm # TODO SSBR !!! [5, 100]
-    "num_slices": 4, 
 
-    "    ": "\n*******************************************************", 
-    "alpha_h": 1, 
-    "beta_h": 0.01,
-    "loss_order": "h", 
-    "lambda": 0, 
-    "alpha": 0,   
-    "lr": 1e-4, 
-    "epochs": 480, 
-    
-    "     ": "\n*******************************************************", 
-    "description": "",
-    "name": "standard-config-01.p" 
-}
 
-config["accumulate_grad_batches"] = int(config["effective_batch_size"]/config["batch_size"])
+
+
+    config = {
+        "custom_transform": custom_transform, 
+        "custom_transform_params": custom_transform_params, 
+        "albumentation_transform": albumentation_transform,
+        "albumentation_transform_params": albumentation_transforms_params, 
+        
+        " ": "\n*******************************************************", 
+        "df_data_source_path": data_path[mode] + "MetaData/meta-data-public-dataset-npy-arrays-3.5mm-windowing-sigma.xlsx", 
+        "data_path":  data_path[mode] + "Arrays-3.5mm-sigma-01/",
+        "landmark_path": data_path[mode] + "MetaData/landmarks-meta-data-v2.xlsx",
+        "model_name": "loh-experiment",
+        "save_dir": save_path[mode], 
+        "shuffle_train_dataloader": True,
+        "random_seed": 0, 
+        "deterministic": True, 
+        "save_model": True, 
+        "base_model": "vgg", 
+        "   ": "\n*******************************************************", 
+
+        "batch_size": 64, 
+        "effective_batch_size": 64, 
+        "equidistance_range": [5, 100], 
+        "num_slices": 4, 
+
+        "    ": "\n*******************************************************", 
+        "alpha_h": 1, 
+        "beta_h": 0.01,
+        "loss_order": "h", 
+        "lambda": 0, 
+        "alpha": 0,   
+        "lr": 1e-4, 
+        "epochs": 480, 
+        
+        "     ": "\n*******************************************************", 
+        "description": "",
+        "name": "standard-config.p" 
+    }
+
+    config["accumulate_grad_batches"] = int(config["effective_batch_size"]/config["batch_size"])
+
+    return config 
 
 
 if __name__ == "__main__":
@@ -239,12 +242,14 @@ if __name__ == "__main__":
                    9: {'alpha_h': 1, 'beta_h': 0.008, 'name': 'loh-1a-0.008b-m4.p', 'model_name':'loh-experiment'},
                    10: {'alpha_h': 1, 'beta_h': 0.007, 'name': 'loh-1a-0.007b-m4.p', 'model_name':'loh-experiment'}}
     """ 
+    mode = "cluster"
     experiments = {0: {"model_name": "public-model",
                        "name": "public-model-v1.p", 
                        "df_data_source_path": data_path[mode] + "MetaData/meta-data-publish-model.xlsx", 
                        "data_path":  data_path[mode] + "Arrays-3.5mm-sigma-01/",
                        "landmark_path": data_path[mode] + "MetaData/landmarks-publish-model.xlsx"}}
     for idx, data in experiments.items(): 
+        config = get_basic_config(mode=mode)
         print("Idx: ", idx)
         for key in data.keys(): 
             config[key] = data[key]

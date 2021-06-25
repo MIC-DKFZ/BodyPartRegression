@@ -5,7 +5,7 @@ import torch
 
 sys.path.append("../../")
 from scripts.dataset.base_dataset import get_slices
-from scripts.evaluation.normalized_mse import NormalizedMSE
+from scripts.evaluation.landmark_mse import LMSE
 from scripts.evaluation.accuracy import Accuracy
 from scripts.utils.linear_transformations import * 
 from src.settings.settings import * 
@@ -17,14 +17,16 @@ class LandmarkScores:
                  df, 
                  model, 
                  device="cuda",
-                 drop_cols=["val", "train", "test"]): 
+                 drop_cols=["val", "train", "test"], 
+                 landmark_start="pelvis_start", 
+                 landmark_end="eyes_end"): 
         
         self.data_path = data_path
         self.device = device
         self.model = model 
         
         # expect filenames to be with or without .npy ending
-        self.filenames = [ f.replace(".npy", "") + ".npy" for f in df["filename"]]
+        self.filenames = [ f.replace(".npy", "") + ".npy" for f in df["filename"] if isinstance(f, str)]
         self.filepaths = [data_path + f for f in self.filenames]
         self.landmark_names = [ l for l in df.columns if not l in drop_cols + ["filename"]]
 
@@ -38,7 +40,9 @@ class LandmarkScores:
         self.score_matrix_transformed = self.transform(self.score_matrix.copy())
 
         self.lookuptable = self.create_lookuptable()
-        self.transformed_lookuptable = transform_lookuptable(self.lookuptable)
+        if isinstance(landmark_start, float) and np.isnan(landmark_start): landmark_start = get_min_keyof_lookuptable(self.lookuptable)
+        if isinstance(landmark_end, float) and np.isnan(landmark_end): landmark_end = get_max_keyof_lookuptable(self.lookuptable)
+        self.transformed_lookuptable = transform_lookuptable(self.lookuptable, landmark_start=landmark_start, landmark_end=landmark_end)
         
     def create_score_matrix(self): 
         with torch.no_grad(): 
@@ -71,10 +75,10 @@ class LandmarkScores:
     
     
     def print_lookuptable(self): 
-        for landmark, values in self.lookuptable.items(): 
+        for landmark, values in self.transformed_lookuptable.items(): 
             mean = np.round(values["mean"], 3)
             std = np.round(values["std"], 3)
-            print(f"{landmark:<15}:\t {mean}+-{std}")    
+            print(f"{landmark:<15}:\t {mean} +- {std}")    
 
     def save_lookuptable(self, filepath): # TODO 
         jsonDict = {"original": self.lookuptable, 
@@ -84,28 +88,28 @@ class LandmarkScores:
 
             
 class LandmarkScoreBundle: 
-    def __init__(self, data_path, landmark_path, model): 
+    def __init__(self, data_path, landmark_path, model, landmark_start="pelvis_start", landmark_end="eyes_end"): 
         df_database = pd.read_excel(landmark_path, sheet_name="database")
         df_train = pd.read_excel(landmark_path, sheet_name="landmarks-train")
         df_val = pd.read_excel(landmark_path, sheet_name="landmarks-val")
         df_test = pd.read_excel(landmark_path, sheet_name="landmarks-test")
 
         self.dict = {
-            "validation":  LandmarkScores(data_path, df_val, model), 
-            "train":  LandmarkScores(data_path, df_train, model),  
-            "test":  LandmarkScores(data_path, df_test, model), 
-            "train+val-all-landmarks":  LandmarkScores(data_path, df_database[(df_database.train == 1)|(df_database.val == 1)], model), 
-            "test-all-landmarks": LandmarkScores(data_path, df_database[(df_database.test == 1)], model), 
+            "validation":  LandmarkScores(data_path, df_val, model, landmark_start=landmark_start, landmark_end=landmark_end), 
+            "train":  LandmarkScores(data_path, df_train, model, landmark_start=landmark_start, landmark_end=landmark_end), 
+            "test":  LandmarkScores(data_path, df_test, model, landmark_start=landmark_start, landmark_end=landmark_end), 
+            "train+val-all-landmarks":  LandmarkScores(data_path, df_database[(df_database.train == 1)|(df_database.val == 1)], model, landmark_start=landmark_start, landmark_end=landmark_end), 
+            "test-all-landmarks": LandmarkScores(data_path, df_database[(df_database.test == 1)], model, landmark_start=landmark_start, landmark_end=landmark_end), 
             
         }
-        self.nmse = NormalizedMSE()
+        self.lmse = LMSE()
         self.model = model 
 
     def nMSE(self, target="validation", reference="train"): 
-        nmse, nmse_std = self.nmse.from_matrices(
+        lmse, lmse_std = self.lmse.from_matrices(
                                 self.dict[target].score_matrix, 
                                 self.dict[reference].score_matrix)
-        return nmse, nmse_std
+        return lmse, lmse_std
     
     def accuracy(self, target_dataset, reference="train", class2landmark=CLASS_TO_LANDMARK_5): 
         acc = Accuracy(self.dict[reference].expected_scores, class2landmark)
@@ -116,19 +120,38 @@ class LandmarkScoreBundle:
         score_matrix = self.dict[target].score_matrix
         reference_matrix = self.dict[reference].score_matrix
         expected_scores = self.dict[reference].expected_scores
-        d = self.nmse.get_normalizing_constant(expected_scores)
+        d = self.lmse.get_normalizing_constant(expected_scores)
         landmark_names = self.dict[reference].landmark_names
 
-        nmse_per_lanmdark = {landmark_name: {} for landmark_name in landmark_names}
-        nmses, nmses_errors = self.nmse.nmse_per_landmark_from_matrices(score_matrix, reference_matrix) 
+        lmse_per_lanmdark = {landmark_name: {} for landmark_name in landmark_names}
+        lmses, lmses_errors = self.lmse.lmse_per_landmark_from_matrices(score_matrix, reference_matrix) 
 
 
-        for landmark, nmse, nmse_std in zip(landmark_names, nmses, nmses_errors): 
-            nmse_per_lanmdark[landmark]["mean"] = nmse
-            nmse_per_lanmdark[landmark]["std"] = nmse_std
+        for landmark, lmse, lmse_std in zip(landmark_names, lmses, lmses_errors): 
+            lmse_per_lanmdark[landmark]["mean"] = lmse
+            lmse_per_lanmdark[landmark]["std"] = lmse_std
 
-        return nmse_per_lanmdark
+        return lmse_per_lanmdark
 
+
+def get_max_keyof_lookuptable(myDict):
+    max_key = ""
+    max_key_value = - np.inf
+    for key in myDict:
+        if myDict[key]["mean"] > max_key_value: 
+            max_key = key
+            max_key_value = myDict[key]["mean"] 
+    return max_key 
+    
+
+def get_min_keyof_lookuptable(myDict):
+    min_key = ""
+    min_key_value = + np.inf
+    for key in myDict:
+        if myDict[key]["mean"] < min_key_value: 
+            min_key = key
+            min_key_value = myDict[key]["mean"] 
+    return min_key 
     
 
 

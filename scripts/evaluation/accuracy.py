@@ -33,12 +33,20 @@ class Accuracy:
         class_to_score_mapping = {myClass: [] for myClass in self.class_to_landmark.keys()}
         
         # iterate through classes 
+        classes_not_in_data = []
         for myClass in self.class_to_landmark: 
-            # get lan
             landmarks = self.class_to_landmark[myClass]
-            slice_scores = self.estimated_landmark_scores[landmarks]
-            class_to_score_mapping[myClass] = list(slice_scores)
-            
+            if max(landmarks) > len(self.estimated_landmark_scores) -1:
+                classes_not_in_data.append(myClass)
+                
+            else: 
+                slice_scores = self.estimated_landmark_scores[landmarks]
+                class_to_score_mapping[myClass] = list(slice_scores)
+        
+        for myClass in classes_not_in_data: 
+            del self.class_to_landmark[myClass]
+            del class_to_score_mapping[myClass]
+
         return class_to_score_mapping
     
     def class_prediction(self, slice_scores): 
