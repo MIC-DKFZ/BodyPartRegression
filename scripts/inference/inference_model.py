@@ -24,10 +24,11 @@ from tqdm import tqdm
 # TODO BodyPartExamined hinzufügen 
 # TODO DataSanityChecks: expected z-spacing
 # TODO predict_tensor sonst überall rausnehmen 
-# TODO predict_npy rausnehmen 
+# TODO predict_npy_array rausnehmen aus base_model
+# TODO predict_npy array: Score zurückgeben 
 # TODO create Tests to test load_model and InferenceModel 
 # TODO give back transformed slice scores 
-
+# TODO Aus Output (dict) aus Inference Model eine Klasse machen 
 
 class InferenceModel: 
     """
@@ -65,8 +66,19 @@ class InferenceModel:
         try: 
             self.lookuptable_original = lookuptable["original"]
             self.lookuptable = lookuptable["transformed"]
-            self.start_landmark = get_min_keyof_lookuptable(self.lookuptable)
-            self.end_landmark = get_max_keyof_lookuptable(self.lookuptable)
+            if "start-landmark" in lookuptable.keys(): 
+                self.start_landmark = lookuptable["start-landmark"]
+            else:     
+                self.start_landmark = get_min_keyof_lookuptable(self.lookuptable)
+            
+            if "end-landmark" in lookuptable.keys(): 
+                self.end_landmark = lookuptable["end-landmark"]
+            else: 
+                self.end_landmark = get_max_keyof_lookuptable(self.lookuptable)
+
+            self.transform_min = lookuptable["original"][self.start_landmark]["mean"]
+            self.transform_max = lookuptable["original"][self.end_landmark]["mean"]
+
         except: 
 
             return 
@@ -99,7 +111,7 @@ class InferenceModel:
         scores = np.array(scores)
         return scores
 
-    def predict_npy(self, x, n_splits=200): 
+    def predict_npy_array(self, x, n_splits=200): 
         x_tensor = torch.tensor(x[:, np.newaxis, :, :]).to(self.device)
         scores = self.predict_tensor(x_tensor, n_splits=n_splits)
         return scores
@@ -113,14 +125,14 @@ class InferenceModel:
 
         # predict slice-scores
         scores = self.predict_tensor(x_tensor)
-        return scores, pixel_spacings    
+        return Scores(scores, pixel_spacings[2], transform_min=self.transform_min, transform_max=self.transform_max) 
 
     def estimated_slope(self, dataset): 
         slopes = []
         for i in tqdm(range(len(dataset))): 
             X =  dataset.get_full_volume(i)
             z = dataset.z_spacings[i] 
-            scores = self.predict_npy(X)
+            scores = self.predict_npy_array(X)
             myScores = self.parse_scores(scores, z)
             slopes.append(myScores.a)
         
@@ -163,15 +175,15 @@ class InferenceModel:
 
                               
     def nifti2json(self, nifti_path, output_path): 
-        slice_score_values, pixel_spacings = self.predict_nifti(nifti_path)
-        slice_scores = self.parse_scores(slice_score_values, pixel_spacings[2])
+        slice_scores = self.predict_nifti(nifti_path)
+        # slice_scores = self.parse_scores(slice_score_values, pixel_spacings[2])
 
         output = {"slice scores": list(slice_scores.values.astype(np.float64)), 
             "z": list(slice_scores.z.astype(np.float64)), 
             "valid z": list(slice_scores.valid_z.astype(np.float64)), 
             "unprocessed slice scores": list(slice_scores.original_transformed_values.astype(np.float64)), 
             "look-up table": self.lookuptable, 
-            "z-spacing": pixel_spacings[2].astype(np.float64)}
+            "z-spacing": slice_scores.zspacing.astype(np.float64)}
 
         if len(output_path) == 0: return output
 

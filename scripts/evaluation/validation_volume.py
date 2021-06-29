@@ -20,7 +20,7 @@ class ValidationVolume:
         self.expected_scores = expected_scores
         self.X = val_dataset.get_full_volume(self.data_idx)
         self.z = val_dataset.z_spacings[self.data_idx]
-        self.scores = inference_model.predict_npy(self.X)
+        self.scores = inference_model.predict_npy_array(self.X)
         self.scores = Scores(self.scores, self.z, transform_min=expected_scores[0], transform_max=expected_scores[-1])
         self.interpolated_x, self.interpolated_scores = self.get_interpolated_scores(self.landmarks, 
                                                                 self.expected_scores)

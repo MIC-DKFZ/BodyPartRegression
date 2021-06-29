@@ -122,7 +122,7 @@ class Evaluation(Visualization):
                 filepaths = self.test_dataset.filepaths
                 zspacing = self.test_dataset.z_spacings[idx]
                 X = np.load(filepaths[idx]).transpose(2, 0, 1)
-                scores = self.inference_model.predict_npy(X)
+                scores = self.inference_model.predict_npy_array(X)
                 myScores = self.inference_model.parse_scores(scores, zspacing)
                 slice_index = np.argmin(np.abs(myScores.original_transformed_values - nearby_value)) 
                 slice_score = myScores.original_transformed_values[slice_index]

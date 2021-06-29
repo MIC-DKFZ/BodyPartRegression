@@ -55,7 +55,7 @@ class LandmarkScores:
                 not_isnan = np.where(~np.isnan(idxs))
                 idxs = idxs[not_isnan].astype(int)
                 X = get_slices(filepath, idxs)
-                y = self.model.predict_npy(X)
+                y = self.model.predict_npy_array(X)
                 slice_score_matrix[i, not_isnan] = y
 
         return slice_score_matrix

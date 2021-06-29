@@ -164,7 +164,7 @@ class BodyPartRegressionBase(pl.LightningModule):
         scores = np.array(scores)
         return scores
 
-    def predict_npy(self, x, n_splits=200, inference_device="cuda"): 
+    def predict_npy_array(self, x, n_splits=200, inference_device="cuda"): 
         x_tensor = torch.tensor(x[:, np.newaxis, :, :]).to(inference_device)
         scores = self.predict_tensor(x_tensor, inference_device=inference_device, n_splits=n_splits)
         return scores
