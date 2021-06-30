@@ -5,31 +5,21 @@ import json, pickle
 import argparse
 
 sys.path.append("../../")
-from scripts.score_processing.datasanitychecks import DataSanityCheck
+
 # from scripts.score_processing.bodypartexamined import BodyPartExamined
 from scripts.preprocessing.nifti2npy import Nifti2Npy
 from scripts.network_architecture.bpr_model import BodyPartRegression
 from scripts.score_processing.scores import Scores
 from scripts.score_processing.landmark_scores import get_max_keyof_lookuptable, get_min_keyof_lookuptable
 
+from dataclasses import dataclass 
 from tqdm import tqdm 
 
 
-# TODO Use InferenceModel in modelEvaluation 
-# TODO put prediction code from bpr_model --> InferenceModel 
-# TODO convert Dockercontainer again and starter.py
-# TODO remove predict.py
-# TODO Use InferenceModel for SliceScoreProcessing 
-# TODO Write Tests for scores2bodyrange 
-# TODO Include data sanity checks 
 # TODO BodyPartExamined hinzufügen 
-# TODO DataSanityChecks: expected z-spacing
 # TODO predict_tensor sonst überall rausnehmen 
 # TODO predict_npy_array rausnehmen aus base_model
-# TODO predict_npy array: Score zurückgeben 
 # TODO create Tests to test load_model and InferenceModel 
-# TODO give back transformed slice scores 
-# TODO Aus Output (dict) aus Inference Model eine Klasse machen 
 
 class InferenceModel: 
     """
@@ -127,7 +117,7 @@ class InferenceModel:
 
         # predict slice-scores
         scores = self.predict_tensor(x_tensor)
-        return Scores(scores, pixel_spacings[2], transform_min=self.transform_min, transform_max=self.transform_max) 
+        return self.parse_scores(scores, pixel_spacings[2]) 
 
     def estimated_slope(self, dataset): 
         slopes = []
@@ -141,58 +131,59 @@ class InferenceModel:
         slopes = np.array(slopes)
         return np.nanmean(slopes), np.nanstd(slopes, ddof=1)
 
-    def datasanitychecks(self, scores, z_spacing): 
-        # TODO !!! 
-        # validation
-        dsc = DataSanityCheck(
-            scores,
-            z_spacing, 
-            self.slope_mean,
-            self.slope_std,
-            self.lower_bound_score,
-            self.upper_bound_score,
-            self.smoothing_sigma,
-        )
-        cleaned_scores, valid_indices = dsc.remove_invalid_regions(scores)
-        reverse_zordering = dsc.is_reverse_zordering()
-        valid_zspacing = dsc.is_valid_zspacing()
-
-        return {
-            "slice scores": list(cleaned_scores), 
-            "valid indices": list(valid_indices.astype(float)), 
-            "unprocessed slice scores": list(scores), 
-            "reverse z-ordering": reverse_zordering, 
-            "valid z-spacing": valid_zspacing, 
-            "z-spacing": np.round(float(z_spacing), 2), 
-            "expected z-spacing": np.round(float(dsc.z_hat), 2)
-        }
-
     def parse_scores(self, scores_array, pixel_spacing): 
         
         scores = Scores(scores_array, 
                         pixel_spacing, 
                         transform_min = self.lookuptable_original[self.start_landmark]["mean"], 
-                        transform_max = self.lookuptable_original[self.end_landmark]["mean"])
+                        transform_max = self.lookuptable_original[self.end_landmark]["mean"],
+                        slope_mean=self.slope_mean, 
+                        slope_std=self.slope_std)
         return scores 
 
-                              
+
+    def npy2json(self, X, output_path, pixel_spacing): 
+        slice_scores = self.predict_npy_array(X)
+        slice_scores = self.parse_scores(slice_scores, pixel_spacing)
+        data_storage = VolumeScoresData(slice_scores, self.lookuptable)
+        if len(output_path) > 0: data_storage.save_json(output_path)
+        return output_path
+
+
     def nifti2json(self, nifti_path, output_path): 
         slice_scores = self.predict_nifti(nifti_path)
-        # slice_scores = self.parse_scores(slice_score_values, pixel_spacings[2])
+        data_storage = VolumeScoresData(slice_scores, self.lookuptable)
+        if len(output_path) > 0: data_storage.save_json(output_path)
+        return data_storage.json 
+    
 
-        output = {"slice scores": list(slice_scores.values.astype(np.float64)), 
-            "z": list(slice_scores.z.astype(np.float64)), 
-            "valid z": list(slice_scores.valid_z.astype(np.float64)), 
-            "unprocessed slice scores": list(slice_scores.original_transformed_values.astype(np.float64)), 
-            "look-up table": self.lookuptable, 
-            "z-spacing": slice_scores.zspacing.astype(np.float64)}
+@dataclass
+class VolumeScoresData: 
+    def __init__(self, scores: Scores, lookuptable): 
+        self.cleaned_slice_scores = list(scores.values.astype(np.float64))
+        self.z = list(scores.z.astype(np.float64))
+        self.unprocessed_slice_scores = list(scores.original_transformed_values.astype(np.float64))
+        self.lookuptable = lookuptable
 
-        if len(output_path) == 0: return output
+        self.zspacing = scores.zspacing.astype(np.float64)
+        self.reverse_zordering = scores.reverse_zordering
+        self.valid_zspacing = scores.valid_zspacing
 
+        self.json = {"slice scores": self.cleaned_slice_scores, 
+                     "z": self.z, 
+                     "unprocessed slice scores": self.unprocessed_slice_scores, 
+                     "look-up table": self.lookuptable, 
+                     "reverse z-ordering": self.reverse_zordering,
+                     "valid z-spacing": self.valid_zspacing, 
+                     "z-spacing": self.zspacing}
+
+
+
+    def save_json(self, output_path): 
         with open(output_path, "w") as f: 
-            json.dump(output, f)
+            json.dump(self.json, f)
 
-        return output
+
 
 def load_model(base_dir, 
                 model_file="model.pt", 
@@ -212,20 +203,7 @@ def load_model(base_dir,
 
     return model
 
-# TODO 
-"""
-json_output = {
-"slice scores": list(cleaned_scores),
-"valid indices": list(valid_indices.astype(float)),
-"unprocessed slice scores": list(scores),
-"body part examined": body_part_examined,
-"look-up table": lookup_transformed,
-"reverse z-ordering": reverse_zordering,
-"valid z-spacing": valid_zspacing,
-"z-spacing": np.round(float(pixel_spacings[2]), 2),
-"expected z-spacig": np.round(dsc.zhat, 2),
-}
-"""
+
 
 
 if __name__ == "__main__":

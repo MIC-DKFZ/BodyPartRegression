@@ -19,6 +19,8 @@ class Scores:
                  transform_max=np.nan, 
                  m_lower_bound = -0.037, 
                  m_upper_bound = 0.25, 
+                 slope_mean = np.nan, 
+                 slope_std = np.nan, 
                  background_scores=[110.83, 6.14]): 
 
         scores = np.array(scores).astype(float)
@@ -30,6 +32,8 @@ class Scores:
         self.transform_max = transform_max
         self.m_lower_bound = m_lower_bound
         self.m_upper_bound = m_upper_bound
+        self.slope_mean = slope_mean
+        self.slope_std = slope_std
         self.scale=100
         self.original_values = scores
         self.original_transformed_values =  self.transform_scores(scores.copy())
@@ -45,6 +49,11 @@ class Scores:
         self.valid_z = self.z[~np.isnan(self.values)]
         self.valid_values = self.values[~np.isnan(self.values)]
         self.a, self.b = self.fit_linear_line()
+
+        # data sanity chekcs
+        self.valid_zspacing = self.is_zspacing_valid()
+        self.reverse_zordering = self.is_zordering_reverse() 
+
 
     def __len__(self): 
         return len(self.original_values)
@@ -127,3 +136,14 @@ class Scores:
         X[:, 1] = self.valid_z
         b, a = np.linalg.inv(X.T @ X) @ X.T @ self.valid_values
         return a, b
+
+    def is_zordering_reverse(self): 
+        if self.a < 0: 
+            return 1
+        return 0 
+
+    def is_zspacing_valid(self): 
+        if np.isnan(self.slope_mean) or np.isnan(self.slope_std): return np.nan 
+        if (self.a < (self.slope_mean - 3*self.slope_std)) or (self.a > (self.slope_mean + 3*self.slope_std)): 
+            return 0
+        return 1
