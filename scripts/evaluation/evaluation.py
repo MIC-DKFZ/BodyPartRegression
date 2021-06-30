@@ -9,7 +9,7 @@ from scripts.evaluation.landmark_mse import LMSE
 from scripts.evaluation.visualization import Visualization
 from scripts.inference.inference_model import InferenceModel
 from scripts.score_processing.landmark_scores import LandmarkScoreBundle, LandmarkScores
-from src.settings.settings import *
+from scripts.settings.settings import *
 
 class Evaluation(Visualization):
 

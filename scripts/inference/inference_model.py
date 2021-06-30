@@ -2,10 +2,11 @@ import numpy as np
 import os, sys
 import torch 
 import json, pickle
+import argparse
 
 sys.path.append("../../")
 from scripts.score_processing.datasanitychecks import DataSanityCheck
-from scripts.score_processing.bodypartexamined import BodyPartExamined
+# from scripts.score_processing.bodypartexamined import BodyPartExamined
 from scripts.preprocessing.nifti2npy import Nifti2Npy
 from scripts.network_architecture.bpr_model import BodyPartRegression
 from scripts.score_processing.scores import Scores
@@ -43,10 +44,11 @@ class InferenceModel:
             lookuptable.json - includes lookuptable as reference 
         device (str, optional): [description]. "cuda" or "cpu" 
     """
-    def __init__(self, base_dir, device="cuda"): 
+    def __init__(self, base_dir, gpu=1): 
 
         self.base_dir = base_dir
-        self.device = device
+        self.device = "cpu"
+        if gpu: self.device = "cuda"
 
         self.model = load_model(base_dir, device=self.device)
         self.load_lookuptable()
@@ -204,7 +206,7 @@ def load_model(base_dir,
         
     model = BodyPartRegression(alpha=config["alpha"], 
                                     lr=config["lr"]) 
-    model.load_state_dict(torch.load(model_filepath))
+    model.load_state_dict(torch.load(model_filepath, map_location=torch.device(device)))
     model.eval()
     model.to(device)
 
@@ -225,7 +227,7 @@ json_output = {
 }
 """
 
-# TODO 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--i", default="")
@@ -237,10 +239,9 @@ if __name__ == "__main__":
     opath = value.o
     gpu = value.g
 
-    base_dir = "../../src/models/loh-ldist-l2/sigma-dataset-v11/"
-    model = Predict(
+    base_dir = "../../src/models/loh/version_1/"
+    model = InferenceModel(
         base_dir,
-        smoothing_sigma=10,
         gpu=gpu
     )
 
@@ -248,5 +249,5 @@ if __name__ == "__main__":
     nifti_paths = [data_path + f for f in os.listdir(data_path) if f.endswith(".nii.gz")]
     for nifti_path in tqdm(nifti_paths): 
         output_path = nifti_path.replace("test_cases", "test_results").replace(".nii.gz", ".json")
-        model.predict(nifti_path, output_path)
+        model.nifti2json(nifti_path, output_path)
     

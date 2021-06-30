@@ -4,11 +4,13 @@ import pandas as pd
 import torch 
 
 sys.path.append("../../")
+
 from scripts.dataset.base_dataset import get_slices
 from scripts.evaluation.landmark_mse import LMSE
 from scripts.evaluation.accuracy import Accuracy
 from scripts.utils.linear_transformations import * 
-from src.settings.settings import * 
+from scripts.settings.settings import * 
+
 import json 
 
 class LandmarkScores: 

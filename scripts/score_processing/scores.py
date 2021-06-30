@@ -36,7 +36,6 @@ class Scores:
 
         self.values = self.filter_scores(scores)
         self.values = self.transform_scores(self.values)
-
         self.values = self.smooth_scores(self.values)
         self.set_boundary_indices(self.values)
         self.values = self.remove_outliers(self.values)
@@ -99,6 +98,8 @@ class Scores:
 
 
     def remove_outliers(self, x): 
+        if len(x) < 2: return x
+
         # get differences. Estimate last difference by copieng previous value
         diffs = np.array(list(np.diff(x)) + [np.diff(x)[-1]])
         self.slopes = diffs/self.zspacing
@@ -121,9 +122,8 @@ class Scores:
         return x
 
     def fit_linear_line(self): 
-        if len(self.valid_z) == 0: return np.nan, np.nan
+        if len(self.valid_z) < 2: return np.nan, np.nan
         X = np.full((len(self.valid_z), 2), 1.0, dtype=float)
         X[:, 1] = self.valid_z
         b, a = np.linalg.inv(X.T @ X) @ X.T @ self.valid_values
-
         return a, b

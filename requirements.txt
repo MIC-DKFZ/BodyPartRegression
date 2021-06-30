@@ -2,4 +2,4 @@ pytorch_lightning==1.2.10
 nibabel
 scipy
 sklearn
-albumentations
+albumentations==0.5.2

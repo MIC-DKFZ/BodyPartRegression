@@ -12,16 +12,15 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 COPY requirements.txt .
 COPY scripts scripts/
-COPY src/models/loh-ldist-l2/sigma-dataset-v11/model.pt src/models/loh-ldist-l2/sigma-dataset-v11/model.pt
-COPY src/models/loh-ldist-l2/sigma-dataset-v11/config.p src/models/loh-ldist-l2/sigma-dataset-v11/config.p
-COPY src/models/loh-ldist-l2/sigma-dataset-v11/lookuptable.json src/models/loh-ldist-l2/sigma-dataset-v11/lookuptable.json
-COPY src/models/loh-ldist-l2/sigma-dataset-v11/settings.json src/models/loh-ldist-l2/sigma-dataset-v11/settings.json
+COPY src/models/loh/version_1/config.p src/models/loh/version_1/config.p
+COPY src/models/loh/version_1/lookuptable.json src/models/loh/version_1/lookuptable.json
+COPY src/models/loh/version_1/model.pt src/models/loh/version_1/model.pt
+COPY src/models/loh/version_1/settings.json src/models/loh/version_1/settings.json
 
 COPY starter.py .
 # Install pip requirements
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
-
 
 
 # Creates a non-root user with an explicit UID and adds permission to access the /app folder

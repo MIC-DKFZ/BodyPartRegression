@@ -6,7 +6,7 @@ from tqdm import tqdm
 import torch
 
 sys.path.append("../../")
-from src.settings.settings import *
+from scripts.settings.settings import *
 
 def grid_plot(X: np.ndarray, 
              titles: list = [], 
