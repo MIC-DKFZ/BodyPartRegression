@@ -147,7 +147,7 @@ class InferenceModel:
         slice_scores = self.parse_scores(slice_scores, pixel_spacing)
         data_storage = VolumeScoresData(slice_scores, self.lookuptable)
         if len(output_path) > 0: data_storage.save_json(output_path)
-        return output_path
+        return data_storage.json
 
 
     def nifti2json(self, nifti_path, output_path): 
@@ -165,11 +165,11 @@ class VolumeScoresData:
         self.unprocessed_slice_scores = list(scores.original_transformed_values.astype(np.float64))
         self.lookuptable = lookuptable
 
-        self.zspacing = scores.zspacing.astype(np.float64)
-        self.reverse_zordering = scores.reverse_zordering
-        self.valid_zspacing = scores.valid_zspacing
+        self.zspacing = float(scores.zspacing) # .astype(np.float64)
+        self.reverse_zordering = float(scores.reverse_zordering)
+        self.valid_zspacing = float(scores.valid_zspacing)
 
-        self.json = {"slice scores": self.cleaned_slice_scores, 
+        self.json = {"cleaned slice scores": self.cleaned_slice_scores, 
                      "z": self.z, 
                      "unprocessed slice scores": self.unprocessed_slice_scores, 
                      "look-up table": self.lookuptable, 

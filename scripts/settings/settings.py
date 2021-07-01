@@ -1,3 +1,5 @@
+import numpy as np 
+
 # define landmark names
 LANDMARK_NAMES = [
     "pelvis-start",
@@ -66,3 +68,11 @@ DF_DATA_SOURCE_PATH = "/home/AD/s429r/Documents/Data/DataSet/MetaData/meta-data-
 LANDMARK_PATH =  "/home/AD/s429r/Documents/Data/DataSet/MetaData/landmarks-meta-data-v2.xlsx"
 DATA_PATH = "/home/AD/s429r/Documents/Data/DataSet/Arrays-3.5mm-sigma-01/"
 
+BODY_PARTS = {
+    "legs": [np.nan, "pelvis_start"], 
+    "pelvis": ["pelvis_start", "pelvis_end"], 
+    "abdomen": ["pelvis_end", "Th12"], 
+    "chest": ["Th12", "Th2"], 
+    "shoulder-neck": ["Th2", "C4"], 
+    "head": ["C4", np.nan]
+}
