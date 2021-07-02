@@ -11,8 +11,7 @@ class BodyPartExamined:
         self.lookuptable = lookuptable
         self.landmarkDict = BODY_PARTS
         self.scoreDict = self.get_scoreDict()
-        
-        
+
     def get_scoreDict(self): 
         scoreDict = {}
         for key, items in self.landmarkDict.items(): 
@@ -42,7 +41,7 @@ class BodyPartExamined:
             indices = self.get_score_indices(scores, 
                                              min_score=boundary_scores[0], 
                                              max_score=boundary_scores[1])[0]
-            bodyPartDict[bodypart] = indices
+            bodyPartDict[bodypart] = list(indices.astype(np.float64))
 
         return bodyPartDict
     

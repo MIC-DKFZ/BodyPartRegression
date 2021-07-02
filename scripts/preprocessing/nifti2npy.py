@@ -280,7 +280,7 @@ def load_nifti_volume(filepath):
         x = img_nii.get_fdata(dtype=np.float32)
     except EOFError:
         print(f"Corrupted file {filepath}")
-        return None, None, None
+        return None, None
     pixel_spacings = np.array(list(img_nii.header.get_zooms()))
     affine = img_nii.affine[:3, :3]
 

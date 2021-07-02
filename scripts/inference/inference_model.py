@@ -11,6 +11,7 @@ from scripts.preprocessing.nifti2npy import Nifti2Npy
 from scripts.network_architecture.bpr_model import BodyPartRegression
 from scripts.score_processing.scores import Scores
 from scripts.score_processing.landmark_scores import get_max_keyof_lookuptable, get_min_keyof_lookuptable
+from scripts.score_processing.bodypartexamined import BodyPartExamined
 
 from dataclasses import dataclass 
 from tqdm import tqdm 
@@ -145,20 +146,20 @@ class InferenceModel:
     def npy2json(self, X, output_path, pixel_spacing): 
         slice_scores = self.predict_npy_array(X)
         slice_scores = self.parse_scores(slice_scores, pixel_spacing)
-        data_storage = VolumeScoresData(slice_scores, self.lookuptable)
+        data_storage = VolumeStorage(slice_scores, self.lookuptable)
         if len(output_path) > 0: data_storage.save_json(output_path)
         return data_storage.json
 
 
     def nifti2json(self, nifti_path, output_path): 
         slice_scores = self.predict_nifti(nifti_path)
-        data_storage = VolumeScoresData(slice_scores, self.lookuptable)
+        data_storage = VolumeStorage(slice_scores, self.lookuptable)
         if len(output_path) > 0: data_storage.save_json(output_path)
         return data_storage.json 
     
 
 @dataclass
-class VolumeScoresData: 
+class VolumeStorage: 
     def __init__(self, scores: Scores, lookuptable): 
         self.cleaned_slice_scores = list(scores.values.astype(np.float64))
         self.z = list(scores.z.astype(np.float64))
@@ -169,9 +170,12 @@ class VolumeScoresData:
         self.reverse_zordering = float(scores.reverse_zordering)
         self.valid_zspacing = float(scores.valid_zspacing)
 
+        self.bpe = BodyPartExamined(lookuptable)
+
         self.json = {"cleaned slice scores": self.cleaned_slice_scores, 
                      "z": self.z, 
-                     "unprocessed slice scores": self.unprocessed_slice_scores, 
+                     "unprocessed slice scores": self.unprocessed_slice_scores,
+                     "body part examined": self.bpe.get_examined_body_part(self.cleaned_slice_scores), 
                      "look-up table": self.lookuptable, 
                      "reverse z-ordering": self.reverse_zordering,
                      "valid z-spacing": self.valid_zspacing, 
