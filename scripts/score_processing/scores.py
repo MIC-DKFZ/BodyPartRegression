@@ -7,7 +7,7 @@ from scipy.ndimage import gaussian_filter
 sys.path.append("../../")
 from scripts.utils.linear_transformations import * 
 
-# TODO drop slicescoreprocessing
+
 # TODO add description to Score class 
 
 class Scores: 

@@ -41,3 +41,28 @@ class Visualization:
         plt.xlabel("Slice Scores", fontsize=fontsize)
         plt.ylabel("Density Frequency Distribution", fontsize=fontsize)
 
+
+
+def grid_plot(X: np.ndarray, 
+             titles: list = [], 
+             cols: int = 4, 
+             rows: int = 4, 
+             save_path: str = "", 
+             cmap: str = "gray", 
+             vmin: int = 0,
+             vmax: int = 250, 
+             figsize: tuple = (16,10)):
+    _, axs = plt.subplots(rows, cols, figsize=figsize)
+    idx = 0
+    for row in range(rows):
+        for col in range(cols):
+            axs[row, col].imshow(X[idx], cmap=cmap, vmin=vmin, vmax=vmax)
+            if len(titles) == cols * rows:
+                axs[row, col].set_title(titles[idx], fontsize=15)
+            axs[row, col].set_yticklabels([])
+            axs[row, col].set_xticklabels([])
+            idx += 1
+
+    if len(save_path) > 0:
+        plt.savefig(save_path)
+    plt.show()

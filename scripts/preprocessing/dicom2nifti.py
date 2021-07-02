@@ -3,11 +3,10 @@ import pandas as pd
 import pydicom
 import glob
 import SimpleITK as sitk
-from tqdm import tqdm
 
 class DicomHandler(): 
     
-    def __init__(slef): 
+    def __init__(self): 
         pass
     
     

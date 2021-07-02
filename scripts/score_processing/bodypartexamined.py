@@ -4,7 +4,7 @@ import numpy as np
 sys.path.append("../../")
 from scripts.settings.settings import *  
 
-# TODO Tests für Klasse schreiben 
+# TODO Write tests for class
 
 class BodyPartExamined: 
     def __init__(self, lookuptable): 
