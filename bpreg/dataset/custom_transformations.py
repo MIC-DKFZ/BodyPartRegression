@@ -4,7 +4,9 @@ import cv2
 
 
 class rescale_intensity(object):
-    def __init__(self, low, high, scale=255, dtype=np.uint8):
+    def __init__(
+        self, low: float, high: float, scale: float = 2, dtype: type = np.uint8
+    ):
         self.low = low
         self.high = high
         self.scale = scale
@@ -24,12 +26,12 @@ class rescale_intensity(object):
 class adjust_contrast(object):
     def __init__(
         self,
-        alpha_min=0,
-        alpha_max=1,
-        beta_min=1.5,
-        beta_max=3.5,
-        p_alpha=0.75,
-        p_beta=0.75,
+        alpha_min: float = 0,
+        alpha_max: float = 1,
+        beta_min: float = 1.5,
+        beta_max: float = 3.5,
+        p_alpha: float = 0.75,
+        p_beta: float = 0.75,
     ):
         self.alpha_min = alpha_min
         self.alpha_max = alpha_max
@@ -61,7 +63,12 @@ class adjust_contrast(object):
 
 class AddFrame:
     def __init__(
-        self, r_square=0.6, r_circle=0.75, dimension=128, p=0.2, fill_value=-1.0
+        self,
+        r_square: float = 0.6,
+        r_circle: float = 0.75,
+        dimension: int = 128,
+        p: float = 0.2,
+        fill_value: float = -1.0,
     ):
         self.p = p
         self.d = dimension
@@ -115,7 +122,14 @@ class AddFrame:
 
 
 class GaussNoise(object):
-    def __init__(self, std_min=0, std_max=5, min_value=0, max_value=255, p=0.5):
+    def __init__(
+        self,
+        std_min: float = 0,
+        std_max: float = 5,
+        min_value: float = -1,
+        max_value: float = 1,
+        p: float = 0.5,
+    ):
         self.std_min = std_min
         self.std_max = std_max
         self.min_value = min_value
@@ -133,7 +147,13 @@ class GaussNoise(object):
 
 
 class ShiftHU(object):
-    def __init__(self, shift_limit=2.55, max_value=255, min_value=0, p=0.5):
+    def __init__(
+        self,
+        shift_limit: float = 2.55,
+        max_value: float = 1,
+        min_value: float = -1,
+        p: float = 0.5,
+    ):
         self.limit = shift_limit
         self.p = p
         self.min_value = min_value
@@ -149,7 +169,13 @@ class ShiftHU(object):
 
 
 class ScaleHU:
-    def __init__(self, scale_delta=0.2, min_value=0, max_value=255, p=1):
+    def __init__(
+        self,
+        scale_delta: float = 0.2,
+        min_value: float = -1,
+        max_value: float = 1,
+        p: float = 1,
+    ):
         self.p = p
         self.scale_delta = scale_delta
         self.max_value = max_value
@@ -166,7 +192,9 @@ class ScaleHU:
 
 
 class RandomGamma:
-    def __init__(self, gamma_min, gamma_max, max_value=255, p=0.5):
+    def __init__(
+        self, gamma_min: float, gamma_max: float, max_value: float = 1, p: float = 0.5
+    ):
         self.gamma_min = gamma_min
         self.gamma_max = gamma_max
         self.max_value = max_value

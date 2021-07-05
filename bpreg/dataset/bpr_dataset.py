@@ -15,18 +15,16 @@ from bpreg.dataset.base_dataset import BaseDataset, swap_axis
 class BPRDataset(BaseDataset):
     def __init__(
         self,
-        data_path="",
-        filenames=[],
-        z_spacings=[],
-        landmark_path=None,
-        landmark_sheet_name=False,
-        num_slices=8,
-        equidistance_range=[2, 10],
-        delta_z_max=np.inf,
+        data_path: str = "",
+        filenames: list = [],
+        z_spacings: list = [],
+        landmark_path: str = "",
+        landmark_sheet_name: str = "",
+        num_slices: int = 8,
+        equidistance_range: list = [2, 10],
         custom_transform=False,
         albumentation_transform=False,
-        random_seed=0,
-        drop_landmarks=[],
+        random_seed: int = 0,
     ):
 
         BaseDataset.__init__(
@@ -38,11 +36,9 @@ class BPRDataset(BaseDataset):
             landmark_sheet_name,
             num_slices,
             equidistance_range,
-            delta_z_max,
             custom_transform,
             albumentation_transform,
             random_seed,
-            drop_landmarks,
         )
 
     def __getitem__(self, idx):

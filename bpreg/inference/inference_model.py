@@ -40,7 +40,7 @@ class InferenceModel:
         device (str, optional): [description]. "cuda" or "cpu"
     """
 
-    def __init__(self, base_dir, gpu=1):
+    def __init__(self, base_dir: str, gpu: int = 1):
 
         self.base_dir = base_dir
         self.device = "cpu"

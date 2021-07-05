@@ -12,18 +12,16 @@ cv2.setNumThreads(1)
 class BaseDataset(Dataset):
     def __init__(
         self,
-        data_path="",
-        filenames=[],
-        z_spacings=[],
-        landmark_path=None,
-        landmark_sheet_name=False,
-        num_slices=8,
-        equidistance_range=[2, 10],
-        delta_z_max=np.inf,
+        data_path: str = "",
+        filenames: list = [],
+        z_spacings: list = [],
+        landmark_path: str = None,
+        landmark_sheet_name: str = "",
+        num_slices: int = 8,
+        equidistance_range: list = [2, 10],
         custom_transform=False,
         albumentation_transform=False,
-        random_seed=0,
-        drop_landmarks=[],
+        random_seed: int = 0,
     ):
         self.data_path = data_path
         self.filenames = filenames

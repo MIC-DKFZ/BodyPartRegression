@@ -11,7 +11,7 @@ from bpreg.inference.inference_model import InferenceModel
 from bpreg.settings.settings import *
 
 
-def bpreg_for_directory(model_path, input_dirpath, output_dirpath):
+def bpreg_for_directory(model_path: str, input_dirpath: str, output_dirpath: str):
     model = InferenceModel(model_path)
     ifiles = [f for f in os.listdir(input_dirpath) if f.endswith((".nii.gz", ".nii"))]
     ofiles = [f.replace(".nii", "").replace(".gz", "") + ".json" for f in ifiles]
