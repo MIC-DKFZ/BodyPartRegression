@@ -8,15 +8,15 @@ class Visualization:
 
     def plot_landmarks(
         self,
-        score_matrix,
-        expected_scores,
-        landmark_names,
-        figsize=(16, 10),
-        fontsize=20,
-        text_margin_top=0.02,
-        text_margin_right=2,
-        alpha=0.7,
-        ylim=None,
+        score_matrix: np.array,
+        expected_scores: np.array,
+        landmark_names: list,
+        figsize: tuple = (16, 10),
+        fontsize: float = 20,
+        text_margin_top: float = 0.02,
+        text_margin_right: float = 2,
+        alpha: float = 0.7,
+        ylim: None = None,
     ):
         plt.figure(figsize=figsize)
         max_value = 0

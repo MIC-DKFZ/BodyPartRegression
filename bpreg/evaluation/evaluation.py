@@ -15,14 +15,14 @@ from bpreg.settings.settings import *
 class Evaluation(Visualization):
     def __init__(
         self,
-        base_filepath,
-        val_dataset=False,
-        df_data_source_path=DF_DATA_SOURCE_PATH,
-        landmark_path=LANDMARK_PATH,
-        data_path=DATA_PATH,
-        device="cuda",
-        landmark_start="pelvis_start",
-        landmark_end="eyes_end",
+        base_filepath: str,
+        val_dataset: None = False,
+        df_data_source_path: str = DF_DATA_SOURCE_PATH,
+        landmark_path: str = LANDMARK_PATH,
+        data_path: str = DATA_PATH,
+        device: str = "cuda",
+        landmark_start: str = "pelvis_start",
+        landmark_end: str = "eyes_end",
     ):
         Visualization.__init__(self)
         self.device = device

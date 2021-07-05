@@ -169,7 +169,7 @@ class InferenceModel:
 
 @dataclass
 class VolumeStorage:
-    def __init__(self, scores: Scores, lookuptable):
+    def __init__(self, scores: Scores, lookuptable: dict):
         self.cleaned_slice_scores = list(scores.values.astype(np.float64))
         self.z = list(scores.z.astype(np.float64))
         self.unprocessed_slice_scores = list(

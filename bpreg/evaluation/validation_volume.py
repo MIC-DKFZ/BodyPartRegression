@@ -1,3 +1,4 @@
+from bpreg.inference.inference_model import InferenceModel
 from scipy import interpolate
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,10 +7,19 @@ import sys
 sys.path.append("../../")
 from bpreg.score_processing.scores import Scores
 from bpreg.utils.linear_transformations import *
+from bpreg.inference.inference_model import InferenceModel
+from bpreg.dataset.base_dataset import BaseDataset
 
 
 class ValidationVolume:
-    def __init__(self, inference_model, val_dataset, idx, expected_scores, fontsize=18):
+    def __init__(
+        self,
+        inference_model: InferenceModel,
+        val_dataset: BaseDataset,
+        idx: int,
+        expected_scores: np.array,
+        fontsize: float = 18,
+    ):
         self.landmark_idx = idx
         self.data_idx = val_dataset.landmark_ids[idx]
 
