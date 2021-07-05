@@ -11,7 +11,7 @@ ENV PYTHONUNBUFFERED=1
 # Copy files 
 WORKDIR /app
 COPY requirements.txt .
-COPY scripts scripts/
+COPY bpreg bpreg/
 COPY src/models/loh/version_1/config.p src/models/loh/version_1/config.p
 COPY src/models/loh/version_1/lookuptable.json src/models/loh/version_1/lookuptable.json
 COPY src/models/loh/version_1/model.pt src/models/loh/version_1/model.pt
