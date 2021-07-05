@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
 
 sys.path.append("../../")
-from scripts.utils.linear_transformations import * 
+from bpreg.utils.linear_transformations import * 
 
 
 # TODO add description to Score class 

@@ -2,7 +2,7 @@ import sys, os
 import numpy as np 
 
 sys.path.append("../../")
-from scripts.settings.settings import *  
+from bpreg.settings.settings import *  
 
 # TODO Write tests for class
 

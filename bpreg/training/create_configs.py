@@ -11,7 +11,7 @@ cv2.setNumThreads(1)
 from torchvision import transforms
 
 sys.path.append("../../")
-from scripts.dataset.custom_transformations import *
+from bpreg.dataset.custom_transformations import *
 
 data_path = {"local": "/home/AD/s429r/Documents/Data/DataSet/", 
             "cluster": "/gpu/data/OE0441/s429r/"}

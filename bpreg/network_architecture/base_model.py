@@ -13,8 +13,8 @@ import torchvision.models as models
 cv2.setNumThreads(1)
 
 sys.path.append("../../")
-from scripts.evaluation.landmark_mse import LMSE
-from scripts.network_architecture.loss_functions import * 
+from bpreg.evaluation.landmark_mse import LMSE
+from bpreg.network_architecture.loss_functions import * 
 
 
 class BodyPartRegressionBase(pl.LightningModule):

@@ -4,8 +4,8 @@ import numpy as np
 import sys
 
 sys.path.append("../../")
-from scripts.score_processing.scores import Scores
-from scripts.utils.linear_transformations import * 
+from bpreg.score_processing.scores import Scores
+from bpreg.utils.linear_transformations import * 
 
 class ValidationVolume: 
     def __init__(self, inference_model, val_dataset, idx, expected_scores, fontsize=18): 

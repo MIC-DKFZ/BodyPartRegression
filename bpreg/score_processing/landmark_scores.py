@@ -5,11 +5,11 @@ import torch
 
 sys.path.append("../../")
 
-from scripts.dataset.base_dataset import get_slices
-from scripts.evaluation.landmark_mse import LMSE
-from scripts.evaluation.accuracy import Accuracy
-from scripts.utils.linear_transformations import * 
-from scripts.settings.settings import * 
+from bpreg.dataset.base_dataset import get_slices
+from bpreg.evaluation.landmark_mse import LMSE
+from bpreg.evaluation.accuracy import Accuracy
+from bpreg.utils.linear_transformations import * 
+from bpreg.settings.settings import * 
 
 import json 
 

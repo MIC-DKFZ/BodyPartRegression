@@ -8,7 +8,7 @@ from torch.utils.data import Dataset
 cv2.setNumThreads(1)
 
 sys.path.append("../../")
-from scripts.dataset.base_dataset import BaseDataset, swap_axis
+from bpreg.dataset.base_dataset import BaseDataset, swap_axis
 
 class BPRDataset(BaseDataset):
 
