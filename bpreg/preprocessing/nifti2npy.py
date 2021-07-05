@@ -24,10 +24,11 @@ class Nifti2Npy:
         skip_slices (int, optional): Skip conversion, if number of slices is less then skip_slices. Defaults to 30.
         corrupted_files (list[str], optional): skip files in this list. Defaults to [].
         reverse_zaxis (list[str], optional): flip z-axis for files in this list. Defaults to [].
-        sigma (tuple[float], optional): variance for gaussian blurring (before downsampling), 
+        sigma (tuple[float], optional): variance for gaussian blurring (before downsampling),
         if downsampling factor is equal to the reference_downsampling_factor. Defaults to (0.8, 0.8, 0).
         reference_downscaling_factor (float, optional): reference downsampling factor for sigma. Defaults to 0.25.
     """
+
     def __init__(
         self,
         target_pixel_spacing: float = 3.5,
@@ -41,8 +42,8 @@ class Nifti2Npy:
         reverse_zaxis: list = [],
         sigma: tuple = (0.8, 0.8, 0),
         reference_downscaling_factor: float = 0.25,
-        rescale_max=1.0, 
-        rescale_min=-1.0, 
+        rescale_max=1.0,
+        rescale_min=-1.0,
     ):
         self.ipath = ipath
         self.opath = opath
@@ -50,22 +51,26 @@ class Nifti2Npy:
         self.min_hu = min_hu
         self.max_hu = max_hu
         self.size = size
-    
+
         self.center_crop = A.CenterCrop(p=1, height=size, width=size)
         self.corrputed_files = corrupted_files
         self.reverse_zaxis = reverse_zaxis
         self.skip_slices = skip_slices
         self.rescale_max = rescale_max
-        self.rescale_min = rescale_min 
+        self.rescale_min = rescale_min
 
         self.sigma = sigma
         self.reference_downscaling_factor = reference_downscaling_factor
 
     def padding(self, x):
-        pad_width = (((self.size-x.shape[0])//2, (self.size-x.shape[0]+1)//2), 
-                     ((self.size-x.shape[1])//2, (self.size-x.shape[1]+1)//2), 
-                     (0, 0))
-        x_pad = np.pad(x,pad_width=pad_width, mode="constant", constant_values=self.rescale_min)
+        pad_width = (
+            ((self.size - x.shape[0]) // 2, (self.size - x.shape[0] + 1) // 2),
+            ((self.size - x.shape[1]) // 2, (self.size - x.shape[1] + 1) // 2),
+            (0, 0),
+        )
+        x_pad = np.pad(
+            x, pad_width=pad_width, mode="constant", constant_values=self.rescale_min
+        )
 
         return x_pad
 
@@ -156,7 +161,10 @@ class Nifti2Npy:
         x = np.where(x > self.max_hu, self.max_hu, x)
         x = np.where(x < self.min_hu, self.min_hu, x)
         x = x - self.min_hu
-        x = x * (self.rescale_max - self.rescale_min)/ (self.max_hu - self.min_hu) + self.rescale_min 
+        x = (
+            x * (self.rescale_max - self.rescale_min) / (self.max_hu - self.min_hu)
+            + self.rescale_min
+        )
         return x
 
     def resize_xy(self, x, pixel_spacings):
@@ -216,12 +224,14 @@ class Nifti2Npy:
         pixel_spacings = np.array(list(img_nii.header.get_zooms()))
         affine = img_nii.affine[:3, :3]
 
-        x, pixel_spacings = self.reorder_volume(x, pixel_spacings, affine, filepath.split("/")[-1])
+        x, pixel_spacings = self.reorder_volume(
+            x, pixel_spacings, affine, filepath.split("/")[-1]
+        )
 
         return x, pixel_spacings
 
     def preprocess_nifti(self, filepath):
-        x, pixel_spacings= self.load_volume(filepath)
+        x, pixel_spacings = self.load_volume(filepath)
         x = self.rescale_xy(x)
         x = self.resize_volume(x, pixel_spacings)
         return x, pixel_spacings
