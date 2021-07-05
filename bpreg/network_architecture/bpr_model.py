@@ -22,14 +22,14 @@ from bpreg.network_architecture.base_model import BodyPartRegressionBase
 class BodyPartRegression(BodyPartRegressionBase):
     def __init__(
         self,
-        lr=1e-4,
-        lambda_=0,
-        alpha=0,
-        pretrained=False,
-        delta_z_max=np.inf,
-        loss_order="h",
-        beta_h=0.025,
-        alpha_h=0.5,
+        lr: float=1e-4,
+        lambda_: float=0,
+        alpha: float=0,
+        pretrained: bool=False,
+        delta_z_max: float=np.inf, 
+        loss_order: str="h",
+        beta_h: float=0.025,
+        alpha_h: float=0.5,
         base_model="vgg",  # TODO löschen
         weight_decay=0,
     ):
