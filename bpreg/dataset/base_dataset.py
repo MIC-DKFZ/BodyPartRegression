@@ -8,7 +8,6 @@ from torch.utils.data import Dataset
 cv2.setNumThreads(1)
 
 class BaseDataset(Dataset):
-
     def __init__(self, 
                  data_path="", 
                  filenames=[],
@@ -22,7 +21,6 @@ class BaseDataset(Dataset):
                  albumentation_transform=False, 
                  random_seed=0,
                  drop_landmarks=[]):
-        
         self.data_path = data_path
         self.filenames = filenames
         self.filepaths = [data_path + f for f in filenames]
@@ -55,12 +53,10 @@ class BaseDataset(Dataset):
         
         # Use identity function, if no transformation is defined 
         else: self.albumentation_transform =  A.Compose([A.Transpose(p=0)])
-            
-
+        
         
     def __len__(self):
         return self.length
-
 
 
     def get_full_volume(self, idx: int): 
@@ -68,12 +64,14 @@ class BaseDataset(Dataset):
         volume = np.load(filepath)
         return swap_axis(volume)
 
+
     def get_landmark_idx(self, idx: int): 
         filename = self.filenames[idx]
         idx =np.where(filename == np.array(self.landmark_files))[0]
         if len(idx) == 1: 
             return idx[0]
         return np.nan
+
 
     def get_landmark_slices(self): 
         landmark_slices_per_volume =  []
@@ -97,17 +95,21 @@ class BaseDataset(Dataset):
 
         return landmark_slices_per_volume, defined_landmarks_per_volume
 
+
 def get_full_volume_from_filepath(filepath:str): 
     volume = np.load(filepath)
     return swap_axis(volume)
+
 
 def get_slices(filepath, indices): 
     volume = np.load(filepath, mmap_mode='r')
     x = volume[:, :, indices]
     return swap_axis(x)
 
+
 def swap_axis(x): 
     return x.swapaxes(2, 1).swapaxes(1, 0)
+
 
 def filename_to_id(filename, filename_array): 
     ids = np.where(filename == filename_array)[0]
