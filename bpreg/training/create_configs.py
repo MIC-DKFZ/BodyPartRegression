@@ -242,12 +242,13 @@ if __name__ == "__main__":
                    9: {'alpha_h': 1, 'beta_h': 0.008, 'name': 'loh-1a-0.008b-m4.p', 'model_name':'loh-experiment'},
                    10: {'alpha_h': 1, 'beta_h': 0.007, 'name': 'loh-1a-0.007b-m4.p', 'model_name':'loh-experiment'}}
     """ 
-    mode = "cluster"
-    experiments = {0: {"model_name": "public-model",
-                       "name": "public-model-v1.p", 
-                       "df_data_source_path": data_path[mode] + "MetaData/meta-data-publish-model.xlsx", 
-                       "data_path":  data_path[mode] + "Arrays-3.5mm-sigma-01/",
-                       "landmark_path": data_path[mode] + "MetaData/landmarks-publish-model.xlsx"}}
+    mode = "local"
+    #experiments = {0: {"model_name": "standard",
+    #                   "name": "standard.p", 
+    #                   "df_data_source_path": data_path[mode] + "MetaData/meta-data-publish-model.xlsx", 
+    #                   "data_path":  data_path[mode] + "Arrays-3.5mm-sigma-01/",
+    #                   "landmark_path": data_path[mode] + "MetaData/landmarks-publish-model.xlsx"}}
+    experiments = {0: {"model_name": "standard", "name": "standard.p"}}
     for idx, data in experiments.items(): 
         config = get_basic_config(mode=mode)
         print("Idx: ", idx)
