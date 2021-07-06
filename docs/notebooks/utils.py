@@ -6,8 +6,8 @@ import pickle
 from tqdm import tqdm
 
 sys.path.append("../../")
-from bpreg.preprocessing.nifti2npy import Nifti2Npy
-from bpreg.training.create_configs import get_basic_config
+from scripts.preprocessing.nifti2npy import Nifti2Npy
+from scripts.training.create_configs import get_basic_config
 
 
 def dicom2nifti(ifilepath, ofilepath):
