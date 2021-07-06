@@ -1,3 +1,18 @@
+"""
+Copyright 2020 Division of Medical Image Computing, German Cancer Research Center (DKFZ), Heidelberg, Germany
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+   
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+
 import numpy as np
 import os, sys
 import torch
@@ -6,7 +21,6 @@ import argparse
 
 sys.path.append("../../")
 
-# from bpreg.score_processing.bodypartexamined import BodyPartExamined
 from bpreg.preprocessing.nifti2npy import Nifti2Npy
 from bpreg.network_architecture.bpr_model import BodyPartRegression
 from bpreg.score_processing.scores import Scores
@@ -20,7 +34,6 @@ from dataclasses import dataclass
 from tqdm import tqdm
 
 
-# TODO BodyPartExamined hinzufügen
 # TODO predict_tensor sonst überall rausnehmen
 # TODO predict_npy_array rausnehmen aus base_model
 # TODO create Tests to test load_model and InferenceModel
