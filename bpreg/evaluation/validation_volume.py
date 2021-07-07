@@ -13,17 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from scripts.inference.inference_model import InferenceModel
+from bpreg.inference.inference_model import InferenceModel
 from scipy import interpolate
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
 
 sys.path.append("../../")
-from scripts.score_processing.scores import Scores
-from scripts.utils.linear_transformations import *
-from scripts.inference.inference_model import InferenceModel
-from scripts.dataset.base_dataset import BaseDataset
+from bpreg.score_processing.scores import Scores
+from bpreg.utils.linear_transformations import *
+from bpreg.inference.inference_model import InferenceModel
+from bpreg.dataset.base_dataset import BaseDataset
 
 
 class ValidationVolume:

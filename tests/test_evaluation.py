@@ -2,8 +2,8 @@ import numpy as np
 import sys
 
 sys.path.append("../")
-from scripts.evaluation.accuracy import Accuracy
-from scripts.evaluation.landmark_mse import LMSE
+from bpreg.evaluation.accuracy import Accuracy
+from bpreg.evaluation.landmark_mse import LMSE
 
 
 def test_landmark_mse():

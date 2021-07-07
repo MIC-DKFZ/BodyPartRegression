@@ -19,12 +19,12 @@ import matplotlib.pyplot as plt
 import torch
 
 sys.path.append("../../")
-from scripts.utils.training_utils import get_dataframe, get_datasets
-from scripts.evaluation.landmark_mse import LMSE
-from scripts.evaluation.visualization import Visualization
-from scripts.inference.inference_model import InferenceModel
-from scripts.score_processing.landmark_scores import LandmarkScoreBundle, LandmarkScores
-from scripts.settings.settings import *
+from bpreg.utils.training_utils import get_dataframe, get_datasets
+from bpreg.evaluation.landmark_mse import LMSE
+from bpreg.evaluation.visualization import Visualization
+from bpreg.inference.inference_model import InferenceModel
+from bpreg.score_processing.landmark_scores import LandmarkScoreBundle, LandmarkScores
+from bpreg.settings.settings import *
 
 
 class Evaluation(Visualization):

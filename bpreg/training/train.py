@@ -36,12 +36,12 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 
 
 sys.path.append("../../")
-from scripts.network_architecture.bpr_model import BodyPartRegression
-from scripts.network_architecture.ssbr_model import SSBR
-from scripts.dataset.bpr_dataset import BPRDataset
-from scripts.dataset.ssbr_dataset import SSBRDataset
-from scripts.score_processing.landmark_scores import LandmarkScores
-from scripts.utils.training_utils import *
+from bpreg.network_architecture.bpr_model import BodyPartRegression
+from bpreg.network_architecture.ssbr_model import SSBR
+from bpreg.dataset.bpr_dataset import BPRDataset
+from bpreg.dataset.ssbr_dataset import SSBRDataset
+from bpreg.score_processing.landmark_scores import LandmarkScores
+from bpreg.utils.training_utils import *
 
 np.seterr(divide="ignore", invalid="ignore")  # TODO
 

@@ -21,14 +21,14 @@ import argparse
 
 sys.path.append("../../")
 
-from scripts.preprocessing.nifti2npy import Nifti2Npy
-from scripts.network_architecture.bpr_model import BodyPartRegression
-from scripts.score_processing.scores import Scores
-from scripts.score_processing.landmark_scores import (
+from bpreg.preprocessing.nifti2npy import Nifti2Npy
+from bpreg.network_architecture.bpr_model import BodyPartRegression
+from bpreg.score_processing.scores import Scores
+from bpreg.score_processing.landmark_scores import (
     get_max_keyof_lookuptable,
     get_min_keyof_lookuptable,
 )
-from scripts.score_processing.bodypartexamined import BodyPartExamined
+from bpreg.score_processing.bodypartexamined import BodyPartExamined
 
 from dataclasses import dataclass
 from tqdm import tqdm
