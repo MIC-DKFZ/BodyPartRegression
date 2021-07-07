@@ -51,7 +51,7 @@ class ModelSettings:
     save_model: bool = True
     base_model: str = "vgg"
     transform_params: dict = field(default_factory=lambda: TRANSFORM_STANDARD_PARAMS)
-    name: str = "standard-config.p"
+    name: str = "default.p"
     model_name: str = "standard"
     model: str = ""
 

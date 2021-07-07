@@ -24,90 +24,12 @@ from scripts.network_architecture.bpr_model import BodyPartRegression
 from scripts.dataset.bpr_dataset import BPRDataset
 from scripts.dataset.ssbr_dataset import SSBRDataset
 from scripts.score_processing.landmark_scores import LandmarkScores
-
+from scripts.settings.model_settings import ModelSettings
 # np.seterr(divide="ignore", invalid="ignore") 
 cv2.setNumThreads(1)
 
-
-def get_dataframe(config: dict):
-    """Get dataframe, which includes all information about train/val/test split 
-    and z-spacings
-
-    Args:
-        config (dict): dictionary contains all information to train a model 
-
-    Returns:
-        df: dataframe with train/val/test information + z-spacing information
-    """
-    df = pd.read_excel(config["df_data_source_path"], engine="openpyxl")
-
-    # only use volumes with more than 30 slices
-    df = df[(df["z"] >= 30)]
-    return df
-
-
-def get_datasets(config: dict, df: pd.DataFrame):
-    """Obtain train, val and test datasets for training
-
-    Args:
-        config (dict): configs for training
-        df (pd.DataFrame): dataframe contains information to train/val/test split + z-spcaings
-
-    Returns:
-        train, val and test dataset
-    """
-    train_filenames = df.loc[df.train_data == 1, "filename"].values
-    val_filenames = df.loc[df.val_data == 1, "filename"].values
-    test_filenames = df.loc[df.test_data == 1, "filename"].values
-
-    train_zspacings = df.loc[df.train_data == 1, "pixel_spacingz"].values
-    val_zspacings = df.loc[df.val_data == 1, "pixel_spacingz"].values
-    test_zspacings = df.loc[df.test_data == 1, "pixel_spacingz"].values
-
-    train_dataset = BPRDataset(
-        data_path=config["data_path"],
-        filenames=train_filenames,
-        z_spacings=train_zspacings,
-        landmark_path=config["landmark_path"],
-        landmark_sheet_name="landmarks-train",  # TODO -without-merge
-        random_seed=config["random_seed"],
-        custom_transform=config["custom_transform"],
-        albumentation_transform=config["albumentation_transform"],
-        equidistance_range=config["equidistance_range"],
-        num_slices=config["num_slices"],
-    )
-
-    val_dataset = BPRDataset(
-        data_path=config["data_path"],
-        filenames=val_filenames,
-        z_spacings=val_zspacings,
-        landmark_path=config["landmark_path"],
-        landmark_sheet_name="landmarks-val",
-        random_seed=config["random_seed"],
-        custom_transform=config["custom_transform"],
-        albumentation_transform=config["albumentation_transform"],
-        equidistance_range=config["equidistance_range"],
-        num_slices=config["num_slices"],
-    )
-
-    test_dataset = BPRDataset(
-        data_path=config["data_path"],
-        filenames=test_filenames,
-        z_spacings=test_zspacings,
-        landmark_path=config["landmark_path"],
-        landmark_sheet_name="landmarks-test",
-        random_seed=config["random_seed"],
-        custom_transform=config["custom_transform"],
-        albumentation_transform=config["albumentation_transform"],
-        equidistance_range=config["equidistance_range"],
-        num_slices=config["num_slices"],
-    )
-
-    return train_dataset, val_dataset, test_dataset
-
-
 def run_fast_dev(
-    config: dict,
+    config: ModelSettings,
     train_dataloader: torch.utils.data.DataLoader,
     val_dataloader: torch.utils.data.DataLoader,
 ):
@@ -119,31 +41,29 @@ def run_fast_dev(
         val_dataloader (torch.utils.data.DataLoader): val dataloader
     """
     model = BodyPartRegression(
-        alpha=config["alpha"],
-        lr=config["lr"],
-        lambda_=config["lambda"],
-        alpha_h=config["alpha_h"],
-        beta_h=config["beta_h"],
-        base_model=config["base_model"],
-        loss_order=config["loss_order"],
+        alpha=config.alpha,
+        lr=config.lr,
+        lambda_=config.lambda_,
+        alpha_h=config.alpha_h,
+        beta_h=config.beta_h,
+        base_model=config.base_model,
+        loss_order=config.loss_order,
     )
     trainer_dev = pl.Trainer(gpus=1, fast_dev_run=True, precision=16)
     trainer_dev.fit(model, train_dataloader, val_dataloader)
 
 
-def save_model(model, config, path):
+def save_model(model, config: ModelSettings, path):
     print("save model at: ", path)
+    config.save(save_path=path + "config.json")
 
-    with open(path + "config.p", "wb") as f:
-        pickle.dump(config, f)
-
-    if config["save_model"]:
+    if config.save_model:
         torch.save(model.state_dict(), path + "model.pt")
 
     # save lookuptable
-    df_landmarks = pd.read_excel(config["landmark_path"], sheet_name="landmarks-train")
+    df_landmarks = pd.read_excel(config.landmark_path, sheet_name="landmarks-train")
     lscores = LandmarkScores(
-        config["data_path"],
+        config.data_path,
         df_landmarks,
         model,
         landmark_start=np.nan,
@@ -152,7 +72,7 @@ def save_model(model, config, path):
     lscores.save_lookuptable(filepath=path + "lookuptable.json")
 
 
-def data_preprocessing_ssbr(df: pd.DataFrame, config: dict):
+def data_preprocessing_ssbr(df: pd.DataFrame, config: ModelSettings):
     """Obtain datasets for ssbr model
 
     Args:
@@ -171,59 +91,134 @@ def data_preprocessing_ssbr(df: pd.DataFrame, config: dict):
     test_zspacings = df.loc[df.test_data == 1, "pixel_spacingz"].values
 
     train_dataset = SSBRDataset(
-        data_path=config["data_path"],
+        data_path=config.data_path,
         filenames=train_filenames,
         z_spacings=train_zspacings,
-        landmark_path=config["landmark_path"],
+        landmark_path=config.landmark_path,
         landmark_sheet_name="landmarks-train",  # TODO -without-merge
-        random_seed=config["random_seed"],
-        custom_transform=config["custom_transform"],
-        albumentation_transform=config["albumentation_transform"],
-        equidistance_range=config["equidistance_range"],
-        num_slices=config["num_slices"],
+        random_seed=config.random_seed,
+        custom_transform=config.custom_transform,
+        albumentation_transform=config.albumentation_transform,
+        equidistance_range=config.equidistance_range,
+        num_slices=config.num_slices,
     )
 
     val_dataset = SSBRDataset(
-        data_path=config["data_path"],
+        data_path=config.data_path,
         filenames=val_filenames,
         z_spacings=val_zspacings,
-        landmark_path=config["landmark_path"],
+        landmark_path=config.landmark_path,
         landmark_sheet_name="landmarks-val",
-        random_seed=config["random_seed"],
-        custom_transform=config["custom_transform"],
-        albumentation_transform=config["albumentation_transform"],
-        equidistance_range=config["equidistance_range"],
-        num_slices=config["num_slices"],
+        random_seed=config.random_seed,
+        custom_transform=config.custom_transform,
+        albumentation_transform=config.albumentation_transform,
+        equidistance_range=config.equidistance_range,
+        num_slices=config.num_slices,
     )
 
     test_dataset = SSBRDataset(
-        data_path=config["data_path"],
+        data_path=config.data_path,
         filenames=test_filenames,
         z_spacings=test_zspacings,
-        landmark_path=config["landmark_path"],
+        landmark_path=config.landmark_path,
         landmark_sheet_name="landmarks-test",
-        random_seed=config["random_seed"],
-        custom_transform=config["custom_transform"],
-        albumentation_transform=config["albumentation_transform"],
-        equidistance_range=config["equidistance_range"],
-        num_slices=config["num_slices"],
+        random_seed=config.random_seed,
+        custom_transform=config.custom_transform,
+        albumentation_transform=config.albumentation_transform,
+        equidistance_range=config.equidistance_range,
+        num_slices=config.num_slices,
     )
 
     train_dataloader = torch.utils.data.DataLoader(
         train_dataset,
-        batch_size=config["batch_size"],
+        batch_size=config.batch_size,
         num_workers=20,
-        shuffle=config["shuffle_train_dataloader"],
+        shuffle=config.shuffle_train_dataloader,
     )
 
     val_dataloader = torch.utils.data.DataLoader(
-        val_dataset, batch_size=config["batch_size"], num_workers=20
+        val_dataset, batch_size=config.batch_size, num_workers=20
     )
 
     test_dataloader = torch.utils.data.DataLoader(
-        test_dataset, batch_size=config["batch_size"], num_workers=20
+        test_dataset, batch_size=config.batch_size, num_workers=20
     )
 
     return train_dataloader, val_dataloader, test_dataloader
 
 
+def get_dataframe(config: ModelSettings):
+    """Get dataframe, which includes all information about train/val/test split
+    and z-spacings
+
+    Args:
+        config (dict): dictionary contains all information to train a model
+
+    Returns:
+        df: dataframe with train/val/test information + z-spacing information
+    """
+    df = pd.read_excel(config.df_data_source_path, engine="openpyxl")
+
+    # only use volumes with more than 30 slices
+    df = df[(df["z"] >= 30)]
+    return df
+
+
+def get_datasets(config: ModelSettings, df: pd.DataFrame):
+    """Obtain train, val and test datasets for training
+
+    Args:
+        config (dict): configs for training
+        df (pd.DataFrame): dataframe contains information to train/val/test split + z-spcaings
+
+    Returns:
+        train, val and test dataset
+    """
+    train_filenames = df.loc[df.train_data == 1, "filename"].values
+    val_filenames = df.loc[df.val_data == 1, "filename"].values
+    test_filenames = df.loc[df.test_data == 1, "filename"].values
+
+    train_zspacings = df.loc[df.train_data == 1, "pixel_spacingz"].values
+    val_zspacings = df.loc[df.val_data == 1, "pixel_spacingz"].values
+    test_zspacings = df.loc[df.test_data == 1, "pixel_spacingz"].values
+
+    train_dataset = BPRDataset(
+        data_path=config.data_path,
+        filenames=train_filenames,
+        z_spacings=train_zspacings,
+        landmark_path=config.landmark_path,
+        landmark_sheet_name="landmarks-train",  # TODO -without-merge
+        random_seed=config.random_seed,
+        custom_transform=config.custom_transform,
+        albumentation_transform=config.albumentation_transform,
+        equidistance_range=config.equidistance_range,
+        num_slices=config.num_slices,
+    )
+
+    val_dataset = BPRDataset(
+        data_path=config.data_path,
+        filenames=val_filenames,
+        z_spacings=val_zspacings,
+        landmark_path=config.landmark_path,
+        landmark_sheet_name="landmarks-val",
+        random_seed=config.random_seed,
+        custom_transform=config.custom_transform,
+        albumentation_transform=config.albumentation_transform,
+        equidistance_range=config.equidistance_range,
+        num_slices=config.num_slices,
+    )
+
+    test_dataset = BPRDataset(
+        data_path=config.data_path,
+        filenames=test_filenames,
+        z_spacings=test_zspacings,
+        landmark_path=config.landmark_path,
+        landmark_sheet_name="landmarks-test",
+        random_seed=config.random_seed,
+        custom_transform=config.custom_transform,
+        albumentation_transform=config.albumentation_transform,
+        equidistance_range=config.equidistance_range,
+        num_slices=config.num_slices,
+    )
+
+    return train_dataset, val_dataset, test_dataset

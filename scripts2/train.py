@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import random, pickle, datetime, os, sys, cv2
+import random, pickle, datetime, os, sys, cv2, json
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -30,97 +30,72 @@ import torchvision.models as models
 import pytorch_lightning as pl
 from pytorch_lightning import seed_everything
 from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.callbacks import ModelCheckpoint
 
 
 sys.path.append("../")
 from scripts.network_architecture.bpr_model import BodyPartRegression
 from scripts.network_architecture.ssbr_model import SSBR
-from scripts.dataset.bpr_dataset import BPRDataset
-from scripts.dataset.ssbr_dataset import SSBRDataset
-from scripts.score_processing.landmark_scores import LandmarkScores
 from scripts.utils.training_utils import *
+from scripts.settings.model_settings import ModelSettings
 
 np.seterr(divide="ignore", invalid="ignore")  # TODO
 
 
-def train_config(config: dict):
-    """Train model based on config dictionary
-
-    Args:
-        config (dict): dictionary which includes all information to train a model
-    """
-    # print configurations
-    seed_everything(config["random_seed"])
-    print(config["custom_transform"])
-    print(config["albumentation_transform"])
-
-    print("CONFIGURATION")
-    print("*******************************************************\n")
-    for key, item in config.items():
-        if key.startswith(("custom_transform", "albumentation_transform")):
-            continue
-        print(f"{key:<30}\t{item}")
+def train_json(json_path: str):
+    config = ModelSettings()
+    config.load(json_path)
+    print(config)
+    seed_everything(config.random_seed)
 
     # load data
     df = get_dataframe(config)
 
-    if "model" in config.keys() and config["model"] == "SSBR":
-        train_dataloader, val_dataloader, test_dataloader = data_preprocessing_ssbr(
-            df, config
-        )
-        model = SSBR(alpha=config["alpha"], lr=config["lr"])
+    if config.model == "SSBR":
+        train_dataloader, val_dataloader, _ = data_preprocessing_ssbr(df, config)
+        model = SSBR(alpha=config.alpha, lr=config.lr)
 
     else:
-        train_dataset, val_dataset, test_dataset = get_datasets(config, df)
+        train_dataset, val_dataset, _ = get_datasets(config, df)
         train_dataloader = torch.utils.data.DataLoader(
             train_dataset,
-            batch_size=config["batch_size"],
+            batch_size=config.batch_size,  # TODO !
             num_workers=22,
-            shuffle=config["shuffle_train_dataloader"],
+            shuffle=config.shuffle_train_dataloader,
         )
 
         val_dataloader = torch.utils.data.DataLoader(
-            val_dataset, batch_size=config["batch_size"], num_workers=22
-        )
-
-        test_dataloader = torch.utils.data.DataLoader(
-            test_dataset, batch_size=config["batch_size"], num_workers=22
+            val_dataset, batch_size=config.batch_size, num_workers=22
         )
 
         # run model
         run_fast_dev(config, train_dataloader, val_dataloader)
 
         model = BodyPartRegression(
-            alpha=config["alpha"],
-            lr=config["lr"],
-            lambda_=config["lambda"],
-            alpha_h=config["alpha_h"],
-            beta_h=config["beta_h"],
-            base_model=config["base_model"],
-            loss_order=config["loss_order"],
+            alpha=config.alpha,
+            lr=config.lr,
+            lambda_=config.lambda_,
+            alpha_h=config.alpha_h,
+            beta_h=config.beta_h,
+            base_model=config.base_model,
+            loss_order=config.loss_order,
         )
 
-    logger_uar = TensorBoardLogger(
-        save_dir=config["save_dir"], name=config["model_name"]
-    )
+    logger_uar = TensorBoardLogger(save_dir=config.save_dir, name=config.model_name)
     trainer = pl.Trainer(
         gpus=1,
-        max_epochs=config["epochs"],
+        max_epochs=config.epochs,
         precision=16,
         logger=logger_uar,
-        deterministic=config["deterministic"],
+        deterministic=config.deterministic,
         # val_check_interval=0.25, log_every_n_steps=25,
-        accumulate_grad_batches=int(
-            config["effective_batch_size"] / config["batch_size"]
-        ),
+        accumulate_grad_batches=int(config.effective_batch_size / config.batch_size),
     )
 
     trainer.fit(model, train_dataloader, val_dataloader)
     save_model(model, config, path=logger_uar.log_dir + "/")
 
 
-def train_config_list(config_filepaths: list):
+def train_json_list(config_filepaths: list):
     """Train for each config in config_filepaths a model.
 
     Args:
@@ -129,11 +104,7 @@ def train_config_list(config_filepaths: list):
 
     # run code for different configurations
     for filepath in config_filepaths:
-
-        with open(filepath, "rb") as f:
-            config = pickle.load(f)
-
-        train_config(config)
+        train_json(filepath)
 
 
 if __name__ == "__main__":
@@ -142,7 +113,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--list", nargs="+", default=[])
     parser.add_argument(
-        "--path", default="/home/AD/s429r/Documents/Code/s429r/trainings/configs/test/"
+        "--path",
+        default="/home/AD/s429r/Documents/Code/s429r/trainings/configs/local/standard/",
     )
 
     value = parser.parse_args()
@@ -152,8 +124,8 @@ if __name__ == "__main__":
     # if no filenames are defined use all files from path
     if len(config_filenames) == 0:
         config_filenames = [
-            f for f in np.sort(os.listdir(config_filepath)) if f.endswith(".p")
+            f for f in np.sort(os.listdir(config_filepath)) if f.endswith(".json")
         ]
 
     config_filepaths = [config_filepath + file for file in config_filenames]
-    train_config_list(config_filepaths)
+    train_json_list(config_filepaths)
