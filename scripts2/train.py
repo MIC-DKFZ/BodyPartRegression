@@ -39,19 +39,21 @@ from scripts.network_architecture.ssbr_model import SSBR
 from scripts.dataset.bpr_dataset import BPRDataset
 from scripts.dataset.ssbr_dataset import SSBRDataset
 from scripts.score_processing.landmark_scores import LandmarkScores
-from scripts.utils.training_utils import * 
+from scripts.utils.training_utils import *
 
 np.seterr(divide="ignore", invalid="ignore")  # TODO
 
 
 def train_config(config: dict):
-    """Train model based on config dictionary 
+    """Train model based on config dictionary
 
     Args:
-        config (dict): dictionary which includes all information to train a model 
+        config (dict): dictionary which includes all information to train a model
     """
     # print configurations
     seed_everything(config["random_seed"])
+    print(config["custom_transform"])
+    print(config["albumentation_transform"])
 
     print("CONFIGURATION")
     print("*******************************************************\n")
@@ -119,10 +121,10 @@ def train_config(config: dict):
 
 
 def train_config_list(config_filepaths: list):
-    """Train for each config in config_filepaths a model. 
+    """Train for each config in config_filepaths a model.
 
     Args:
-        config_filepaths (list): list of paths to config-files 
+        config_filepaths (list): list of paths to config-files
     """
 
     # run code for different configurations
@@ -132,7 +134,6 @@ def train_config_list(config_filepaths: list):
             config = pickle.load(f)
 
         train_config(config)
-
 
 
 if __name__ == "__main__":
@@ -150,7 +151,9 @@ if __name__ == "__main__":
 
     # if no filenames are defined use all files from path
     if len(config_filenames) == 0:
-        config_filenames = np.sort(os.listdir(config_filepath))
+        config_filenames = [
+            f for f in np.sort(os.listdir(config_filepath)) if f.endswith(".p")
+        ]
 
     config_filepaths = [config_filepath + file for file in config_filenames]
     train_config_list(config_filepaths)

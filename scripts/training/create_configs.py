@@ -21,6 +21,7 @@ import cv2
 
 cv2.setNumThreads(1)
 
+sys.path.append("../../")
 from torchvision import transforms
 from scripts.dataset.custom_transformations import *
 

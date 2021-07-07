@@ -86,7 +86,7 @@ class AddFrame:
         fill_value: float = -1.0,
     ):
         self.p = p
-        self.d = dimension
+        self.dimension = dimension
         self.r_square = r_square
         self.r_circle = r_circle
         self.fill_value = fill_value
@@ -94,24 +94,24 @@ class AddFrame:
         self.circle_frame = self.get_circle_frame()
 
     def get_square_frame(self):
-        irange = int(self.d * self.r_square + 0.5)
+        irange = int(self.dimension * self.r_square + 0.5)
         if irange % 2 == 0:
             irange += 1
 
-        X = np.full((self.d, self.d), np.nan)
+        X = np.full((self.dimension, self.dimension), np.nan)
         X_inside = np.full((irange, irange), 0)
         X[
-            self.d // 2 - irange // 2 : self.d // 2 + irange // 2 + 1,
-            self.d // 2 - irange // 2 : self.d // 2 + irange // 2 + 1,
+            self.dimension // 2 - irange // 2 : self.dimension // 2 + irange // 2 + 1,
+            self.dimension // 2 - irange // 2 : self.dimension // 2 + irange // 2 + 1,
         ] = X_inside
 
         return X  # [:, :, np.newaxis]
 
     def get_circle_frame(self):
-        irange = int(self.d * self.r_circle + 0.5)
+        irange = int(self.dimension * self.r_circle + 0.5)
         if irange % 2 == 0:
             irange += 1
-        X = np.full((self.d, self.d), np.nan)
+        X = np.full((self.dimension, self.dimension), np.nan)
         X_inside = np.full((irange, irange), 0, dtype=float)
         center = irange // 2
         radius = center
@@ -122,8 +122,8 @@ class AddFrame:
                     X_inside[idx, idy] = np.nan
 
         X[
-            self.d // 2 - irange // 2 : self.d // 2 + irange // 2 + 1,
-            self.d // 2 - irange // 2 : self.d // 2 + irange // 2 + 1,
+            self.dimension // 2 - irange // 2 : self.dimension // 2 + irange // 2 + 1,
+            self.dimension // 2 - irange // 2 : self.dimension // 2 + irange // 2 + 1,
         ] = X_inside
 
         return X  # [:, :, np.newaxis]
@@ -164,12 +164,12 @@ class GaussNoise(object):
 class ShiftHU(object):
     def __init__(
         self,
-        shift_limit: float = 2.55,
+        limit: float = 2.55,
         max_value: float = 1,
         min_value: float = -1,
         p: float = 0.5,
     ):
-        self.limit = shift_limit
+        self.limit = limit
         self.p = p
         self.min_value = min_value
         self.max_value = max_value

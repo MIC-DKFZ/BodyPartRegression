@@ -95,7 +95,7 @@ TRANSFORM_STANDARD_PARAMS = {
         "max_value": 1,
         "p": 0.5,
     },
-    "ShiftHU": {"shift_limit": 0.08, "p": 0.5, "min_value": -1, "max_value": 1},
+    "ShiftHU": {"limit": 0.08, "p": 0.5, "min_value": -1, "max_value": 1},
     "ScaleHU": {"p": 0.5, "scale_delta": 0.2, "max_value": 1, "min_value": -1},
     "AddFrame": {"p": 0.25, "dimension": 128, "r_circle": 0.75, "fill_value": -1},
     "Flip": {"p": 0.5},
