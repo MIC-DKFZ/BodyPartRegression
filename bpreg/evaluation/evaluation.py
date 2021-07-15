@@ -26,6 +26,7 @@ from bpreg.inference import InferenceModel
 from bpreg.score_processing import LandmarkScoreBundle
 from bpreg.settings import *
 
+
 class Evaluation(Visualization):
     def __init__(
         self,
@@ -135,7 +136,7 @@ class Evaluation(Visualization):
             expected_scores=expected_scores,
             landmark_names=landmark_names,
             alpha=alpha,
-            colors=colors
+            colors=colors,
         )
 
     def plot_slices2scores(

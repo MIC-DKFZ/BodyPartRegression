@@ -140,7 +140,6 @@ class InferenceModel:
         scores = self.predict_tensor(x_tensor)
         return self.parse_scores(scores, pixel_spacings[2])
 
-
     def parse_scores(self, scores_array, pixel_spacing):
 
         scores = Scores(
@@ -169,7 +168,7 @@ class InferenceModel:
         return data_storage.json
 
 
-# TODO: Description hinzufügen 
+# TODO: Description hinzufügen
 # TODO: Dokumentation hinzufügen: params: {sigma, z-ratio threshold, body-part-examined table, model-name, ...}
 
 
@@ -187,7 +186,7 @@ class VolumeStorage:
         self.reverse_zordering = float(scores.reverse_zordering)
         self.valid_zspacing = float(scores.valid_zspacing)
         self.expected_slope = float(scores.slope_mean)
-        self.observed_slope  = float(scores.a)
+        self.observed_slope = float(scores.a)
         self.expected_zspacing = float(scores.expected_zspacing)
         self.r_zspacing = float(scores.r_zspacing)
         self.bpe = BodyPartExamined(lookuptable)
@@ -202,10 +201,10 @@ class VolumeStorage:
             "look-up table": self.lookuptable,
             "reverse z-ordering": self.reverse_zordering,
             "valid z-spacing": self.valid_zspacing,
-            "expected slope": self.expected_slope, 
-            "observed slope": self.observed_slope, 
+            "expected slope": self.expected_slope,
+            "observed slope": self.observed_slope,
             "z-spacing ratio": self.r_zspacing,
-            "expected z-spacing": self.expected_zspacing, 
+            "expected z-spacing": self.expected_zspacing,
             "z-spacing": self.zspacing,
         }
 
@@ -214,9 +213,9 @@ class VolumeStorage:
             json.dump(self.json, f)
 
 
-
-
-def load_model(base_dir, model_file="model.pt", config_file="config.json", device="cuda"):
+def load_model(
+    base_dir, model_file="model.pt", config_file="config.json", device="cuda"
+):
     config_filepath = base_dir + config_file
     model_filepath = base_dir + model_file
 
@@ -231,11 +230,12 @@ def load_model(base_dir, model_file="model.pt", config_file="config.json", devic
     return model
 
 
-### TODO löschen 
+### TODO löschen
+
 
 def load_model2(base_dir, model_file="model.pt", config_file="config.p", device="cuda"):
-    config_filepath = base_dir + config_file 
-    model_filepath = base_dir + model_file 
+    config_filepath = base_dir + config_file
+    model_filepath = base_dir + model_file
 
     with open(config_filepath, "rb") as f:
         config = pickle.load(f)

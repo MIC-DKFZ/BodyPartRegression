@@ -116,7 +116,8 @@ class ValidationVolume:
         plt.ylabel("Slice Score", fontsize=self.fontsize)
         plt.xticks(fontsize=self.fontsize - 2)
         plt.yticks(fontsize=self.fontsize - 2)
-        if legend: plt.legend(loc=0)
+        if legend:
+            plt.legend(loc=0)
 
     def transform(self, x):
         return linear_transform(

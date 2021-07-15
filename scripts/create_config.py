@@ -60,4 +60,3 @@ if __name__ == "__main__":
             os.mkdir(save_path_dir)
         print(f"SAVE CONFIG: {save_path_dir + config.name}")
         config.save(save_path=save_path_dir + config.name)
-

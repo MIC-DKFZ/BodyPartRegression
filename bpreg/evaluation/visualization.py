@@ -32,25 +32,36 @@ class Visualization:
         text_margin_right: float = 2,
         alpha: float = 0.7,
         ylim: None = None,
-        colors: list =[],
+        colors: list = [],
     ):
         plt.figure(figsize=figsize)
         max_value = 0
 
         for idx in range(score_matrix.shape[1]):
             x = score_matrix[:, idx]
-            if len(colors) == score_matrix.shape[1]: 
+            if len(colors) == score_matrix.shape[1]:
                 bins, _, _ = plt.hist(
-                    x, density=True, alpha=alpha, label=landmark_names[idx], color=colors[idx]
+                    x,
+                    density=True,
+                    alpha=alpha,
+                    label=landmark_names[idx],
+                    color=colors[idx],
                 )
-            else: 
+            else:
                 bins, _, _ = plt.hist(
-                    x, density=True, alpha=alpha, label=landmark_names[idx], 
+                    x,
+                    density=True,
+                    alpha=alpha,
+                    label=landmark_names[idx],
                 )
 
             mean = expected_scores[idx]
             plt.plot(
-                [mean, mean], [0, 100], color="black", linestyle="--", linewidth=0.5, 
+                [mean, mean],
+                [0, 100],
+                color="black",
+                linestyle="--",
+                linewidth=0.5,
             )
 
             plt.annotate(
@@ -71,6 +82,7 @@ class Visualization:
         plt.xlabel("Slice Scores", fontsize=fontsize)
         plt.ylabel("Density Frequency Distribution", fontsize=fontsize)
         plt.xlim((-10, 110))
+
 
 def grid_plot(
     X: np.ndarray,

@@ -39,7 +39,7 @@ def bpreg_for_directory(model_path: str, input_dirpath: str, output_dirpath: str
         model.nifti2json(input_dirpath + ifile, output_dirpath + ofile)
 
 
-def main(): 
+def main():
     default_model = "../src/models/loh/version_1/"
 
     parser = argparse.ArgumentParser()
@@ -53,7 +53,7 @@ def main():
     output_dirpath = value.o
 
     bpreg_for_directory(model_path, input_dirpath, output_dirpath)
-    
+
+
 if __name__ == "__main__":
     main()
-

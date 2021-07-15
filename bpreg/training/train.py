@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-######################### TODO löschen ######################### 
+######################### TODO löschen #########################
 
 import random, pickle, datetime, os, sys, cv2
 import matplotlib.pyplot as plt
@@ -46,16 +46,16 @@ from bpreg.utils.training_utils import *
 np.seterr(divide="ignore", invalid="ignore")  # TODO
 
 
-# np.seterr(divide="ignore", invalid="ignore") 
+# np.seterr(divide="ignore", invalid="ignore")
 cv2.setNumThreads(1)
 
 
 def get_dataframe(config: dict):
-    """Get dataframe, which includes all information about train/val/test split 
+    """Get dataframe, which includes all information about train/val/test split
     and z-spacings
 
     Args:
-        config (dict): dictionary contains all information to train a model 
+        config (dict): dictionary contains all information to train a model
 
     Returns:
         df: dataframe with train/val/test information + z-spacing information
@@ -246,8 +246,6 @@ def data_preprocessing_ssbr(df: pd.DataFrame, config: dict):
     )
 
     return train_dataloader, val_dataloader, test_dataloader
-
-
 
 
 def train_config(config: dict):

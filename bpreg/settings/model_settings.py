@@ -153,20 +153,19 @@ class ModelSettings:
             self.custom_transform.__dict__["transforms"],
             ["square_frame", "circle_frame"],
         )
-        params_albumentation =  self.transforms_to_dict(
-                self.albumentation_transform,
-                [
-                    "deterministic",
-                    "save_key",
-                    "replay_mode",
-                    "mask_value",
-                    "applied_in_replay",
-                    "params"
-                ],
-                albumentation=True
-            )
+        params_albumentation = self.transforms_to_dict(
+            self.albumentation_transform,
+            [
+                "deterministic",
+                "save_key",
+                "replay_mode",
+                "mask_value",
+                "applied_in_replay",
+                "params",
+            ],
+            albumentation=True,
+        )
         params.update(params_albumentation)
-
 
         # if "ShiftHU" in params.keys():
         #   params["ShiftHU"]["limit"] = params["ShiftHU"]["shift_limit"]
@@ -179,17 +178,14 @@ class ModelSettings:
         self.transform_params = params
         self.json_dict = self.__dict__.copy()
 
-    def transforms_to_dict(self, 
-                           transform_list, 
-                           delete_keys, 
-                           albumentation=False):
+    def transforms_to_dict(self, transform_list, delete_keys, albumentation=False):
         params = {}
         for transform in transform_list:
             name = type(transform).__name__
 
             transform_params = transform.__dict__
-            if albumentation: 
-                transform_params = transform.get_base_init_args() 
+            if albumentation:
+                transform_params = transform.get_base_init_args()
                 transform_params.update(transform.get_transform_init_args())
 
             params[name] = transform_params
