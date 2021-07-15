@@ -8,7 +8,7 @@ docs/docker-docs.txt
 starter.py 
 .vscode/*
 .vscode/settings.json
-
+bpreg.egg-info/
 *.gz
 *.csv
 *.xlsx

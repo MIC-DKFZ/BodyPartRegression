@@ -30,4 +30,4 @@ setup(
     long_description=readme, 
     author = "Division of Medical Image Computing, German Cancer Research Center",
     maintainer_email = "",
-    entry_points={'bpreg_predict = scripts.bpreg_inference'})
+    entry_points={'console_scripts': ['bpreg_predict = scripts.bpreg_inference:main']})
