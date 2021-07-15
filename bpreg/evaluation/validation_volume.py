@@ -13,16 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from bpreg.inference.inference_model import InferenceModel
 from scipy import interpolate
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
 
 sys.path.append("../../")
-from bpreg.score_processing.scores import Scores
+from bpreg.score_processing import Scores
 from bpreg.utils.linear_transformations import *
-from bpreg.inference.inference_model import InferenceModel
+from bpreg.inference import InferenceModel
 from bpreg.dataset.base_dataset import BaseDataset
 
 
@@ -33,7 +32,7 @@ class ValidationVolume:
         val_dataset: BaseDataset,
         idx: int,
         expected_scores: np.array,
-        fontsize: float = 18,
+        fontsize: float = 22,
     ):
         self.landmark_idx = idx
         self.data_idx = val_dataset.landmark_ids[idx]
@@ -93,8 +92,7 @@ class ValidationVolume:
         )
 
         # plot landmarks
-        for style, name, landmark, color, score in zip(
-            self.markerstyles[self.nonempty],
+        for name, landmark, color, score in zip(
             self.landmark_names[self.nonempty],
             self.landmarks[self.nonempty],
             self.colors[self.nonempty],
@@ -108,8 +106,8 @@ class ValidationVolume:
                 landmark * self.z,
                 score,
                 linestyle="",
-                marker=style,
-                markersize=10,
+                marker=".",
+                markersize=15,
                 color=color,
                 label=label,
             )
@@ -118,7 +116,7 @@ class ValidationVolume:
         plt.ylabel("Slice Score", fontsize=self.fontsize)
         plt.xticks(fontsize=self.fontsize - 2)
         plt.yticks(fontsize=self.fontsize - 2)
-        plt.legend(loc=0)
+        if legend: plt.legend(loc=0)
 
     def transform(self, x):
         return linear_transform(

@@ -2,7 +2,7 @@ import numpy as np
 import sys, os
 
 sys.path.append("../")
-from bpreg.score_processing.scores import Scores
+from bpreg.score_processing import Scores
 
 scores1 = np.array([2, -2, -1, 0, 2, 4, 7, 10, 13, 16, 20], dtype=float)
 scores2 = np.array([50, 61, 72, 83, 90, 105, 95, 90, 85], dtype=float)

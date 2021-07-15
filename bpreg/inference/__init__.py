@@ -1,0 +1,1 @@
+from bpreg.inference.inference_model import InferenceModel

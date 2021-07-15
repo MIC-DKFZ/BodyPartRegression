@@ -36,7 +36,7 @@ sys.path.append("../")
 from bpreg.network_architecture.bpr_model import BodyPartRegression
 from bpreg.network_architecture.ssbr_model import SSBR
 from bpreg.utils.training_utils import *
-from bpreg.settings.model_settings import ModelSettings
+from bpreg.settings import ModelSettings
 
 np.seterr(divide="ignore", invalid="ignore")  # TODO
 
@@ -87,7 +87,6 @@ def train_json(json_path: str):
         precision=16,
         logger=logger_uar,
         deterministic=config.deterministic,
-        # val_check_interval=0.25, log_every_n_steps=25,
         accumulate_grad_batches=int(config.effective_batch_size / config.batch_size),
     )
 

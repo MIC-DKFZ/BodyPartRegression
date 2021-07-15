@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import os, sys, pickle, random
+import os, sys, json
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -22,10 +22,9 @@ sys.path.append("../../")
 from bpreg.utils.training_utils import get_dataframe, get_datasets
 from bpreg.evaluation.landmark_mse import LMSE
 from bpreg.evaluation.visualization import Visualization
-from bpreg.inference.inference_model import InferenceModel
-from bpreg.score_processing.landmark_scores import LandmarkScoreBundle, LandmarkScores
-from bpreg.settings.settings import *
-
+from bpreg.inference import InferenceModel
+from bpreg.score_processing import LandmarkScoreBundle
+from bpreg.settings import *
 
 class Evaluation(Visualization):
     def __init__(
@@ -66,22 +65,22 @@ class Evaluation(Visualization):
         )
 
     def _setup_data(self, val_dataset=False):
-        path = self.base_filepath + "config.p"  # TODO !
+        path = self.base_filepath + "config.json"  # TODO !
 
-        with open(path, "rb") as f:
-            self.config = pickle.load(f)
+        self.config = ModelSettings()
+        self.config.load(path)
 
-        config = self.config.copy()
-        config["num_slices"] = 8
-        config["batch_size"] = 32
-        config["shuffle_train_dataloader"] = False
+        config = self.config
+        config.num_slices = 8
+        config.batch_size = 32
+        config.shuffle_train_dataloader = False
 
         if len(self.df_data_source_path) > 0:
-            config["df_data_source_path"] = self.df_data_source_path
+            config.df_data_source_path = self.df_data_source_path
         if len(self.landmark_path) > 0:
-            config["landmark_path"] = self.landmark_path
+            config.landmark_path = self.landmark_path
         if len(self.data_path) > 0:
-            config["data_path"] = self.data_path
+            config.data_path = self.data_path
 
         df_data = get_dataframe(config)
         if val_dataset:
@@ -94,17 +93,17 @@ class Evaluation(Visualization):
 
         self.train_dataloader = torch.utils.data.DataLoader(
             self.train_dataset,
-            batch_size=config["batch_size"],
+            batch_size=config.batch_size,
             num_workers=20,
-            shuffle=config["shuffle_train_dataloader"],
+            shuffle=config.shuffle_train_dataloader,
         )
 
         self.val_dataloader = torch.utils.data.DataLoader(
-            self.val_dataset, batch_size=config["batch_size"], num_workers=20
+            self.val_dataset, batch_size=config.batch_size, num_workers=20
         )
 
         self.test_dataloader = torch.utils.data.DataLoader(
-            self.test_dataset, batch_size=config["batch_size"], num_workers=20
+            self.test_dataset, batch_size=config.batch_size, num_workers=20
         )
 
     def print_summary(self):
@@ -117,7 +116,7 @@ class Evaluation(Visualization):
         print("\nLook-up table for training data \n*******************************")
         self.landmark_score_bundle.dict["train"].print_lookuptable()
 
-    def plot_landmarks(self, alpha=0.7, target="validation"):
+    def plot_landmarks(self, colors=[], alpha=0.7, target="validation"):
         if target == "validation":
             score_matrix = self.landmark_score_bundle.dict[
                 "validation"
@@ -136,6 +135,7 @@ class Evaluation(Visualization):
             expected_scores=expected_scores,
             landmark_names=landmark_names,
             alpha=alpha,
+            colors=colors
         )
 
     def plot_slices2scores(

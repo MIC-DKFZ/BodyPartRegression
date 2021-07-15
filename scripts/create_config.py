@@ -16,7 +16,7 @@ limitations under the License.
 import sys, os, argparse
 
 sys.path.append("../")
-from bpreg.settings.model_settings import ModelSettings
+from bpreg.settings import ModelSettings
 
 data_path = {
     "local": "/home/AD/s429r/Documents/Data/DataSet/",

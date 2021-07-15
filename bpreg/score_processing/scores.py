@@ -24,16 +24,16 @@ from bpreg.utils.linear_transformations import *
 
 
 # TODO add description to Score class
-
+# TODO Transform min and transform max are mandatory 
 
 class Scores:
     def __init__(
         self,
         scores,
-        zspacing,
-        smoothing_sigma=10,
+        zspacing,        
         transform_min=np.nan,
         transform_max=np.nan,
+        smoothing_sigma=10,
         m_lower_bound=-0.037,
         m_upper_bound=0.25,
         slope_mean=np.nan,
@@ -69,6 +69,9 @@ class Scores:
         self.a, self.b = self.fit_linear_line()
 
         # data sanity chekcs
+        self.r_zspacing_threshold = 0.2                             # TODO 
+        self.expected_zspacing = self.calculate_expected_zspacing()
+        self.r_zspacing = self.calculate_relative_error_to_expected_zspcaing()
         self.valid_zspacing = self.is_zspacing_valid()
         self.reverse_zordering = self.is_zordering_reverse()
 
@@ -113,14 +116,18 @@ class Scores:
         diff_min_score = np.abs(x - min_score)
         diff_max_score = np.abs(x - max_score)
 
-        if np.min(diff_min_score) < 2:
-            min_boundary_idx = np.argmin(diff_min_score)
+        if np.nanmin(diff_min_score) < 10:
+            min_boundary_idx = np.nanargmin(diff_min_score)
 
-        if np.min(diff_max_score) < 2:
-            max_boundary_idx = np.argmin(diff_max_score)
+        if np.nanmin(diff_max_score) < 10:
+            max_boundary_idx = np.nanargmin(diff_max_score)
+
 
         self.min_boundary_idx = min_boundary_idx
         self.max_boundary_idx = max_boundary_idx
+
+        if self.min_boundary_idx > self.max_boundary_idx: 
+            self.min_boundary_idx = np.nan 
 
     def remove_outliers(self, x):
         if len(x) < 2:
@@ -159,16 +166,34 @@ class Scores:
         b, a = np.linalg.inv(X.T @ X) @ X.T @ self.valid_values
         return a, b
 
+    def calculate_expected_zspacing(self): 
+        slope_score2index = self.a * self.zspacing
+        expected_zspacing = slope_score2index/self.slope_mean
+
+        return expected_zspacing
+
+    def calculate_relative_error_to_expected_zspcaing(self): 
+        return self.zspacing/self.expected_zspacing
+
     def is_zordering_reverse(self):
         if self.a < 0:
             return 1
         return 0
 
     def is_zspacing_valid(self):
-        if np.isnan(self.slope_mean) or np.isnan(self.slope_std):
-            return np.nan
-        if (self.a < (self.slope_mean - 3 * self.slope_std)) or (
-            self.a > (self.slope_mean + 3 * self.slope_std)
-        ):
-            return 0
-        return 1
+        if np.isnan(self.r_zspacing): return np.nan 
+
+        if np.abs(1 - self.r_zspacing) >  self.r_zspacing_threshold: 
+            return 0 
+        return 1 
+
+    # TODO löschen 
+
+    # def is_zspacing_valid(self):
+    #    if np.isnan(self.slope_mean) or np.isnan(self.slope_std):
+    #        return np.nan
+    #    if (self.a < (self.slope_mean - 3 * self.slope_std)) or (
+    #        self.a > (self.slope_mean + 3 * self.slope_std)
+    #    ):
+    #        return 0
+    #    return 1

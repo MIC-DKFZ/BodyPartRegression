@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-# TODO löschen 
+######################### TODO löschen ######################### 
 
 import random, pickle, datetime, os, sys, cv2
 import matplotlib.pyplot as plt
@@ -40,7 +40,7 @@ from bpreg.network_architecture.bpr_model import BodyPartRegression
 from bpreg.network_architecture.ssbr_model import SSBR
 from bpreg.dataset.bpr_dataset import BPRDataset
 from bpreg.dataset.ssbr_dataset import SSBRDataset
-from bpreg.score_processing.landmark_scores import LandmarkScores
+from bpreg.score_processing import LandmarkScores
 from bpreg.utils.training_utils import *
 
 np.seterr(divide="ignore", invalid="ignore")  # TODO

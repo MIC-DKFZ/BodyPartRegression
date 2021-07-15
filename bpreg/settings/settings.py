@@ -81,10 +81,10 @@ DATA_PATH = "/home/AD/s429r/Documents/Data/DataSet/Arrays-3.5mm-sigma-01/"
 BODY_PARTS = {
     "legs": [np.nan, "pelvis_start"],
     "pelvis": ["pelvis_start", "pelvis_end"],
-    "abdomen": ["pelvis_end", "Th12"],
-    "chest": ["Th12", "Th2"],
-    "shoulder-neck": ["Th2", "C4"],
-    "head": ["C4", np.nan],
+    "abdomen": ["L5", "Th8"],
+    "chest": ["Th12", "Th1"],
+    "shoulder-neck": ["Th3", "C2"],
+    "head": ["C5", np.nan],
 }
 
 TRANSFORM_STANDARD_PARAMS = {

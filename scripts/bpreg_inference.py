@@ -22,8 +22,8 @@ from tqdm import tqdm
 
 sys.path.append("../")
 
-from bpreg.inference.inference_model import InferenceModel
-from bpreg.settings.settings import *
+from bpreg.inference import InferenceModel
+from bpreg.settings import *
 
 
 def bpreg_for_directory(model_path: str, input_dirpath: str, output_dirpath: str):

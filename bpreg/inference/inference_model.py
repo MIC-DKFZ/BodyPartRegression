@@ -23,12 +23,12 @@ sys.path.append("../../")
 
 from bpreg.preprocessing.nifti2npy import Nifti2Npy
 from bpreg.network_architecture.bpr_model import BodyPartRegression
-from bpreg.score_processing.scores import Scores
+from bpreg.score_processing import Scores, BodyPartExamined
 from bpreg.score_processing.landmark_scores import (
     get_max_keyof_lookuptable,
     get_min_keyof_lookuptable,
 )
-from bpreg.score_processing.bodypartexamined import BodyPartExamined
+from bpreg.settings.model_settings import ModelSettings
 
 from dataclasses import dataclass
 from tqdm import tqdm
@@ -140,17 +140,6 @@ class InferenceModel:
         scores = self.predict_tensor(x_tensor)
         return self.parse_scores(scores, pixel_spacings[2])
 
-    def estimated_slope(self, dataset):
-        slopes = []
-        for i in tqdm(range(len(dataset))):
-            X = dataset.get_full_volume(i)
-            z = dataset.z_spacings[i]
-            scores = self.predict_npy_array(X)
-            myScores = self.parse_scores(scores, z)
-            slopes.append(myScores.a)
-
-        slopes = np.array(slopes)
-        return np.nanmean(slopes), np.nanstd(slopes, ddof=1)
 
     def parse_scores(self, scores_array, pixel_spacing):
 
@@ -180,6 +169,10 @@ class InferenceModel:
         return data_storage.json
 
 
+# TODO: Description hinzufügen 
+# TODO: Dokumentation hinzufügen: params: {sigma, z-ratio threshold, body-part-examined table, model-name, ...}
+
+
 @dataclass
 class VolumeStorage:
     def __init__(self, scores: Scores, lookuptable: dict):
@@ -193,7 +186,10 @@ class VolumeStorage:
         self.zspacing = float(scores.zspacing)  # .astype(np.float64)
         self.reverse_zordering = float(scores.reverse_zordering)
         self.valid_zspacing = float(scores.valid_zspacing)
-
+        self.expected_slope = float(scores.slope_mean)
+        self.observed_slope  = float(scores.a)
+        self.expected_zspacing = float(scores.expected_zspacing)
+        self.r_zspacing = float(scores.r_zspacing)
         self.bpe = BodyPartExamined(lookuptable)
 
         self.json = {
@@ -206,6 +202,10 @@ class VolumeStorage:
             "look-up table": self.lookuptable,
             "reverse z-ordering": self.reverse_zordering,
             "valid z-spacing": self.valid_zspacing,
+            "expected slope": self.expected_slope, 
+            "observed slope": self.observed_slope, 
+            "z-spacing ratio": self.r_zspacing,
+            "expected z-spacing": self.expected_zspacing, 
             "z-spacing": self.zspacing,
         }
 
@@ -214,9 +214,28 @@ class VolumeStorage:
             json.dump(self.json, f)
 
 
-def load_model(base_dir, model_file="model.pt", config_file="config.p", device="cuda"):
-    config_filepath = base_dir + config_file  # TODO
-    model_filepath = base_dir + model_file  # TODO verallgemeinern
+
+
+def load_model(base_dir, model_file="model.pt", config_file="config.json", device="cuda"):
+    config_filepath = base_dir + config_file
+    model_filepath = base_dir + model_file
+
+    config = ModelSettings()
+    config.load(path=config_filepath)
+
+    model = BodyPartRegression(alpha=config.alpha, lr=config.lr)
+    model.load_state_dict(torch.load(model_filepath, map_location=torch.device(device)))
+    model.eval()
+    model.to(device)
+
+    return model
+
+
+### TODO löschen 
+
+def load_model2(base_dir, model_file="model.pt", config_file="config.p", device="cuda"):
+    config_filepath = base_dir + config_file 
+    model_filepath = base_dir + model_file 
 
     with open(config_filepath, "rb") as f:
         config = pickle.load(f)

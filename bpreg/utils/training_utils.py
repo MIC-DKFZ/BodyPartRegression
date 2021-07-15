@@ -23,8 +23,8 @@ sys.path.append("../")
 from bpreg.network_architecture.bpr_model import BodyPartRegression
 from bpreg.dataset.bpr_dataset import BPRDataset
 from bpreg.dataset.ssbr_dataset import SSBRDataset
-from bpreg.score_processing.landmark_scores import LandmarkScores
-from bpreg.settings.model_settings import ModelSettings
+from bpreg.score_processing  import LandmarkScores
+from bpreg.settings import ModelSettings
 # np.seterr(divide="ignore", invalid="ignore") 
 cv2.setNumThreads(1)
 
