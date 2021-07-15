@@ -29,7 +29,7 @@ save_path = {
 }
 
 
-def base_config(mode="cluster"):
+def base_config(mode: str="cluster"):
     params = {
         "df_data_source_path": data_path[mode]
         + "MetaData/meta-data-public-dataset-npy-arrays-3.5mm-windowing-sigma.xlsx",

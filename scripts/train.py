@@ -113,7 +113,7 @@ if __name__ == "__main__":
     parser.add_argument("--list", nargs="+", default=[])
     parser.add_argument(
         "--path",
-        default="/home/AD/s429r/Documents/Code/bodypartregression/src/configs/local/standard/",
+        default="/home/AD/s429r/Documents/Code/bodypartregression/src/configs/local/test/",
     )
 
     value = parser.parse_args()
