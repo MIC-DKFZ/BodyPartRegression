@@ -23,7 +23,7 @@ from bpreg.settings.settings import *
 
 
 class BodyPartExamined:
-    def __init__(self, lookuptable):
+    def __init__(self, lookuptable: dict):
         self.lookuptable = lookuptable
         self.landmarkDict = BODY_PARTS
         self.scoreDict = self.get_scoreDict()

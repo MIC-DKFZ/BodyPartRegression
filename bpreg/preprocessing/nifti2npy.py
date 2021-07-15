@@ -57,8 +57,8 @@ class Nifti2Npy:
         reverse_zaxis: list = [],
         sigma: tuple = (0.8, 0.8, 0),
         reference_downscaling_factor: float = 0.25,
-        rescale_max=1.0,
-        rescale_min=-1.0,
+        rescale_max: float = 1.0,
+        rescale_min: float = -1.0,
     ):
         self.ipath = ipath
         self.opath = opath

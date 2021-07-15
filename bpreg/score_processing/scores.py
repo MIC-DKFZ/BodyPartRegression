@@ -30,15 +30,15 @@ from bpreg.utils.linear_transformations import *
 class Scores:
     def __init__(
         self,
-        scores,
-        zspacing,
-        transform_min=np.nan,
-        transform_max=np.nan,
-        smoothing_sigma=10,
-        m_lower_bound=-0.037,
-        m_upper_bound=0.25,
-        slope_mean=np.nan,
-        slope_std=np.nan,
+        scores: list, 
+        zspacing: float, 
+        transform_min: float=np.nan,
+        transform_max: float=np.nan,
+        smoothing_sigma: float=10,
+        m_lower_bound: float=-0.037,
+        m_upper_bound: float=0.25,
+        slope_mean: float=np.nan,
+        slope_std: float=np.nan,
         background_scores=[110.83, 6.14],
     ):
 
