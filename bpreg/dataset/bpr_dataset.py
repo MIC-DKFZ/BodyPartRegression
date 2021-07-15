@@ -28,6 +28,7 @@ from bpreg.dataset.base_dataset import BaseDataset, swap_axis
 
 
 class BPRDataset(BaseDataset):
+
     def __init__(
         self,
         data_path: str = "",

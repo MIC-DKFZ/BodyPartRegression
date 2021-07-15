@@ -23,6 +23,21 @@ cv2.setNumThreads(1)
 
 
 class BaseDataset(Dataset):
+    """Parent class to create a dataset for a body part regression model. 
+
+    Args:
+        data_path (str, optional): Path where .npy data is stored. Defaults to "".
+        filenames (list, optional): filenames of .npy volumes. Defaults to [].
+        z_spacings (list, optional): corresponding z-spacings to .npy volumes. Defaults to [].
+        landmark_path (str, optional): path to landmark-file which stores the annotated landmarks for a
+        subset of the training data, for the validation data and for the test data. Defaults to None.
+        landmark_sheet_name (str, optional): sheet-name of landmark file which corresponds to dataset e.g. val-landmarks . Defaults to "".
+        num_slices (int, optional): Numer of sampled slices per volume. 
+        equidistance_range (list, optional): Distance of sampling num_slices from volume. 
+        custom_transform (bool, optional): custom slice wise transformations. Defaults to False.
+        albumentation_transform (bool, optional): slice wise transformations from albumentation. Defaults to False.
+        random_seed (int, optional): define random seed for sampling. Defaults to 0.
+    """
     def __init__(
         self,
         data_path: str = "",
@@ -30,12 +45,13 @@ class BaseDataset(Dataset):
         z_spacings: list = [],
         landmark_path: str = None,
         landmark_sheet_name: str = "",
-        num_slices: int = 8,
-        equidistance_range: list = [2, 10],
+        num_slices: int = 4,
+        equidistance_range: list = [5, 100],
         custom_transform=False,
         albumentation_transform=False,
         random_seed: int = 0,
     ):
+
         self.data_path = data_path
         self.filenames = filenames
         self.filepaths = [data_path + f for f in filenames]
