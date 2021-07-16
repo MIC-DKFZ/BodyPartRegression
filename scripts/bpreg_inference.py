@@ -22,7 +22,7 @@ from tqdm import tqdm
 
 sys.path.append("../")
 
-from bpreg.inference import InferenceModel
+from bpreg.inference.inference_model import InferenceModel
 from bpreg.settings import *
 
 

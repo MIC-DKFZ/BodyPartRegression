@@ -24,18 +24,24 @@ ENV PYTHONUNBUFFERED=1
 # Copy files 
 WORKDIR /app
 COPY requirements.txt .
+COPY starter_test.py .
+COPY starter.py .
+COPY setup.py . 
+COPY README.md .
+
 COPY bpreg bpreg/
+COPY scripts scripts/
+
 COPY src/models/loh/version_1/config.p src/models/loh/version_1/config.p
 COPY src/models/loh/version_1/lookuptable.json src/models/loh/version_1/lookuptable.json
 COPY src/models/loh/version_1/model.pt src/models/loh/version_1/model.pt
 COPY src/models/loh/version_1/settings.json src/models/loh/version_1/settings.json
 
-COPY starter.py .
+
 # Install pip requirements
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
-
-
+RUN pip3 install -e .
 # Creates a non-root user with an explicit UID and adds permission to access the /app folder
 # For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
 # RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app

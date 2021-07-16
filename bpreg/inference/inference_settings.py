@@ -7,7 +7,7 @@ import json
 from tqdm import tqdm 
 from dataclasses import dataclass, field
 from bpreg.score_processing import Scores
-from bpreg.evaluation import Evaluation, landmark_mse
+from bpreg.evaluation.evaluation import Evaluation
 from torch.utils.data import Dataset
 
 
@@ -86,9 +86,11 @@ def postprocess_model_for_inference(
 
     slope_mean = np.nanmean(slice_score_curve_slopes)
     slope_std = np.nanstd(slice_score_curve_slopes, ddof=1)
+    slope_median = np.nanquantile(slice_score_curve_slopes, 0.5)
 
     storage = InferenceSettingsStorage(
         slope_mean=slope_mean,
+        slope_median=slope_median, 
         slope_std=slope_std,
         upper_quantile_tangential_slope=upper_tangential_slope,
         upper_quantile=upper_tangential_slope_quantile,
@@ -152,6 +154,7 @@ def compute_slice_score_curve_slopes(
 @dataclass
 class InferenceSettingsStorage:
     slope_mean: float = 0.118
+    slope_median: float = 0.118
     slope_std: float = 0.012
     tangential_slope_mean: float = 0.113
     upper_quantile_tangential_slope: float = 0.25

@@ -22,7 +22,7 @@ sys.path.append("../../")
 from bpreg.utils.training_utils import get_dataframe, get_datasets
 from bpreg.evaluation.landmark_mse import LMSE
 from bpreg.evaluation.visualization import Visualization
-from bpreg.inference import InferenceModel
+from bpreg.inference.inference_model import InferenceModel
 from bpreg.score_processing import LandmarkScoreBundle
 from bpreg.settings import *
 
