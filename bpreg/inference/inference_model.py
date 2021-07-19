@@ -95,45 +95,6 @@ class InferenceModel:
         self.tangential_slope_min = settings["lower_quantile_tangential_slope"]
         self.tangential_slope_max = settings["upper_quantile_tangential_slope"]
 
-    def load_lookuptable(self):
-        path = self.base_dir + "lookuptable.json"
-        if not os.path.exists(path):
-            return
-
-        with open(path, "rb") as f:
-            lookuptable = json.load(f)
-
-        try:
-            self.lookuptable_original = lookuptable["original"]
-            self.lookuptable = lookuptable["transformed"]
-            if "start-landmark" in lookuptable.keys():
-                self.start_landmark = lookuptable["start-landmark"]
-            else:
-                self.start_landmark = get_min_keyof_lookuptable(self.lookuptable)
-
-            if "end-landmark" in lookuptable.keys():
-                self.end_landmark = lookuptable["end-landmark"]
-            else:
-                self.end_landmark = get_max_keyof_lookuptable(self.lookuptable)
-
-            self.transform_min = lookuptable["original"][self.start_landmark]["mean"]
-            self.transform_max = lookuptable["original"][self.end_landmark]["mean"]
-
-        except:
-
-            return
-
-    def load_settings(self):
-        path = self.base_dir + "settings.json"
-        if not os.path.exists(path):
-            return
-
-        with open(path, "rb") as f:
-            mySettings = json.load(f)
-
-        self.slope_mean = mySettings["slope_mean"]
-        self.slope_std = mySettings["slope_std"]
-
     def predict_tensor(self, tensor, n_splits=200):
         scores = []
         n = tensor.shape[0]

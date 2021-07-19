@@ -12,42 +12,37 @@ with a few modifications explained in the master thesis "Body Part Regression fo
 
 For CT volumes you are able to load a body part regression model and apply it to your use case. If you want to train a BPR model for a different modality, the training procedure will be explained as well. 
 
+--------------------------------------------------------------
+## Install package 
+1. Create a new virtual environment with pip
+2. Clone the bodypartregression repsoitory from phabricator 
+3. Go into the bodypartregression/ folder and run: 
+   
+`pip install -e .`
 
-## Applying the BPR model to CT volumes 
-1. Load model parameters **TODO** 
-2. nifti file -> json output 
-3. Explain json output 
-4. documents/notebooks/bpr-prediction.ipynb **TODO** 
-5. documents/notebooks/estimate-body-part-examined.ipynb
-6. documents/notebooks/valid-scope-sensitive-segmetnation.ipynb
-7. documents/notebooks/data-sanity-checks.ipynb
+--------------------------------------------------------------
+## Analyze examined body parts
+Provide the CT volumes in the nifti-format in one directory. 
 
 Scope of the BPR modle: start of the pelvis to end of the head -> valid region in CT volumes
-not in valid scope: kids and pregnant women, because of lag of data. 
-
-### Estimate the Body Part Examined
+not in valid scope: kids and pregnant women, because of lag of data. #TODO 
 
 
-### Valid scope sensitive prediction of clinical models 
+Run the following command in the terminal: <br>
+` bpreg_predict -i <input_path> -o <output_path>` <br>
+For each nifti-file in the directory `input_path` a corresponding json-file 
+gets created and saved in the `output_path`. <br>
 
+Additional tags for the `bpreg_predict` command: <br>
+--skip (bool): skip already created .json meta data files (default: 1) <br>
+--model (str): specify model (default: public model from zenodo)
 
-### Data Sanity Checks 
+The json-file contains all the meta data regarding the examined body part of the nifti-file. 
+It includes the following tags: 
+- valid-zspacing
+- cleaned slice-scores
+- lookuptable 
+- ... 
 
+License and References of used public model: 
 
-## Training a BPR model 
-For Training a BPR model it is important to have lots of different studies and volumes (preferably more than 1000 volumes). <br>
-For demonstration a BPR model is trained with a small dataset and a small image size of 64 px x 64 px in the following notebook:  <br>
-*documentation/notebooks/train-bpr-model.ipynb* <br>
-Please read the paper from [Yan et al.](https://arxiv.org/pdf/1707.03891.pdf) and the Methods & Experiments section from the master thesis to 
-understand the theoretical foundations behind the BPR model. The main pittfalls of training a body part regression model are: 
-- using not enough data augmentation techniques, so that the model can overfitt on certain studies or patients
-- using to less data 
-- haveing to much data with a wrong axis ordering in the dataset 
-
-A very valuable source for getting data for a body part regression model is [The Cancer Image Archive](https://www.cancerimagingarchive.net/). 
-
-python package pip install ... **TODO** 
-tests **TODO** 
-master thesis link to arxiv **TODO** 
-
-bpreg_predict -i data/test_cases/ -o data/test_results/

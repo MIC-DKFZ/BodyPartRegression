@@ -17,8 +17,6 @@ import os, sys
 import argparse
 
 
-from tqdm import tqdm
-
 
 sys.path.append("../")
 
@@ -37,7 +35,7 @@ def bpreg_for_directory(model_path: str, input_dirpath: str, output_dirpath: str
         if os.path.exists(opath) and skip_existing==1:
             print(f"JSON-file already exists. Skip file: {opath}")
             continue
-        print(f"Create meta-data file: {opath}")
+        print(f"Create body-part meta data file: {opath}")
         model.nifti2json(ipath, opath)
 
 
@@ -49,13 +47,15 @@ def main():
     parser.add_argument("-i", default="")
     parser.add_argument("-o", default="")
     parser.add_argument("--skip", default=1)
+    # TODO --plot 0/1 
+    # TODO report 
 
     value = parser.parse_args()
     model_path = value.model
     input_dirpath = value.i
     output_dirpath = value.o
     skip_existing = value.skip
-    print(skip_existing)
+
     bpreg_for_directory(model_path, input_dirpath, output_dirpath, skip_existing=skip_existing)
 
 
