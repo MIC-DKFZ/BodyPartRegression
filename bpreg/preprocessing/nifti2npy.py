@@ -193,6 +193,7 @@ class Nifti2Npy:
         downscaling_factor_x = rescaled_sizex / x.shape[0]
         downscaling_factor_y = rescaled_sizey / x.shape[1]
 
+        print(x.shape, downscaling_factor_x, downscaling_factor_y)
         sigma = (
             self.sigma[0] * self.reference_downscaling_factor / downscaling_factor_x,
             self.sigma[1] * self.reference_downscaling_factor / downscaling_factor_y,

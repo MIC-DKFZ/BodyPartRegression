@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from bpreg.score_processing.bodypartexamined_tag import BodyPartExaminedTag
 import numpy as np
 import os, sys
 import torch
@@ -23,7 +24,7 @@ sys.path.append("../../")
 
 from bpreg.preprocessing.nifti2npy import Nifti2Npy
 from bpreg.network_architecture.bpr_model import BodyPartRegression
-from bpreg.score_processing import Scores, BodyPartExamined
+from bpreg.score_processing import Scores, BodyPartExaminedDict
 from bpreg.score_processing.landmark_scores import (
     get_max_keyof_lookuptable,
     get_min_keyof_lookuptable,
@@ -61,11 +62,38 @@ class InferenceModel:
             self.device = "cuda"
 
         self.model = load_model(base_dir, device=self.device)
-        self.load_lookuptable()
-        self.load_settings()
+        self.load_inference_settings()
+
+       #  self.load_lookuptable()
+        # self.load_settings()
         self.n2n = Nifti2Npy(
             target_pixel_spacing=3.5, min_hu=-1000, max_hu=1500, size=128
         )
+
+    def load_inference_settings(self): 
+
+        path = self.base_dir + "inference-settings.json"
+        if not os.path.exists(path): 
+            print("WARNING: For this model no inference settings can be load!")
+            return 
+
+        with open(path, "rb") as f: 
+            settings = json.load(f)
+
+        # use for inference the lookuptable from all predictions 
+        # of the annotated landmarks in the train- and validation-dataset
+        self.lookuptable_original = settings["lookuptable_train_val"]["original"]
+        self.lookuptable = settings["lookuptable_train_val"]["transformed"]
+
+        self.start_landmark = settings["settings"]["start-landmark"]
+        self.end_landmark = settings["settings"]["end-landmark"]
+
+        self.transform_min = self.lookuptable_original[self.start_landmark]["mean"]
+        self.transform_max = self.lookuptable_original[self.end_landmark]["mean"]
+
+        self.slope_mean = settings["slope_mean"]
+        self.tangential_slope_min = settings["lower_quantile_tangential_slope"]
+        self.tangential_slope_max = settings["upper_quantile_tangential_slope"]
 
     def load_lookuptable(self):
         path = self.base_dir + "lookuptable.json"
@@ -149,6 +177,8 @@ class InferenceModel:
             transform_max=self.lookuptable_original[self.end_landmark]["mean"],
             slope_mean=self.slope_mean,
             slope_std=self.slope_std,
+            tangential_slope_min=self.tangential_slope_min, 
+            tangential_slope_max=self.tangential_slope_max
         )
         return scores
 
@@ -189,7 +219,8 @@ class VolumeStorage:
         self.observed_slope = float(scores.a)
         self.expected_zspacing = float(scores.expected_zspacing)
         self.r_zspacing = float(scores.r_zspacing)
-        self.bpe = BodyPartExamined(lookuptable)
+        self.bpe = BodyPartExaminedDict(lookuptable)
+        self.bpet = BodyPartExaminedTag(lookuptable)
 
         self.json = {
             "cleaned slice scores": self.cleaned_slice_scores,
@@ -198,6 +229,7 @@ class VolumeStorage:
             "body part examined": self.bpe.get_examined_body_part(
                 self.cleaned_slice_scores
             ),
+            "body part examined tag": self.bpet.estimate_tag(scores), 
             "look-up table": self.lookuptable,
             "reverse z-ordering": self.reverse_zordering,
             "valid z-spacing": self.valid_zspacing,

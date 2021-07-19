@@ -19,6 +19,7 @@ def postprocess_model_for_inference(
     lower_tangential_slope_quantile: float = 0.005,
     transform_min_landmark: str = "pelvis_start",
     transform_max_landmark: str = "eyes_end",
+    skip_slopes: bool=False
 ):
     """Create inference-settings.json for model. 
     The inference-settings.json file saves all relevant information which is needed for using the model during test time. 
@@ -65,40 +66,56 @@ def postprocess_model_for_inference(
     transform_min = lookuptable_train_val_original[transform_min_landmark]["mean"]
     transform_max = lookuptable_train_val_original[transform_max_landmark]["mean"]
 
-    # Tangential Slopes
-    print("Compute tangential slopes of training data set")
-    tangential_slopes = compute_tangential_slopes(modelEval.inference_model, modelEval.train_dataset, transform_min, transform_max)
-    upper_tangential_slope = np.nanquantile(
-        tangential_slopes, upper_tangential_slope_quantile
-    )
-    lower_tangential_slope = np.nanquantile(
-        tangential_slopes, lower_tangential_slope_quantile
-    )
+    settings = {
+    "upper_tangential_quantile": upper_tangential_slope_quantile, 
+    "lower_tangential_quantile": lower_tangential_slope_quantile, 
+    "start-landmark": transform_min_landmark, 
+    "end-landmark": transform_max_landmark}
 
-    # Slice score curve slopes 
-    print("Compute slice score curve slopes")
-    slice_score_curve_slopes = compute_slice_score_curve_slopes(modelEval.inference_model, 
-                                                                modelEval.train_dataset, 
-                                                                lower_tangential_slope, 
-                                                                upper_tangential_slope, 
-                                                                transform_min, 
-                                                                transform_max)
+    if not skip_slopes: 
+        # Tangential Slopes
+        print("Compute tangential slopes of training data set")
+        tangential_slopes = compute_tangential_slopes(modelEval.inference_model, modelEval.train_dataset, transform_min, transform_max)
+        upper_tangential_slope = np.nanquantile(
+            tangential_slopes, upper_tangential_slope_quantile
+        )
+        lower_tangential_slope = np.nanquantile(
+            tangential_slopes, lower_tangential_slope_quantile
+        )
+        tangential_slope_mean = np.nanmean(tangential_slopes)
 
-    slope_mean = np.nanmean(slice_score_curve_slopes)
-    slope_std = np.nanstd(slice_score_curve_slopes, ddof=1)
-    slope_median = np.nanquantile(slice_score_curve_slopes, 0.5)
+        # Slice score curve slopes 
+        print("Compute slice score curve slopes")
+        slice_score_curve_slopes = compute_slice_score_curve_slopes(modelEval.inference_model, 
+                                                                    modelEval.train_dataset, 
+                                                                    lower_tangential_slope, 
+                                                                    upper_tangential_slope, 
+                                                                    transform_min, 
+                                                                    transform_max)
 
-    storage = InferenceSettingsStorage(
-        slope_mean=slope_mean,
-        slope_median=slope_median, 
-        slope_std=slope_std,
-        upper_quantile_tangential_slope=upper_tangential_slope,
-        upper_quantile=upper_tangential_slope_quantile,
-        lower_quantile_tangential_slope=lower_tangential_slope,
-        lower_quantile=lower_tangential_slope_quantile,
-        lookuptable_train=lookuptable_train,
-        lookuptable_train_val=lookuptable_train_val,
-    )
+        slope_mean = np.nanmean(slice_score_curve_slopes)
+        slope_std = np.nanstd(slice_score_curve_slopes, ddof=1)
+        slope_median = np.nanquantile(slice_score_curve_slopes, 0.5)
+
+
+
+        storage = InferenceSettingsStorage(
+            slope_mean=slope_mean,
+            slope_median=slope_median, 
+            slope_std=slope_std,
+            upper_quantile_tangential_slope=upper_tangential_slope,
+            lower_quantile_tangential_slope=lower_tangential_slope,
+            tangential_slope_mean=tangential_slope_mean, 
+            lookuptable_train=lookuptable_train,
+            lookuptable_train_val=lookuptable_train_val,
+            settings=settings
+        )
+
+    else: 
+        storage = InferenceSettingsStorage(
+            lookuptable_train=lookuptable_train,
+            lookuptable_train_val=lookuptable_train_val,
+            settings=settings)
 
     storage.save(model_path)
 
@@ -119,8 +136,8 @@ def compute_tangential_slopes(
             z,
             transform_min=transform_min,
             transform_max=transform_max,
-            m_lower_bound=-np.inf,
-            m_upper_bound=np.inf,
+            tangential_slope_min=-np.inf,
+            tangential_slope_max=np.inf,
         )
         tangential_slopes += list(scores.slopes)
 
@@ -144,11 +161,13 @@ def compute_slice_score_curve_slopes(
                         z, 
                         transform_min=transform_min, 
                         transform_max=transform_max, 
-                        m_lower_bound=lower_tangential_slope, 
-                        m_upper_bound=upper_tangential_slope) 
+                        tangential_slope_min=lower_tangential_slope, 
+                        tangential_slope_max=upper_tangential_slope) 
         curve_slopes.append(scores.a)     
 
     return np.array(curve_slopes)
+
+
 
 
 @dataclass
@@ -158,11 +177,10 @@ class InferenceSettingsStorage:
     slope_std: float = 0.012
     tangential_slope_mean: float = 0.113
     upper_quantile_tangential_slope: float = 0.25
-    upper_quantile: float = 0.995
     lower_quantile_tangential_slope: float = -0.037
-    lower_quantile: float = 0.005
     lookuptable_train: dict = field(default_factory={}) 
     lookuptable_train_val: dict = field(default_factory={}) 
+    settings: dict = field(default_factory={})
 
     def __post_init__(self):
         self.json_dict = self.__dict__.copy()

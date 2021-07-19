@@ -1,3 +1,3 @@
 from bpreg.score_processing.scores import Scores
 from bpreg.score_processing.landmark_scores import LandmarkScores, LandmarkScoreBundle
-from bpreg.score_processing.bodypartexamined import BodyPartExamined
+from bpreg.score_processing.bodypartexamined_dict import BodyPartExaminedDict

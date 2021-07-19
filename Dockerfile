@@ -32,7 +32,7 @@ COPY README.md .
 COPY bpreg bpreg/
 COPY scripts scripts/
 
-COPY src/models/loh/version_1/config.p src/models/loh/version_1/config.p
+COPY src/models/loh/version_1/config.json src/models/loh/version_1/config.json
 COPY src/models/loh/version_1/lookuptable.json src/models/loh/version_1/lookuptable.json
 COPY src/models/loh/version_1/model.pt src/models/loh/version_1/model.pt
 COPY src/models/loh/version_1/settings.json src/models/loh/version_1/settings.json

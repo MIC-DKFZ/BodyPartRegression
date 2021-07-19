@@ -35,8 +35,8 @@ class Scores:
         transform_min: float=np.nan,
         transform_max: float=np.nan,
         smoothing_sigma: float=10,
-        m_lower_bound: float=-0.037,
-        m_upper_bound: float=0.25,
+        tangential_slope_min: float=-0.037,
+        tangential_slope_max: float=0.25,
         slope_mean: float=np.nan,
         slope_std: float=np.nan,
         background_scores=[110.83, 6.14],
@@ -49,8 +49,8 @@ class Scores:
         self.smoothing_sigma = smoothing_sigma
         self.transform_min = transform_min
         self.transform_max = transform_max
-        self.m_lower_bound = m_lower_bound
-        self.m_upper_bound = m_upper_bound
+        self.tangential_slope_min = tangential_slope_min
+        self.tangential_slope_max = tangential_slope_max
         self.slope_mean = slope_mean
         self.slope_std = slope_std
         self.scale = 100
@@ -139,7 +139,7 @@ class Scores:
 
         # get outlier slopes
         outlier_indices = np.where(
-            (self.slopes < self.m_lower_bound) | (self.slopes > self.m_upper_bound)
+            (self.slopes < self.tangential_slope_min) | (self.slopes > self.tangential_slope_max)
         )[0]
 
         # identify if outliers lie before or after boundary index
