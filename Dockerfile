@@ -32,10 +32,10 @@ COPY README.md .
 COPY bpreg bpreg/
 COPY scripts scripts/
 
-COPY src/models/loh/version_1/config.json src/models/loh/version_1/config.json
-COPY src/models/loh/version_1/lookuptable.json src/models/loh/version_1/lookuptable.json
-COPY src/models/loh/version_1/model.pt src/models/loh/version_1/model.pt
-COPY src/models/loh/version_1/settings.json src/models/loh/version_1/settings.json
+COPY src/models/private_bpr_model/config.json src/models/private_bpr_model/config.json
+COPY src/models/private_bpr_model/lookuptable.json src/models/private_bpr_model/lookuptable.json
+COPY src/models/private_bpr_model/model.pt src/models/private_bpr_model/model.pt
+COPY src/models/private_bpr_model/settings.json src/models/private_bpr_model/settings.json
 
 
 # Install pip requirements

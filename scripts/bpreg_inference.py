@@ -40,7 +40,7 @@ def bpreg_for_directory(model_path: str, input_dirpath: str, output_dirpath: str
 
 
 def main():
-    default_model = "../src/models/loh/version_1/"
+    default_model = "../src/models/private_bpr_model/"
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default=default_model)

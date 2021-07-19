@@ -291,7 +291,7 @@ if __name__ == "__main__":
     opath = value.o
     gpu = value.g
 
-    base_dir = "../../src/models/loh/version_1/"
+    base_dir = "../../src/models/private_bpr_model/"
     model = InferenceModel(base_dir, gpu=gpu)
 
     data_path = "../../data/test_cases/"

@@ -1,3 +1,4 @@
+from bpreg import PUBLIC_MODEL_URL
 import numpy as np
 import cv2
 
@@ -114,3 +115,6 @@ TRANSFORM_STANDARD_PARAMS = {
         "p": 0.5,
     },
 }
+
+# inference model settings
+DEFAULT_MODEL = "src/models/public_bpr_model/"
