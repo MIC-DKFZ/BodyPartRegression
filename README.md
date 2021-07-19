@@ -49,3 +49,5 @@ A very valuable source for getting data for a body part regression model is [The
 python package pip install ... **TODO** 
 tests **TODO** 
 master thesis link to arxiv **TODO** 
+
+bpreg_predict -i data/test_cases/ -o data/test_results/

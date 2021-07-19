@@ -20,7 +20,6 @@ import torch
 import pytorch_lightning as pl
 
 sys.path.append("../../")
-
 from bpreg.dataset.base_dataset import get_slices
 from bpreg.evaluation.landmark_mse import LMSE
 from bpreg.evaluation.accuracy import Accuracy

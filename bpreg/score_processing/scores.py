@@ -38,7 +38,6 @@ class Scores:
         tangential_slope_min: float = -0.037,
         tangential_slope_max: float = 0.25,
         slope_mean: float = np.nan,
-        slope_std: float = np.nan,
         background_scores=[110.83, 6.14],
     ):
 
@@ -52,7 +51,6 @@ class Scores:
         self.tangential_slope_min = tangential_slope_min
         self.tangential_slope_max = tangential_slope_max
         self.slope_mean = slope_mean
-        self.slope_std = slope_std
         self.scale = 100
         self.original_values = scores
         self.original_transformed_values = self.transform_scores(scores.copy())

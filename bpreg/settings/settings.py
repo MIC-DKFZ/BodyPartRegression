@@ -1,6 +1,5 @@
-from bpreg import PUBLIC_MODEL_URL
 import numpy as np
-import cv2
+import cv2, os
 
 cv2.setNumThreads(1)
 
@@ -116,5 +115,7 @@ TRANSFORM_STANDARD_PARAMS = {
     },
 }
 
-# inference model settings
-DEFAULT_MODEL = "src/models/public_bpr_model/"
+# Path for default inference model 
+MODULE_PATH =  os.getcwd().split("bodypartregression")[0] + "bodypartregression/"
+DEFAULT_MODEL = MODULE_PATH + "/src/models/public_bpr_model/"
+

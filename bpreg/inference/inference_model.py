@@ -64,7 +64,7 @@ class InferenceModel:
         self.model = load_model(base_dir, device=self.device)
         self.load_inference_settings()
 
-        #  self.load_lookuptable()
+        # self.load_lookuptable() # TODO remove 
         # self.load_settings()
         self.n2n = Nifti2Npy(
             target_pixel_spacing=3.5, min_hu=-1000, max_hu=1500, size=128
@@ -176,7 +176,6 @@ class InferenceModel:
             transform_min=self.lookuptable_original[self.start_landmark]["mean"],
             transform_max=self.lookuptable_original[self.end_landmark]["mean"],
             slope_mean=self.slope_mean,
-            slope_std=self.slope_std,
             tangential_slope_min=self.tangential_slope_min,
             tangential_slope_max=self.tangential_slope_max,
         )

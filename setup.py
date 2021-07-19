@@ -1,9 +1,6 @@
 import os
 from setuptools import setup, find_packages
 
-import requests, os, zipfile
-
-
 def resolve_requirements(file):
     requirements = []
     with open(file) as f:
@@ -39,6 +36,9 @@ setup(
     maintainer_email="",
     entry_points={"console_scripts": ["bpreg_predict = scripts.bpreg_inference:main"]},
 )
+
+
+import requests, zipfile # TODO 
 
 
 # Download public model from zenodo, for inference
