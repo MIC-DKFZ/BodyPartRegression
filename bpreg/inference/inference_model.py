@@ -64,23 +64,23 @@ class InferenceModel:
         self.model = load_model(base_dir, device=self.device)
         self.load_inference_settings()
 
-       #  self.load_lookuptable()
+        #  self.load_lookuptable()
         # self.load_settings()
         self.n2n = Nifti2Npy(
             target_pixel_spacing=3.5, min_hu=-1000, max_hu=1500, size=128
         )
 
-    def load_inference_settings(self): 
+    def load_inference_settings(self):
 
         path = self.base_dir + "inference-settings.json"
-        if not os.path.exists(path): 
+        if not os.path.exists(path):
             print("WARNING: For this model no inference settings can be load!")
-            return 
+            return
 
-        with open(path, "rb") as f: 
+        with open(path, "rb") as f:
             settings = json.load(f)
 
-        # use for inference the lookuptable from all predictions 
+        # use for inference the lookuptable from all predictions
         # of the annotated landmarks in the train- and validation-dataset
         self.lookuptable_original = settings["lookuptable_train_val"]["original"]
         self.lookuptable = settings["lookuptable_train_val"]["transformed"]
@@ -177,8 +177,8 @@ class InferenceModel:
             transform_max=self.lookuptable_original[self.end_landmark]["mean"],
             slope_mean=self.slope_mean,
             slope_std=self.slope_std,
-            tangential_slope_min=self.tangential_slope_min, 
-            tangential_slope_max=self.tangential_slope_max
+            tangential_slope_min=self.tangential_slope_min,
+            tangential_slope_max=self.tangential_slope_max,
         )
         return scores
 
@@ -229,7 +229,7 @@ class VolumeStorage:
             "body part examined": self.bpe.get_examined_body_part(
                 self.cleaned_slice_scores
             ),
-            "body part examined tag": self.bpet.estimate_tag(scores), 
+            "body part examined tag": self.bpet.estimate_tag(scores),
             "look-up table": self.lookuptable,
             "reverse z-ordering": self.reverse_zordering,
             "valid z-spacing": self.valid_zspacing,

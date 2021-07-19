@@ -57,7 +57,7 @@ def run_fast_dev(
 
 def save_model(model, config: ModelSettings, path):
     print("save model at: ", path)
-    config.save(save_path=path + "config.json") # TODO - does this work? 
+    config.save(save_path=path + "config.json")  # TODO - does this work?
 
     if config.save_model:
         torch.save(model.state_dict(), path + "model.pt")

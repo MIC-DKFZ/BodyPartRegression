@@ -41,22 +41,23 @@ setup(
 )
 
 
-
 # Download public model from zenodo, for inference
 print("Download publicly available body part regression model.")
-PUBLIC_MODEL_URL = "https://zenodo.org/record/5113483/files/public_bpr_model.zip?download=1"
+PUBLIC_MODEL_URL = (
+    "https://zenodo.org/record/5113483/files/public_bpr_model.zip?download=1"
+)
 SAVE_PUBLIC_MODEL_PATH = "src/models/public_inference_model.zip"
 
-with requests.get(PUBLIC_MODEL_URL, stream="True") as r: 
+with requests.get(PUBLIC_MODEL_URL, stream="True") as r:
     r.raise_for_status()
-    with open(SAVE_PUBLIC_MODEL_PATH, "wb") as f: 
-        for chunk in r.iter_content(chunk_size=None): 
+    with open(SAVE_PUBLIC_MODEL_PATH, "wb") as f:
+        for chunk in r.iter_content(chunk_size=None):
             f.write(chunk)
 
-# unzip public model 
+# unzip public model
 save_path = "/".join(SAVE_PUBLIC_MODEL_PATH.split("/")[:-1]) + "/"
-with zipfile.ZipFile(SAVE_PUBLIC_MODEL_PATH, "r") as f: 
+with zipfile.ZipFile(SAVE_PUBLIC_MODEL_PATH, "r") as f:
     f.extractall(save_path)
 
-# remove file 
+# remove file
 os.remove(SAVE_PUBLIC_MODEL_PATH)

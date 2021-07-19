@@ -30,15 +30,15 @@ from bpreg.utils.linear_transformations import *
 class Scores:
     def __init__(
         self,
-        scores: list, 
-        zspacing: float, 
-        transform_min: float=np.nan,
-        transform_max: float=np.nan,
-        smoothing_sigma: float=10,
-        tangential_slope_min: float=-0.037,
-        tangential_slope_max: float=0.25,
-        slope_mean: float=np.nan,
-        slope_std: float=np.nan,
+        scores: list,
+        zspacing: float,
+        transform_min: float = np.nan,
+        transform_max: float = np.nan,
+        smoothing_sigma: float = 10,
+        tangential_slope_min: float = -0.037,
+        tangential_slope_max: float = 0.25,
+        slope_mean: float = np.nan,
+        slope_std: float = np.nan,
         background_scores=[110.83, 6.14],
     ):
 
@@ -139,7 +139,8 @@ class Scores:
 
         # get outlier slopes
         outlier_indices = np.where(
-            (self.slopes < self.tangential_slope_min) | (self.slopes > self.tangential_slope_max)
+            (self.slopes < self.tangential_slope_min)
+            | (self.slopes > self.tangential_slope_max)
         )[0]
 
         # identify if outliers lie before or after boundary index

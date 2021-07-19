@@ -21,14 +21,14 @@ import sys
 from bpreg.score_processing import Scores
 from bpreg.utils.linear_transformations import *
 from bpreg.dataset.base_dataset import BaseDataset
-# from bpreg.inference.inference_model import InferenceModel
 
+# from bpreg.inference.inference_model import InferenceModel
 
 
 class ValidationVolume:
     def __init__(
         self,
-        inference_model, 
+        inference_model,
         val_dataset: BaseDataset,
         idx: int,
         expected_scores: np.array,

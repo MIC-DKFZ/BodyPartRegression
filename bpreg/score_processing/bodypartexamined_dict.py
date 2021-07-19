@@ -49,12 +49,13 @@ class BodyPartExaminedDict:
 
         return bodyPartDict
 
+
 def get_scoreDict(landmarkDict: dict, lookuptable: dict) -> dict:
     scoreDict = {}
     for key, items in landmarkDict.items():
         scores = []
         for landmark in items:
-            if isinstance(landmark, float): 
+            if isinstance(landmark, float):
                 scores.append(landmark)
             else:
                 scores.append(lookuptable[landmark]["mean"])

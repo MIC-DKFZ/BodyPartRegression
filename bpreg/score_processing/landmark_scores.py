@@ -17,7 +17,7 @@ import sys, os
 import numpy as np
 import pandas as pd
 import torch
-import pytorch_lightning as pl 
+import pytorch_lightning as pl
 
 sys.path.append("../../")
 
@@ -36,10 +36,10 @@ class LandmarkScores:
         data_path: str,
         df: pd.DataFrame,
         model: pl.LightningModule,
-        device: str="cuda",
+        device: str = "cuda",
         drop_cols=["val", "train", "test"],
-        landmark_start: str="pelvis_start",
-        landmark_end: str="eyes_end",
+        landmark_start: str = "pelvis_start",
+        landmark_end: str = "eyes_end",
     ):
 
         self.data_path = data_path

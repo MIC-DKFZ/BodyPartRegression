@@ -23,7 +23,7 @@ cv2.setNumThreads(1)
 
 
 class BaseDataset(Dataset):
-    """Parent class to create a dataset for a body part regression model. 
+    """Parent class to create a dataset for a body part regression model.
 
     Args:
         data_path (str, optional): Path where .npy data is stored. Defaults to "".
@@ -32,12 +32,13 @@ class BaseDataset(Dataset):
         landmark_path (str, optional): path to landmark-file which stores the annotated landmarks for a
         subset of the training data, for the validation data and for the test data. Defaults to None.
         landmark_sheet_name (str, optional): sheet-name of landmark file which corresponds to dataset e.g. val-landmarks . Defaults to "".
-        num_slices (int, optional): Numer of sampled slices per volume. 
-        equidistance_range (list, optional): Distance of sampling num_slices from volume. 
+        num_slices (int, optional): Numer of sampled slices per volume.
+        equidistance_range (list, optional): Distance of sampling num_slices from volume.
         custom_transform (bool, optional): custom slice wise transformations. Defaults to False.
         albumentation_transform (bool, optional): slice wise transformations from albumentation. Defaults to False.
         random_seed (int, optional): define random seed for sampling. Defaults to 0.
     """
+
     def __init__(
         self,
         data_path: str = "",
