@@ -23,9 +23,9 @@ from bpreg.settings.settings import *
 
 
 class BodyPartExaminedDict:
-    def __init__(self, lookuptable: dict):
+    def __init__(self, lookuptable: dict, body_parts=BODY_PARTS):
         self.lookuptable = lookuptable
-        self.landmarkDict = BODY_PARTS
+        self.landmarkDict = body_parts
         self.scoreDict = get_scoreDict(self.landmarkDict, self.lookuptable)
 
     def get_score_indices(self, scores, min_score=np.nan, max_score=np.nan):

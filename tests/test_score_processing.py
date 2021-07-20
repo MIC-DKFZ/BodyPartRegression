@@ -43,6 +43,3 @@ def test_transform():
 def test_cut_extreme_diffs():
     pass
 
-
-if __name__ == "__main__":
-    test_valid_range()

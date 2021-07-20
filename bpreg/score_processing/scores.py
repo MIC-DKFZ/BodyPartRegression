@@ -83,12 +83,23 @@ class Scores:
         self.valid_values = self.values[~np.isnan(self.values)]
         self.a, self.b = self.fit_linear_line()
 
+
         # data sanity chekcs
         self.r_slope_threshold = r_slope_threshold
         self.expected_zspacing = self.calculate_expected_zspacing()
         self.r_slope = self.calculate_relative_error_to_expected_slope()
         self.valid_zspacing = self.is_zspacing_valid()
         self.reverse_zordering = self.is_zordering_reverse()
+
+        # define settings
+        self.settings = {"transform_min": self.transform_min,
+                "transform_max": self.transform_max,
+                "slope_mean": self.slope_mean,
+                "tangential_slope_min": self.tangential_slope_min,
+                "tangential_slope_max": self.tangential_slope_max,
+                "r_slope_threshold": self.r_slope_threshold, 
+                "smoothing_sigma": self.smoothing_sigma, 
+                "background_scores": self.background_scores}
 
     def __len__(self):
         return len(self.original_values)

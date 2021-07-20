@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from bpreg.score_processing.bodypartexamined_tag import BodyPartExaminedTag
 import numpy as np
 import os, sys
 import torch
@@ -25,11 +24,10 @@ sys.path.append("../../")
 from bpreg.preprocessing.nifti2npy import Nifti2Npy
 from bpreg.network_architecture.bpr_model import BodyPartRegression
 from bpreg.score_processing import Scores, BodyPartExaminedDict
-from bpreg.score_processing.landmark_scores import (
-    get_max_keyof_lookuptable,
-    get_min_keyof_lookuptable,
-)
+from bpreg.settings.settings import * 
 from bpreg.settings.model_settings import ModelSettings
+from bpreg.score_processing.bodypartexamined_tag import *
+
 
 from dataclasses import dataclass
 from tqdm import tqdm
@@ -172,7 +170,19 @@ class InferenceModel:
 
 @dataclass
 class VolumeStorage:
-    def __init__(self, scores: Scores, lookuptable: dict):
+    def __init__(self, 
+                 scores: Scores, 
+                 lookuptable: dict, 
+                 body_parts=BODY_PARTS, 
+                 body_parts_included=BODY_PARTS_INCLUDED, 
+                 distinct_body_parts=DISTINCT_BODY_PARTS, 
+                 min_present_landmarks=MIN_PRESENT_LANDMARKS, 
+                 settings={}):
+        self.body_parts=body_parts
+        self.body_parts_included = body_parts_included
+        self.distinct_body_parts = distinct_body_parts
+        self.min_present_landmarks = min_present_landmarks
+
         self.cleaned_slice_scores = list(scores.values.astype(np.float64))
         self.z = list(scores.z.astype(np.float64))
         self.unprocessed_slice_scores = list(
@@ -187,8 +197,18 @@ class VolumeStorage:
         self.observed_slope = float(scores.a)
         self.expected_zspacing = float(scores.expected_zspacing)
         self.r_slope = float(scores.r_slope)
-        self.bpe = BodyPartExaminedDict(lookuptable)
-        self.bpet = BodyPartExaminedTag(lookuptable)
+        self.bpe = BodyPartExaminedDict(lookuptable, body_parts=self.body_parts)
+        self.bpet = BodyPartExaminedTag(lookuptable,         
+                                        body_parts_included=self.body_parts_included,
+                                        distinct_body_parts=self.distinct_body_parts,
+                                        min_present_landmarks=self.min_present_landmarks)
+
+        self.settings = {"slice score processing": scores.settings, 
+                            "body part examined dict": self.body_parts, 
+                           "body part examined tag": {
+                                "body parts included": self.body_parts_included, 
+                                "distinct body parts": self.distinct_body_parts, 
+                                "min present landmarks": self.min_present_landmarks}}
 
         self.json = {
             "cleaned slice scores": self.cleaned_slice_scores,
@@ -206,6 +226,7 @@ class VolumeStorage:
             "slope ratio": self.r_slope,
             "expected z-spacing": self.expected_zspacing,
             "z-spacing": self.zspacing,
+            "settings": self.settings
         }
 
     def save_json(self, output_path):
