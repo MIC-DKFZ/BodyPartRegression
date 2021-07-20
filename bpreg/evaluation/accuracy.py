@@ -16,7 +16,7 @@ limitations under the License.
 import numpy as np
 import torch
 
-# TODO inference model nutzen
+
 class Accuracy:
     def __init__(self, estimated_landmark_scores: np.array, class_to_landmark: dict):
         self.estimated_landmark_scores = estimated_landmark_scores
