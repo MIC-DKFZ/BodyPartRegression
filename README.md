@@ -15,15 +15,59 @@ With a simple command from the terminal, the body part information can be calcul
 
 
 --------------------------------------------------------------
-## Install package 
-
-1. Create a new virtual environment with pip
-2. Clone the bodypartregression repsoitory from phabricator 
-3. Go into the bodypartregression/ folder and run: 
-   
+## Install package with conda
+1. Clone the bodypartregression repository from phabricator and move into the bodypartregression/ folder
 ```
+cd bodypartregression/
+```
+2. Create new conda environment and activate environment with: 
+```
+conda create -n venv_name
+conda activate venv_name
+```
+3. Install pip into the environment
+```
+conda install pip
+```
+4. Install the package with pip through the command (with your personal anaconda path): 
+```
+/home/anaconda3/envs/venv_name/bin/pip install -e 
+```
+You can find your personal anaconda path through the command: 
+```
+which anaconda
+```
+5. Initialize the bpreg package for inference and run in the terminal: 
+```
+bpreg_initialize
+```
+This command downloads the pretrained bpr model for CT volumes from 
+[zenodo](https://zenodo.org/record/5113483#.YPaBkNaxWEA).
+
+
+
+
+## Install package without conda
+1. Create a new python environment and activate it through: 
+```
+python -m venv venv_name
+source venv_name/bin/activate
+```
+2. Clone the bodypartregression repository from phabricator and move into the bodypartregression/ folder 
+```
+cd bodypartregression/
+```
+3. Install the package through: 
+ ```
 pip install -e .
 ```
+4. Initialize the bpreg package for inference and run in the terminal: 
+```
+bpreg_initialize
+```
+This command downloads the pretrained bpr model for CT volumes from 
+[zenodo](https://zenodo.org/record/5113483#.YPaBkNaxWEA).
+
 
 --------------------------------------------------------------
 ## Analyze examined body parts
