@@ -54,3 +54,4 @@ conda install pip
 /home/AD/s429r/anaconda3/envs/bvenv_name/bin/pip install package_name - which anaconda 
 
 /home/AD/s429r/anaconda3/envs/bpreg2/bin/pip install -e .
+/home/AD/s429r/anaconda3/envs/bpreg3/bin/pip install .

@@ -11,7 +11,7 @@ SAVE_PUBLIC_MODEL_PATH = "src/models/public_inference_model.zip"
 class PostInstallCommand(install): 
 
     def run(self): 
-        install.run()
+        install.run(self)
         import requests, zipfile 
 
         # Download public model from zenodo, for inference
