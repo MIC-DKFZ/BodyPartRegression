@@ -178,7 +178,7 @@ class VolumeStorage:
         self.expected_slope = float(scores.slope_mean)
         self.observed_slope = float(scores.a)
         self.expected_zspacing = float(scores.expected_zspacing)
-        self.r_zspacing = float(scores.r_zspacing)
+        self.r_slope = float(scores.r_slope)
         self.bpe = BodyPartExaminedDict(lookuptable)
         self.bpet = BodyPartExaminedTag(lookuptable)
 
@@ -195,7 +195,7 @@ class VolumeStorage:
             "valid z-spacing": self.valid_zspacing,
             "expected slope": self.expected_slope,
             "observed slope": self.observed_slope,
-            "z-spacing ratio": self.r_zspacing,
+            "slope ratio": self.r_slope,
             "expected z-spacing": self.expected_zspacing,
             "z-spacing": self.zspacing,
         }

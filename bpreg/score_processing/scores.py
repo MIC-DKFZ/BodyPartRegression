@@ -68,9 +68,9 @@ class Scores:
         self.a, self.b = self.fit_linear_line()
 
         # data sanity chekcs
-        self.r_zspacing_threshold = 0.2  # TODO
+        self.r_slope_threshold = 0.28  # TODO
         self.expected_zspacing = self.calculate_expected_zspacing()
-        self.r_zspacing = self.calculate_relative_error_to_expected_zspcaing()
+        self.r_slope = self.calculate_relative_error_to_expected_slope()
         self.valid_zspacing = self.is_zspacing_valid()
         self.reverse_zordering = self.is_zordering_reverse()
 
@@ -171,8 +171,8 @@ class Scores:
 
         return expected_zspacing
 
-    def calculate_relative_error_to_expected_zspcaing(self):
-        return self.zspacing / self.expected_zspacing
+    def calculate_relative_error_to_expected_slope(self):
+        return self.a/self.slope_mean
 
     def is_zordering_reverse(self):
         if self.a < 0:
@@ -180,20 +180,9 @@ class Scores:
         return 0
 
     def is_zspacing_valid(self):
-        if np.isnan(self.r_zspacing):
+        if np.isnan(self.r_slope):
             return np.nan
 
-        if np.abs(1 - self.r_zspacing) > self.r_zspacing_threshold:
+        if np.abs(1 - self.r_slope) > self.r_slope_threshold:
             return 0
         return 1
-
-    # TODO löschen
-
-    # def is_zspacing_valid(self):
-    #    if np.isnan(self.slope_mean) or np.isnan(self.slope_std):
-    #        return np.nan
-    #    if (self.a < (self.slope_mean - 3 * self.slope_std)) or (
-    #        self.a > (self.slope_mean + 3 * self.slope_std)
-    #    ):
-    #        return 0
-    #    return 1
