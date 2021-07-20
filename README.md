@@ -19,6 +19,7 @@ With a simple command from the terminal, the body part information can be calcul
 You can either use conda or just pip to install the bpreg package. 
 
 ### 1.1 Install package with conda
+
 1. Clone the bodypartregression repository from phabricator and move into the bodypartregression/ folder
 ```
 cd bodypartregression/
@@ -53,6 +54,7 @@ This command downloads the pretrained bpr model for CT volumes from
 
 
 ## 1.2 Install package without conda
+
 1. Create a new python environment and activate it through: 
 ```
 python -m venv venv_name
@@ -63,7 +65,7 @@ source venv_name/bin/activate
 cd bodypartregression/
 ```
 3. Install the package through: 
- ```
+```
 pip install -e .
 ```
 4. Initialize the bpreg package for inference and run in the terminal: 
