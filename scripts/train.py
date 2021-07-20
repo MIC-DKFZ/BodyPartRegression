@@ -22,7 +22,6 @@ import albumentations as A
 from scipy.stats import pearsonr
 from tqdm import tqdm
 
-cv2.setNumThreads(1)
 
 import torch, torchvision
 import torch.nn as nn
@@ -38,7 +37,8 @@ from bpreg.network_architecture.ssbr_model import SSBR
 from bpreg.utils.training_utils import *
 from bpreg.settings import ModelSettings
 
-np.seterr(divide="ignore", invalid="ignore")  # TODO
+cv2.setNumThreads(1)
+np.seterr(divide="ignore", invalid="ignore") 
 
 
 def train_json(json_path: str):
@@ -58,7 +58,7 @@ def train_json(json_path: str):
         train_dataset, val_dataset, _ = get_datasets(config, df)
         train_dataloader = torch.utils.data.DataLoader(
             train_dataset,
-            batch_size=config.batch_size,  # TODO !
+            batch_size=config.batch_size,  
             num_workers=22,
             shuffle=config.shuffle_train_dataloader,
         )

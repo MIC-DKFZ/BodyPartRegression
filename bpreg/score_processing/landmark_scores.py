@@ -109,7 +109,7 @@ class LandmarkScores:
             std = np.round(values["std"], 3)
             print(f"{landmark:<15}:\t {mean} +- {std}")
 
-    def save_lookuptable(self, filepath):  # TODO
+    def save_lookuptable(self, filepath):
         jsonDict = {
             "original": self.lookuptable,
             "transformed": self.transformed_lookuptable,

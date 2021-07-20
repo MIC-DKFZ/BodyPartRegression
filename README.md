@@ -1,6 +1,6 @@
 # Body Part Regression 
 
-The Body Part Regression (BPR) model translates the anatomy in a radiologic volume into a machine-readable form. 
+The Body Part Regression (BPR) model translates the anatomy in a radiologic volume into a machine-interpretable form. 
 Each axial slice maps to a slice score. The slice scores monotonously increase with patient height. 
 With the help of a slice-score look-up table, the mapping between certain landmarks to slice scores can be checked. 
 The BPR model learns in a completely self-supervised fashion. There is no need for annotated data for training the model besides of evaluation purposes. 

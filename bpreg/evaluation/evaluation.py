@@ -28,10 +28,20 @@ from bpreg.settings import *
 
 
 class Evaluation(Visualization):
+    """evaluate body part regression model 
+
+    Args:
+        base_filepath (str): path of trained model
+        df_data_source_path (str, optional): Path to dataframe which defines train/val/test split. Defaults to DF_DATA_SOURCE_PATH.
+        landmark_path (str, optional): Path to dataframe which saves the annotated landmarks. Defaults to LANDMARK_PATH.
+        data_path (str, optional): Path where the .npy files for training are saved. Defaults to DATA_PATH.
+        device (str, optional): device, where to save the model. Defaults to "cuda".
+        landmark_start (str, optional): start landmark gets mapped through transformation to zero. Defaults to "pelvis_start".
+        landmark_end (str, optional): end_landmark gets mapped through transformation to 100. Defaults to "eyes_end".
+    """
     def __init__(
         self,
         base_filepath: str,
-        val_dataset: None = False,
         df_data_source_path: str = DF_DATA_SOURCE_PATH,
         landmark_path: str = LANDMARK_PATH,
         data_path: str = DATA_PATH,
@@ -39,6 +49,7 @@ class Evaluation(Visualization):
         landmark_start: str = "pelvis_start",
         landmark_end: str = "eyes_end",
     ):
+
         Visualization.__init__(self)
         self.device = device
         self.base_filepath = base_filepath
@@ -56,7 +67,7 @@ class Evaluation(Visualization):
         self.df_data_source_path = df_data_source_path
         self.landmark_path = landmark_path  # TODO --> model dataclass with all attributes and _load_model function
         self.data_path = data_path
-        self._setup_data(val_dataset=val_dataset)
+        self._setup_data()
 
         self.mse, self.mse_std = self.landmark_score_bundle.nMSE(
             target="validation", reference="train"
@@ -65,8 +76,8 @@ class Evaluation(Visualization):
             self.val_dataset, reference="train", class2landmark=CLASS_TO_LANDMARK_5
         )
 
-    def _setup_data(self, val_dataset=False):
-        path = self.base_filepath + "config.json"  # TODO !
+    def _setup_data(self):
+        path = self.base_filepath + "config.json" 
 
         self.config = ModelSettings()
         self.config.load(path)
@@ -84,13 +95,10 @@ class Evaluation(Visualization):
             config.data_path = self.data_path
 
         df_data = get_dataframe(config)
-        if val_dataset:
-            self.val_dataset = val_dataset
-            self.train_dataset, _, self.test_dataset = get_datasets(config, df_data)
-        else:
-            self.train_dataset, self.val_dataset, self.test_dataset = get_datasets(
-                config, df_data
-            )
+
+        self.train_dataset, self.val_dataset, self.test_dataset = get_datasets(
+            config, df_data
+        )
 
         self.train_dataloader = torch.utils.data.DataLoader(
             self.train_dataset,

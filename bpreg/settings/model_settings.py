@@ -23,7 +23,6 @@ import albumentations as A
 from bpreg.settings.settings import *
 from bpreg.dataset.custom_transformations import *
 
-# TODO dataclass + typing/list/dict
 
 
 @dataclass

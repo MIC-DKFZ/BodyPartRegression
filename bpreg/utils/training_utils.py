@@ -57,7 +57,7 @@ def run_fast_dev(
 
 def save_model(model, config: ModelSettings, path):
     print("save model at: ", path)
-    config.save(save_path=path + "config.json")  # TODO - does this work?
+    config.save(save_path=path + "config.json") 
 
     if config.save_model:
         torch.save(model.state_dict(), path + "model.pt")
@@ -97,7 +97,7 @@ def data_preprocessing_ssbr(df: pd.DataFrame, config: ModelSettings):
         filenames=train_filenames,
         z_spacings=train_zspacings,
         landmark_path=config.landmark_path,
-        landmark_sheet_name="landmarks-train",  # TODO -without-merge
+        landmark_sheet_name="landmarks-train", 
         random_seed=config.random_seed,
         custom_transform=config.custom_transform,
         albumentation_transform=config.albumentation_transform,
@@ -189,7 +189,7 @@ def get_datasets(config: ModelSettings, df: pd.DataFrame):
         filenames=train_filenames,
         z_spacings=train_zspacings,
         landmark_path=config.landmark_path,
-        landmark_sheet_name="landmarks-train",  # TODO -without-merge
+        landmark_sheet_name="landmarks-train",  
         random_seed=config.random_seed,
         custom_transform=config.custom_transform,
         albumentation_transform=config.albumentation_transform,

@@ -13,5 +13,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-# TODO: prepare model for inference
+# TODO: prepare model for inference - postprocess_model_for_inference
 # TODO: create model-settings file

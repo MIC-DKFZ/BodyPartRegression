@@ -28,17 +28,33 @@ from bpreg.utils.linear_transformations import *
 
 
 class Scores:
+    """ Scores and additional meta data inforamtion based on the prediction from the Body Part Regression (bpr) model. 
+
+    Args:
+        scores (list): predictions from the bpr model. 
+        zspacing (float): zspacing of analzed volume. 
+        transform_min (float, optional): score which should get mapped to zero. Defaults to np.nan.
+        transform_max (float, optional): score which should get mapped to 100. Defaults to np.nan.
+        smoothing_sigma (float, optional): Smoothing sigma in mm, for gaussian smoothing of the scores. Defaults to 10.
+        tangential_slope_min (float, optional): minimum valid tangential slope. Defaults to -0.037.
+        tangential_slope_max (float, optional): maximum valid tangential slope. Defaults to 0.25.
+        slope_mean (float, optional): expected slope of slice score curve. Defaults to np.nan.
+        background_scores (list, optional): slice score prediction of empty slice. Defaults to [110.83, 6.14].
+        r_slope_threshold (float, optional): threshold for declaring the z-spacing as invalid. Defaults to 0.28.
+    """
+
     def __init__(
         self,
         scores: list,
         zspacing: float,
-        transform_min: float = np.nan,
-        transform_max: float = np.nan,
+        transform_min: float,
+        transform_max: float,
         smoothing_sigma: float = 10,
         tangential_slope_min: float = -0.037,
         tangential_slope_max: float = 0.25,
         slope_mean: float = np.nan,
         background_scores=[110.83, 6.14],
+        r_slope_threshold: float=0.28, 
     ):
 
         scores = np.array(scores).astype(float)
@@ -68,7 +84,7 @@ class Scores:
         self.a, self.b = self.fit_linear_line()
 
         # data sanity chekcs
-        self.r_slope_threshold = 0.28  # TODO
+        self.r_slope_threshold = r_slope_threshold
         self.expected_zspacing = self.calculate_expected_zspacing()
         self.r_slope = self.calculate_relative_error_to_expected_slope()
         self.valid_zspacing = self.is_zspacing_valid()

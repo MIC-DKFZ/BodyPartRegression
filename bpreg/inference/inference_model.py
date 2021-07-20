@@ -64,8 +64,6 @@ class InferenceModel:
         self.model = load_model(base_dir, device=self.device)
         self.load_inference_settings()
 
-        # self.load_lookuptable() # TODO remove 
-        # self.load_settings()
         self.n2n = Nifti2Npy(
             target_pixel_spacing=3.5, min_hu=-1000, max_hu=1500, size=128
         )

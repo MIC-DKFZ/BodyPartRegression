@@ -29,7 +29,7 @@ LANDMARK_NAMES = [
 # 0 - legs, 1 - pelvis, 2 - abdomen
 CLASSES = {"legs": 0, "pelvis": 1, "abdomen": 2, "thorax": 3, "neck": 4, "head": 5}
 
-LANDMARK_CLASS_MAPPING = {  # TODO ######
+LANDMARK_CLASS_MAPPING = {  
     0: CLASSES["legs"],
     1: CLASSES["pelvis"],
     2: CLASSES["pelvis"],

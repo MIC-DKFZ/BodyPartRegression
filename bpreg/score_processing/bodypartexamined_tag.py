@@ -16,7 +16,7 @@ BODY_PARTS_INCLUDED = {
         "Th11",
         "Th10",
         "Th9",
-    ],  # TODO document 7/9
+    ], 
     "CHEST": [
         "Th12",
         "Th11",

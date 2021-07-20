@@ -66,16 +66,11 @@ class LMSE:
 
     def from_matrices(
         self, score_matrix, reference_matrix, d=False
-    ):  ####### TODO ######
+    ):  
         lmses, lmse_stds = self.lmse_per_volume_from_matrices(
             score_matrix, reference_matrix, d=d
         )
         return np.mean(lmses), np.std(lmses, ddof=1) / np.sqrt(len(lmses))
-
-        # square_error_matrix = self.get_square_error_matrix(score_matrix, reference_matrix, d=d)
-        # lmse_per_volume =  np.nanmean(square_error_matrix, axis=1)
-
-        # return np.mean(lmse_per_volume), np.std(lmse_per_volume, ddof=1)/ np.sqrt(len(lmse_per_volume))
 
     def get_square_error_matrix(self, score_matrix, reference_matrix, d=False):
         expected_scores = np.nanmean(reference_matrix, axis=0)
