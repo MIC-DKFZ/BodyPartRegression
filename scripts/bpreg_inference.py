@@ -15,7 +15,7 @@ limitations under the License.
 
 import os, sys
 import argparse
-
+import torch
 
 
 sys.path.append("../")
@@ -25,7 +25,10 @@ from bpreg.settings import *
 
 
 def bpreg_for_directory(model_path: str, input_dirpath: str, output_dirpath: str, skip_existing: bool=1):
-    model = InferenceModel(model_path)
+    # test if gpu is available 
+    gpu_available = torch.cuda.is_available()
+
+    model = InferenceModel(model_path, gpu=gpu_available)
     ifiles = [f for f in os.listdir(input_dirpath) if f.endswith((".nii.gz", ".nii"))]
     ofiles = [f.replace(".nii", "").replace(".gz", "") + ".json" for f in ifiles]
 

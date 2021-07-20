@@ -54,7 +54,7 @@ class InferenceModel:
         device (str, optional): [description]. "cuda" or "cpu"
     """
 
-    def __init__(self, base_dir: str, gpu: int = 1):
+    def __init__(self, base_dir: str, gpu: bool = 1):
 
         self.base_dir = base_dir
         self.device = "cpu"
@@ -221,23 +221,6 @@ def load_model(
 
     return model
 
-
-### TODO löschen
-
-
-def load_model2(base_dir, model_file="model.pt", config_file="config.p", device="cuda"):
-    config_filepath = base_dir + config_file
-    model_filepath = base_dir + model_file
-
-    with open(config_filepath, "rb") as f:
-        config = pickle.load(f)
-
-    model = BodyPartRegression(alpha=config["alpha"], lr=config["lr"])
-    model.load_state_dict(torch.load(model_filepath, map_location=torch.device(device)))
-    model.eval()
-    model.to(device)
-
-    return model
 
 
 if __name__ == "__main__":
