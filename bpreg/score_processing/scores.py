@@ -83,7 +83,6 @@ class Scores:
         self.valid_values = self.values[~np.isnan(self.values)]
         self.a, self.b = self.fit_linear_line()
 
-
         # data sanity chekcs
         self.r_slope_threshold = r_slope_threshold
         self.expected_zspacing = self.calculate_expected_zspacing()
