@@ -54,7 +54,7 @@ class InferenceModel:
         device (str, optional): [description]. "cuda" or "cpu"
     """
 
-    def __init__(self, base_dir: str, gpu: bool = 1):
+    def __init__(self, base_dir: str, gpu: bool=1):
 
         self.base_dir = base_dir
         self.device = "cpu"
@@ -118,9 +118,14 @@ class InferenceModel:
         scores = self.predict_tensor(x_tensor, n_splits=n_splits)
         return scores
 
-    def predict_nifti(self, nifti_path):
+    def predict_nifti(self, nifti_path: str):
         # get nifti file as tensor
         x, pixel_spacings = self.n2n.preprocess_nifti(nifti_path)
+        if isinstance(x, float) and np.isnan(x): 
+            print(f"WARNING: File {nifti_path.split('/')[-1]} can not be converted to a 3-dimensional volume ",
+                   f"of the size {self.n2n.size}x{self.n2n.size}xz")
+            return np.nan
+
         x = np.transpose(x, (2, 0, 1))[:, np.newaxis, :, :]
         x_tensor = torch.tensor(x)
         x_tensor.to(self.device)
@@ -152,6 +157,8 @@ class InferenceModel:
 
     def nifti2json(self, nifti_path, output_path):
         slice_scores = self.predict_nifti(nifti_path)
+        if isinstance(slice_scores, float) and np.isnan(slice_scores): return np.nan
+
         data_storage = VolumeStorage(slice_scores, self.lookuptable)
         if len(output_path) > 0:
             data_storage.save_json(output_path)

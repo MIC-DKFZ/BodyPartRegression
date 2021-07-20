@@ -15,6 +15,7 @@ limitations under the License.
 
 import numpy as np
 import nibabel as nib
+from numpy.lib.arraysetops import isin
 
 import pandas as pd
 from tqdm import tqdm
@@ -115,6 +116,12 @@ class Nifti2Npy:
     def resize_volume(self, x, pixel_spacings):
         x = self.resize_xy(x, pixel_spacings)
 
+        # filter invalid volumes 
+        if isinstance(x, float) and np.isnan(x): 
+            return np.nan 
+        elif x.shape[0] == 1 or x.shape[1] == 1: 
+            return np.nan 
+
         if (x.shape[0] < self.size) or (x.shape[1] < self.size):
             x = self.padding3d(x)
         if (x.shape[0] > self.size) or (x.shape[1] > self.size):
@@ -179,7 +186,6 @@ class Nifti2Npy:
         return x
 
     def resize_xy(self, x, pixel_spacings):
-
         scalex = self.target_pixel_spacing / pixel_spacings[0]
         scaley = self.target_pixel_spacing / pixel_spacings[1]
 
@@ -189,6 +195,8 @@ class Nifti2Npy:
         downscaling_factor_x = rescaled_sizex / x.shape[0]
         downscaling_factor_y = rescaled_sizey / x.shape[1]
 
+        if downscaling_factor_y == 0 or downscaling_factor_x == 0: 
+            return np.nan
         sigma = (
             self.sigma[0] * self.reference_downscaling_factor / downscaling_factor_x,
             self.sigma[1] * self.reference_downscaling_factor / downscaling_factor_y,
@@ -273,6 +281,8 @@ class Nifti2Npy:
 
         x = self.rescale_xy(x0)
         x = self.resize_volume(x, pixel_spacings)
+        if isinstance(x, float) and np.isnan(x): return np.nan, x0, pixel_spacings
+
         x = self.remove_empty_slices(x)
         self.test_volume(x)
 

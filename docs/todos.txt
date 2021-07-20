@@ -46,6 +46,8 @@
 
 bpreg_predict -i data/test_cases/ -o data/test_results/ --skip 0
 
+bpreg_predict -i /home/AD/s429r/Documents/Data/DataSet/Images/ -o /home/AD/s429r/Documents/Data/DataSet/body-part-meta-data/ 
+
 ## Anaconda Environment 
 
 conda create -n venv_name
@@ -59,3 +61,4 @@ conda install pip
 /home/AD/s429r/anaconda3/envs/bpreg5/bin/pip install -e .
 
 bpreg_initialize
+
