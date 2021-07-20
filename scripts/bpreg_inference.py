@@ -33,12 +33,12 @@ def bpreg_for_directory(model_path: str, input_dirpath: str, output_dirpath: str
     ofiles = [f.replace(".nii", "").replace(".gz", "") + ".json" for f in ifiles]
 
     for ifile, ofile in zip(ifiles, ofiles):
-        ipath = input_dirpath + ifile
-        opath = output_dirpath + ofile
+        ipath = os.path.join(input_dirpath, ifile)
+        opath = os.path.join(output_dirpath, ofile)
         if os.path.exists(opath) and skip_existing==1:
-            print(f"JSON-file already exists. Skip file: {opath.split('/')[-1]}")
+            print(f"JSON-file already exists. Skip file: {ifile}")
             continue
-        print(f"Create body-part meta data file: {opath.split('/')[-1]}")
+        print(f"Create body-part meta data file: {ofile}")
         model.nifti2json(ipath, opath)
 
 
