@@ -40,6 +40,19 @@
     - using to less data 
     - haveing to much data with a wrong axis ordering in the dataset 
     - A very valuable source for getting data for a body part regression model is [The Cancer Image Archive](https://www.cancerimagingarchive.net/). 
-- bpreg_predict -i data/test_cases/ -o data/test_results/ --skip 0
+- 
 - add visualizations
 - report.txt 
+
+bpreg_predict -i data/test_cases/ -o data/test_results/ --skip 0
+
+## Anaconda Environment 
+
+conda create -n venv_name
+source activate venv_name
+conda install pip
+/home/AD/s429r/anaconda3/envs/bvenv_name/bin/pip install package_name
+
+/home/AD/s429r/anaconda3/envs/bpreg/bin/pip install -e .
+
+/home/AD/s429r/anaconda3/envs/bpreg2/bin/pip install -e .
