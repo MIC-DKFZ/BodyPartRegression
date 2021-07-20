@@ -117,5 +117,5 @@ TRANSFORM_STANDARD_PARAMS = {
 
 # Path for default inference model 
 MODULE_PATH =  os.getcwd().split("bodypartregression")[0] + "bodypartregression/"
-DEFAULT_MODEL = MODULE_PATH + "/src/models/public_bpr_model/"
+DEFAULT_MODEL = MODULE_PATH + "src/models/public_bpr_model/"
 
