@@ -1,7 +1,13 @@
 import numpy as np
-import cv2, os
+import cv2, os, json
 
 cv2.setNumThreads(1)
+
+abspath = os.path.abspath(__file__)
+MAIN_PATH = os.path.dirname(os.path.dirname(os.path.dirname(abspath)))
+
+# Path for default inference model 
+DEFAULT_MODEL = os.path.join(MAIN_PATH,"src/models/public_bpr_model/")
 
 # define landmark names
 LANDMARK_NAMES = [
@@ -114,8 +120,4 @@ TRANSFORM_STANDARD_PARAMS = {
         "p": 0.5,
     },
 }
-
-# Path for default inference model 
-MODULE_PATH =  os.getcwd().split("bodypartregression")[0] + "bodypartregression/"
-DEFAULT_MODEL = MODULE_PATH + "src/models/public_bpr_model/"
 

@@ -49,9 +49,13 @@ bpreg_predict -i data/test_cases/ -o data/test_results/ --skip 0
 ## Anaconda Environment 
 
 conda create -n venv_name
-source activate venv_name
+conda activate venv_name
+
 conda install pip
 /home/AD/s429r/anaconda3/envs/bvenv_name/bin/pip install package_name - which anaconda 
 
-/home/AD/s429r/anaconda3/envs/bpreg2/bin/pip install -e .
-/home/AD/s429r/anaconda3/envs/bpreg3/bin/pip install .
+/home/AD/s429r/anaconda3/envs/bpreg4/bin/pip install .
+
+/home/AD/s429r/anaconda3/envs/bpreg5/bin/pip install -e .
+
+bpreg_initialize
