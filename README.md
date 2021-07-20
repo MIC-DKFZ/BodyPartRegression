@@ -15,7 +15,10 @@ With a simple command from the terminal, the body part information can be calcul
 
 
 --------------------------------------------------------------
-## Install package with conda
+## 1. Install package
+You can either use conda or just pip to install the bpreg package. 
+
+### 1.1 Install package with conda
 1. Clone the bodypartregression repository from phabricator and move into the bodypartregression/ folder
 ```
 cd bodypartregression/
@@ -37,17 +40,19 @@ You can find your personal anaconda path through the command:
 ```
 which anaconda
 ```
+
 5. Initialize the bpreg package for inference and run in the terminal: 
 ```
 bpreg_initialize
 ```
+
 This command downloads the pretrained bpr model for CT volumes from 
 [zenodo](https://zenodo.org/record/5113483#.YPaBkNaxWEA).
 
 
 
 
-## Install package without conda
+## 1.2 Install package without conda
 1. Create a new python environment and activate it through: 
 ```
 python -m venv venv_name
@@ -70,6 +75,7 @@ This command downloads the pretrained bpr model for CT volumes from
 
 
 --------------------------------------------------------------
+
 ## Analyze examined body parts
 The scope of the pretrained BPR model for CT volumes are body parts from adults from the beginning of the pelvis to the end of the head. Note that due to missing training data, children, pregnant women or legs are not in the scope of the algorithm. <br> 
 To obtain the body part information for nifti-files you need to provide the nifti-files with the file ending *.nii or *.nii.gz in one directory and run the following command: 
@@ -91,6 +97,7 @@ If you use this model for your work, please make sure to cite the model and the 
 
 
 --------------------------------------------------------------
+
 ## Structure of metadata file
 
 The json-file contains all the metadata regarding the examined body part of the nifti-file. It includes the following  tags: 
