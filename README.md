@@ -21,7 +21,7 @@ With a simple command from the terminal, the body part information can be calcul
 2. Clone the bodypartregression repsoitory from phabricator 
 3. Go into the bodypartregression/ folder and run: 
    
-```bash
+```
 pip install -e .
 ```
 
@@ -29,7 +29,7 @@ pip install -e .
 ## Analyze examined body parts
 The scope of the pretrained BPR model for CT volumes are body parts from adults from the beginning of the pelvis to the end of the head. Note that due to missing training data, children, pregnant women or legs are not in the scope of the algorithm. <br> 
 To obtain the body part information for nifti-files you need to provide the nifti-files with the file ending *.nii or *.nii.gz in one directory and run the following command: 
-```bash
+```
 bpreg_predict -i <input_path> -o <output_path>
 ``` 
 Tags for the `bpreg_predict` command: <br>
