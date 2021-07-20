@@ -24,8 +24,10 @@ from bpreg.inference.inference_model import InferenceModel
 from bpreg.settings import *
 
 
-def bpreg_for_directory(model_path: str, input_dirpath: str, output_dirpath: str, skip_existing: bool=1):
-    # test if gpu is available 
+def bpreg_for_directory(
+    model_path: str, input_dirpath: str, output_dirpath: str, skip_existing: bool = 1
+):
+    # test if gpu is available
     gpu_available = torch.cuda.is_available()
 
     model = InferenceModel(model_path, gpu=gpu_available)
@@ -35,7 +37,7 @@ def bpreg_for_directory(model_path: str, input_dirpath: str, output_dirpath: str
     for ifile, ofile in zip(ifiles, ofiles):
         ipath = os.path.join(input_dirpath, ifile)
         opath = os.path.join(output_dirpath, ofile)
-        if os.path.exists(opath) and skip_existing==1:
+        if os.path.exists(opath) and skip_existing == 1:
             print(f"JSON-file already exists. Skip file: {ifile}")
             continue
         print(f"Create body-part meta data file: {ofile}")
@@ -43,15 +45,15 @@ def bpreg_for_directory(model_path: str, input_dirpath: str, output_dirpath: str
 
 
 def main():
-    # default_model = "../src/models/private_bpr_model/" # TODO 
+    # default_model = "../src/models/private_bpr_model/" # TODO
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("-i", default="")
     parser.add_argument("-o", default="")
     parser.add_argument("--skip", default=1)
-    # TODO --plot 0/1 
-    # TODO report 
+    # TODO --plot 0/1
+    # TODO report
 
     value = parser.parse_args()
     model_path = value.model
@@ -59,7 +61,9 @@ def main():
     output_dirpath = value.o
     skip_existing = value.skip
 
-    bpreg_for_directory(model_path, input_dirpath, output_dirpath, skip_existing=skip_existing)
+    bpreg_for_directory(
+        model_path, input_dirpath, output_dirpath, skip_existing=skip_existing
+    )
 
 
 if __name__ == "__main__":

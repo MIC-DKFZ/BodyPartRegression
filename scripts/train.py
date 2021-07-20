@@ -38,7 +38,7 @@ from bpreg.utils.training_utils import *
 from bpreg.settings import ModelSettings
 
 cv2.setNumThreads(1)
-np.seterr(divide="ignore", invalid="ignore") 
+np.seterr(divide="ignore", invalid="ignore")
 
 
 def train_json(json_path: str):
@@ -58,7 +58,7 @@ def train_json(json_path: str):
         train_dataset, val_dataset, _ = get_datasets(config, df)
         train_dataloader = torch.utils.data.DataLoader(
             train_dataset,
-            batch_size=config.batch_size,  
+            batch_size=config.batch_size,
             num_workers=22,
             shuffle=config.shuffle_train_dataloader,
         )

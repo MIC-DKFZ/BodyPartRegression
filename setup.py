@@ -36,9 +36,10 @@ setup(
     long_description=readme,
     author="Division of Medical Image Computing, German Cancer Research Center",
     maintainer_email="",
-    entry_points={"console_scripts": [
-                                    "bpreg_initialize = scripts.initialize_pretrained_model:main", 
-                                    "bpreg_predict = scripts.bpreg_inference:main"]},
+    entry_points={
+        "console_scripts": [
+            "bpreg_initialize = scripts.initialize_pretrained_model:main",
+            "bpreg_predict = scripts.bpreg_inference:main",
+        ]
+    },
 )
-
-

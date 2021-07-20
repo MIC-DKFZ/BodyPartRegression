@@ -19,13 +19,17 @@ from bpreg.settings.settings import MAIN_PATH
 PUBLIC_MODEL_URL = (
     "https://zenodo.org/record/5113483/files/public_bpr_model.zip?download=1"
 )
-SAVE_PUBLIC_MODEL_PATH = os.path.join(MAIN_PATH, "src/models/public_inference_model.zip")
+SAVE_PUBLIC_MODEL_PATH = os.path.join(
+    MAIN_PATH, "src/models/public_inference_model.zip"
+)
 
 
-def main(): 
+def main():
     # Download public model from zenodo, for inference
-    print("Download publicly available body part regression model from Zenodo:\n", 
-    "https://zenodo.org/record/5113483")
+    print(
+        "Download publicly available body part regression model from Zenodo:\n",
+        "https://zenodo.org/record/5113483",
+    )
 
     with requests.get(PUBLIC_MODEL_URL, stream="True") as r:
         r.raise_for_status()
@@ -41,5 +45,6 @@ def main():
     # remove file
     os.remove(SAVE_PUBLIC_MODEL_PATH)
 
-if __name__ == "__main__": 
+
+if __name__ == "__main__":
     main()

@@ -28,11 +28,11 @@ from bpreg.utils.linear_transformations import *
 
 
 class Scores:
-    """ Scores and additional meta data inforamtion based on the prediction from the Body Part Regression (bpr) model. 
+    """Scores and additional meta data inforamtion based on the prediction from the Body Part Regression (bpr) model.
 
     Args:
-        scores (list): predictions from the bpr model. 
-        zspacing (float): zspacing of analzed volume. 
+        scores (list): predictions from the bpr model.
+        zspacing (float): zspacing of analzed volume.
         transform_min (float, optional): score which should get mapped to zero. Defaults to np.nan.
         transform_max (float, optional): score which should get mapped to 100. Defaults to np.nan.
         smoothing_sigma (float, optional): Smoothing sigma in mm, for gaussian smoothing of the scores. Defaults to 10.
@@ -54,7 +54,7 @@ class Scores:
         tangential_slope_max: float = 0.25,
         slope_mean: float = np.nan,
         background_scores=[110.83, 6.14],
-        r_slope_threshold: float=0.28, 
+        r_slope_threshold: float = 0.28,
     ):
 
         scores = np.array(scores).astype(float)
@@ -188,7 +188,7 @@ class Scores:
         return expected_zspacing
 
     def calculate_relative_error_to_expected_slope(self):
-        return self.a/self.slope_mean
+        return self.a / self.slope_mean
 
     def is_zordering_reverse(self):
         if self.a < 0:

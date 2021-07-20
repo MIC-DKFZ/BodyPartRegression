@@ -6,8 +6,8 @@ cv2.setNumThreads(1)
 abspath = os.path.abspath(__file__)
 MAIN_PATH = os.path.dirname(os.path.dirname(os.path.dirname(abspath)))
 
-# Path for default inference model 
-DEFAULT_MODEL = os.path.join(MAIN_PATH,"src/models/public_bpr_model/")
+# Path for default inference model
+DEFAULT_MODEL = os.path.join(MAIN_PATH, "src/models/public_bpr_model/")
 
 # define landmark names
 LANDMARK_NAMES = [
@@ -29,7 +29,7 @@ LANDMARK_NAMES = [
 # 0 - legs, 1 - pelvis, 2 - abdomen
 CLASSES = {"legs": 0, "pelvis": 1, "abdomen": 2, "thorax": 3, "neck": 4, "head": 5}
 
-LANDMARK_CLASS_MAPPING = {  
+LANDMARK_CLASS_MAPPING = {
     0: CLASSES["legs"],
     1: CLASSES["pelvis"],
     2: CLASSES["pelvis"],
@@ -120,4 +120,3 @@ TRANSFORM_STANDARD_PARAMS = {
         "p": 0.5,
     },
 }
-

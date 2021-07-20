@@ -24,7 +24,6 @@ from bpreg.settings.settings import *
 from bpreg.dataset.custom_transformations import *
 
 
-
 @dataclass
 class ModelSettings:
     """Create settings file for training a body part regression model."""

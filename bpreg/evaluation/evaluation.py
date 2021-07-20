@@ -28,7 +28,7 @@ from bpreg.settings import *
 
 
 class Evaluation(Visualization):
-    """evaluate body part regression model 
+    """evaluate body part regression model
 
     Args:
         base_filepath (str): path of trained model
@@ -39,6 +39,7 @@ class Evaluation(Visualization):
         landmark_start (str, optional): start landmark gets mapped through transformation to zero. Defaults to "pelvis_start".
         landmark_end (str, optional): end_landmark gets mapped through transformation to 100. Defaults to "eyes_end".
     """
+
     def __init__(
         self,
         base_filepath: str,
@@ -77,7 +78,7 @@ class Evaluation(Visualization):
         )
 
     def _setup_data(self):
-        path = self.base_filepath + "config.json" 
+        path = self.base_filepath + "config.json"
 
         self.config = ModelSettings()
         self.config.load(path)

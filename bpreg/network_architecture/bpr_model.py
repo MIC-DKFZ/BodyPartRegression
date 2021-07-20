@@ -39,7 +39,7 @@ class BodyPartRegression(BodyPartRegressionBase):
         loss_order: str = "h",
         beta_h: float = 0.025,
         alpha_h: float = 0.5,
-        base_model="vgg", 
+        base_model="vgg",
         weight_decay=0,
     ):
 

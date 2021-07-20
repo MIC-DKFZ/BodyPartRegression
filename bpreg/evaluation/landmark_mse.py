@@ -64,9 +64,7 @@ class LMSE:
 
         return lmse, lmse_std
 
-    def from_matrices(
-        self, score_matrix, reference_matrix, d=False
-    ):  
+    def from_matrices(self, score_matrix, reference_matrix, d=False):
         lmses, lmse_stds = self.lmse_per_volume_from_matrices(
             score_matrix, reference_matrix, d=d
         )
