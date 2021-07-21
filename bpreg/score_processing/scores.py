@@ -198,7 +198,7 @@ class Scores:
         return expected_zspacing
 
     def calculate_relative_error_to_expected_slope(self):
-        return self.a / self.slope_mean
+        return np.abs(self.a) / self.slope_mean
 
     def is_zordering_reverse(self):
         if self.a < 0:

@@ -116,7 +116,10 @@ class InferenceModel:
 
     def predict_nifti(self, nifti_path: str):
         # get nifti file as tensor
-        x, pixel_spacings = self.n2n.preprocess_nifti(nifti_path)
+        try: 
+            x, pixel_spacings = self.n2n.preprocess_nifti(nifti_path)
+        except: x, pixel_spacings = np.nan, np.nan 
+
         if isinstance(x, float) and np.isnan(x):
             print(
                 f"WARNING: File {nifti_path.split('/')[-1]} can not be converted to a 3-dimensional volume ",
@@ -145,7 +148,7 @@ class InferenceModel:
         )
         return scores
 
-    def npy2json(self, X, output_path, pixel_spacing):
+    def npy2json(self, X, output_path, pixel_spacing=np.nan):
         slice_scores = self.predict_npy_array(X)
         slice_scores = self.parse_scores(slice_scores, pixel_spacing)
         data_storage = VolumeStorage(slice_scores, self.lookuptable)
