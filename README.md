@@ -35,21 +35,12 @@ conda install pip
 ```
 4. Install the package with pip through the command (with your personal anaconda path): 
 ```
-/home/anaconda3/envs/venv_name/bin/pip install -e 
+/home/anaconda3/envs/venv_name/bin/pip install -e .
 ```
 You can find your personal anaconda path through the command: 
 ```
 which anaconda
 ```
-
-5. Initialize the bpreg package for inference and run in the terminal: 
-```
-bpreg_initialize
-```
-
-This command downloads the pretrained bpr model for CT volumes from 
-[zenodo](https://zenodo.org/record/5113483#.YPaBkNaxWEA).
-
 
 
 
@@ -68,12 +59,6 @@ cd bodypartregression/
 ```
 pip install -e .
 ```
-4. Initialize the bpreg package for inference and run in the terminal: 
-```
-bpreg_initialize
-```
-This command downloads the pretrained bpr model for CT volumes from 
-[zenodo](https://zenodo.org/record/5113483#.YPaBkNaxWEA).
 
 
 --------------------------------------------------------------

@@ -24,7 +24,7 @@ SAVE_PUBLIC_MODEL_PATH = os.path.join(
 )
 
 
-def main():
+def initialize_pretrained_model():
     # Download public model from zenodo, for inference
     print(
         "Download publicly available body part regression model from Zenodo:\n",
@@ -47,4 +47,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    initialize_pretrained_model()

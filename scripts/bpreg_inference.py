@@ -14,6 +14,7 @@ limitations under the License.
 """
 
 import os, sys
+from scripts.initialize_pretrained_model import initialize_pretrained_model
 import argparse
 import torch
 
@@ -22,7 +23,6 @@ sys.path.append("../")
 
 from bpreg.inference.inference_model import InferenceModel
 from bpreg.settings import *
-
 
 def bpreg_for_directory(
     model_path: str, input_dirpath: str, output_dirpath: str, skip_existing: bool = 1
@@ -61,10 +61,14 @@ def main():
     output_dirpath = value.o
     skip_existing = value.skip
 
+    # load public model, if it does not exists locally 
+    if (model_path == DEFAULT_MODEL) & ~os.path.exists(model_path): 
+        initialize_pretrained_model()
+    
+    # run body part regression for each file in dictionary
     bpreg_for_directory(
         model_path, input_dirpath, output_dirpath, skip_existing=skip_existing
     )
-
 
 if __name__ == "__main__":
     main()

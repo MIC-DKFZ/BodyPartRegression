@@ -38,7 +38,6 @@ setup(
     maintainer_email="",
     entry_points={
         "console_scripts": [
-            "bpreg_initialize = scripts.initialize_pretrained_model:main",
             "bpreg_predict = scripts.bpreg_inference:main",
         ]
     },
