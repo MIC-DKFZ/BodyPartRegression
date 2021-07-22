@@ -1,8 +1,8 @@
 pytorch_lightning==1.2.10
 nibabel==3.2.1
-scipy==1.7.0 # ==1.5.2 # 1.5.2 does not work 
+scipy==1.7.0 #<=1.7.0,>=1.5.4 # ==1.5.2 # 1.5.2 does not work 
 albumentations==0.5.2
 dataclasses
-pandas==1.2.1
+pandas==1.2.1 # <=1.2.1,>=1.1.5
 torch==1.7.1
 torchvision==0.8.2

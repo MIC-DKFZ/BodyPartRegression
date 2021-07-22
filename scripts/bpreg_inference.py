@@ -25,7 +25,11 @@ from bpreg.inference.inference_model import InferenceModel
 from bpreg.settings import *
 
 def bpreg_for_directory(
-    model_path: str, input_dirpath: str, output_dirpath: str, skip_existing: bool = 1
+    model_path: str, 
+    input_dirpath: str, 
+    output_dirpath: str, 
+    skip_existing: bool=True, 
+    stringify_json: bool=False
 ):
     # test if gpu is available
     gpu_available = torch.cuda.is_available()
@@ -41,7 +45,7 @@ def bpreg_for_directory(
             print(f"JSON-file already exists. Skip file: {ifile}")
             continue
         print(f"Create body-part meta data file: {ofile}")
-        model.nifti2json(ipath, opath)
+        model.nifti2json(ipath, opath, stringify_json=stringify_json)
 
 
 def main():
@@ -51,7 +55,9 @@ def main():
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("-i", default="")
     parser.add_argument("-o", default="")
-    parser.add_argument("--skip", default=1)
+    parser.add_argument("--skip", default=True)
+    parser.add_argument("--str", default=False)
+
     # TODO --plot 0/1
     # TODO report
 
@@ -60,6 +66,7 @@ def main():
     input_dirpath = value.i
     output_dirpath = value.o
     skip_existing = value.skip
+    stringify_json = value.str
 
     # load public model, if it does not exists locally 
     if (model_path == DEFAULT_MODEL) & ~os.path.exists(model_path): 
@@ -67,7 +74,7 @@ def main():
     
     # run body part regression for each file in dictionary
     bpreg_for_directory(
-        model_path, input_dirpath, output_dirpath, skip_existing=skip_existing
+        model_path, input_dirpath, output_dirpath, skip_existing=skip_existing, stringify_json=stringify_json
     )
 
 if __name__ == "__main__":

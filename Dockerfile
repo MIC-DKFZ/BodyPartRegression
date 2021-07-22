@@ -12,8 +12,11 @@
 # limitations under the License.
 
 # For more information, please refer to https://aka.ms/vscode-docker-python
-#FROM python:3.8-slim-buster
-FROM nvcr.io/nvidia/pytorch:20.09-py3
+FROM python:3.8-slim-buster
+# FROM nvcr.io/nvidia/pytorch:20.09-py3 
+# FROM nvcr.io/nvidia/pytorch:21.01-py3
+# This image makes trubles - pandas and skipy cant be found
+# FROM python:3.8-slim-buster
 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -23,7 +26,13 @@ ENV PYTHONUNBUFFERED=1
 
 # Copy files 
 WORKDIR /app
+
+# Install pip requirements
 COPY requirements.txt .
+RUN pip3 install --upgrade pip
+RUN pip3 install -r requirements.txt
+
+# Copy code
 COPY starter_test.py .
 COPY starter.py .
 COPY setup.py . 
@@ -33,15 +42,13 @@ COPY bpreg bpreg/
 COPY scripts scripts/
 
 COPY src/models/private_bpr_model/config.json src/models/private_bpr_model/config.json
-COPY src/models/private_bpr_model/lookuptable.json src/models/private_bpr_model/lookuptable.json
+COPY src/models/private_bpr_model/inference-settings.json src/models/private_bpr_model/inference-settings.json
 COPY src/models/private_bpr_model/model.pt src/models/private_bpr_model/model.pt
 COPY src/models/private_bpr_model/settings.json src/models/private_bpr_model/settings.json
-
-
-# Install pip requirements
-RUN pip3 install --upgrade pip
-RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
+
+
+
 # Creates a non-root user with an explicit UID and adds permission to access the /app folder
 # For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
 # RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app

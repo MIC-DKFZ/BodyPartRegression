@@ -27,7 +27,7 @@ from bpreg.score_processing import Scores, BodyPartExaminedDict
 from bpreg.settings.settings import * 
 from bpreg.settings.model_settings import ModelSettings
 from bpreg.score_processing.bodypartexamined_tag import *
-
+from bpreg.utils.json_parser import * 
 
 from dataclasses import dataclass
 from tqdm import tqdm
@@ -156,14 +156,14 @@ class InferenceModel:
             data_storage.save_json(output_path)
         return data_storage.json
 
-    def nifti2json(self, nifti_path, output_path):
+    def nifti2json(self, nifti_path, output_path, stringify_json=False):
         slice_scores = self.predict_nifti(nifti_path)
         if isinstance(slice_scores, float) and np.isnan(slice_scores):
             return np.nan
 
         data_storage = VolumeStorage(slice_scores, self.lookuptable)
         if len(output_path) > 0:
-            data_storage.save_json(output_path)
+            data_storage.save_json(output_path, stringify_json=stringify_json)
         return data_storage.json
 
 
@@ -180,7 +180,7 @@ class VolumeStorage:
                  body_parts_included=BODY_PARTS_INCLUDED, 
                  distinct_body_parts=DISTINCT_BODY_PARTS, 
                  min_present_landmarks=MIN_PRESENT_LANDMARKS, 
-                 settings={}):
+                 ):
         self.body_parts=body_parts
         self.body_parts_included = body_parts_included
         self.distinct_body_parts = distinct_body_parts
@@ -232,9 +232,13 @@ class VolumeStorage:
             "settings": self.settings
         }
 
-    def save_json(self, output_path):
+    def save_json(self, output_path, stringify_json=False):
+        data = self.json 
+        if stringify_json: 
+            data = parse_json2str(data)
+
         with open(output_path, "w") as f:
-            json.dump(self.json, f)
+            json.dump(data, f)
 
 
 def load_model(
