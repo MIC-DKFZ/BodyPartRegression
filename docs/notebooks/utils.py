@@ -94,3 +94,4 @@ def create_standard_config(base_path, npy_path, config_path, model_path):
         pickle.dump(config, f)
 
     return config
+

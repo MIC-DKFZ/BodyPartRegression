@@ -1,7 +1,4 @@
 import numpy as np
-import sys
-
-sys.path.append("../")
 from bpreg.evaluation.accuracy import Accuracy
 from bpreg.evaluation.landmark_mse import LMSE
 
@@ -13,9 +10,9 @@ def test_landmark_mse():
 
     normMSE = LMSE()
     mse, mse_std = normMSE.from_matrices(vm, tm)
-
+    
     assert np.round(mse, 1) == 58.7
-    assert np.round(mse_std, 1) == 27.9
+    assert np.round(mse_std, 1) == 54.1
 
     # test normalized mse with nan-values
     tm = np.array([[1, 2, 4], [np.nan, 2.2, 3.5], [1, 1.9, 4.1]])
@@ -23,8 +20,8 @@ def test_landmark_mse():
 
     mse, mse_std = normMSE.from_matrices(vm, tm)
 
-    assert np.round(mse, 0) == 56
-    assert np.round(mse_std, 0) == 40
+    assert np.round(mse, 0) == 35
+    assert np.round(mse_std, 0) == 26
 
 
 def test_accuracy_class_initalization():
