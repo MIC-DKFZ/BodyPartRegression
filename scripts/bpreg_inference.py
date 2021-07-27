@@ -24,12 +24,13 @@ sys.path.append("../")
 from bpreg.inference.inference_model import InferenceModel
 from bpreg.settings import *
 
+
 def bpreg_for_directory(
-    model_path: str, 
-    input_dirpath: str, 
-    output_dirpath: str, 
-    skip_existing: bool=True, 
-    stringify_json: bool=False
+    model_path: str,
+    input_dirpath: str,
+    output_dirpath: str,
+    skip_existing: bool = True,
+    stringify_json: bool = False,
 ):
     # test if gpu is available
     gpu_available = torch.cuda.is_available()
@@ -46,6 +47,27 @@ def bpreg_for_directory(
             continue
         print(f"Create body-part meta data file: {ofile}")
         model.nifti2json(ipath, opath, stringify_json=stringify_json)
+
+
+def bpreg_inference(
+    input_path: str,
+    output_path: str,
+    model: str,
+    skip_existing: bool,
+    stringify_json: bool,
+):
+    # load public model, if it does not exists locally
+    if (model == DEFAULT_MODEL) & ~os.path.exists(model):
+        initialize_pretrained_model()
+
+    # run body part regression for each file in the dictionary
+    bpreg_for_directory(
+        model,
+        input_path,
+        output_path,
+        skip_existing=skip_existing,
+        stringify_json=stringify_json,
+    )
 
 
 def main():
@@ -68,14 +90,10 @@ def main():
     skip_existing = value.skip
     stringify_json = value.str
 
-    # load public model, if it does not exists locally 
-    if (model_path == DEFAULT_MODEL) & ~os.path.exists(model_path): 
-        initialize_pretrained_model()
-    
-    # run body part regression for each file in dictionary
-    bpreg_for_directory(
-        model_path, input_dirpath, output_dirpath, skip_existing=skip_existing, stringify_json=stringify_json
+    bpreg_inference(
+        input_dirpath, output_dirpath, model_path, skip_existing, stringify_json
     )
+
 
 if __name__ == "__main__":
     main()
