@@ -52,9 +52,9 @@ def bpreg_for_directory(
 def bpreg_inference(
     input_path: str,
     output_path: str,
-    model: str,
-    skip_existing: bool,
-    stringify_json: bool,
+    model: str=DEFAULT_MODEL,
+    skip_existing: bool=True,
+    stringify_json: bool=False,
 ):
     # load public model, if it does not exists locally
     if (model == DEFAULT_MODEL) & ~os.path.exists(model):
