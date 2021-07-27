@@ -64,20 +64,20 @@ pip install -e .
 --------------------------------------------------------------
 
 ## Analyze examined body parts
-The scope of the pretrained BPR model for CT volumes are body parts from adults from the beginning of the pelvis to the end of the head. Note that due to missing training data, children, pregnant women or legs are not in the scope of the algorithm. <br> 
+The scope of the pretrained BPR model for CT volumes are body parts from adults from the beginning of the pelvis to the end of the head. Note that due to missing training data, children, pregnant women or legs are not in the scope of the algorithm.
 To obtain the body part information for nifti-files you need to provide the nifti-files with the file ending *.nii or *.nii.gz in one directory and run the following command: 
 ```
 bpreg_predict -i <input_path> -o <output_path>
 ``` 
-Tags for the `bpreg_predict` command: <br>
+Tags for the `bpreg_predict` command: 
 - `-i` (str): input path, origin of nifti-files
 - `-o` (str): save path for created meta-data json-files
-- `--skip` (bool): skip already created .json metadata files (default: 1) <br>
+- `--skip` (bool): skip already created .json metadata files (default: 1)
 - `--model` (str): specify model (default: public model from zenodo for CT volumes)
 
 
 Through the `bpreg_predict` command for each nifti-file in the directory `input_path` a corresponding json-file 
-gets created and saved in the `output_path`. <br>
+gets created and saved in the `output_path`. 
 
 If you use this model for your work, please make sure to cite the model and the training data as explained at 
 [zenodo](https://zenodo.org/record/5113483#.YPaBkNaxWEA). 
