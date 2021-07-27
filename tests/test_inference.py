@@ -10,7 +10,7 @@ def test_inference():
     """Expensive test to test based on 10 nifti files in the data/test_cases 
     folder if the inference method runs and creates json files. 
     """
-    
+
     input_path = "../data/test_cases/"
     output_path = "../data/test_results/"
 
@@ -38,4 +38,5 @@ def test_inference():
     assert "body part examined" in x.keys()
     assert "body part examined tag" in x.keys()
 
-    # TODO if readme file is saved 
+    # Check if readme file is saved. 
+    assert "README.md" in os.listdir(output_path)

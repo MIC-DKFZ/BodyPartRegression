@@ -14,13 +14,12 @@ limitations under the License.
 """
 
 import os, sys
-from scripts.initialize_pretrained_model import initialize_pretrained_model
 import argparse
 import torch
-
+from shutil import copyfile
 
 sys.path.append("../")
-
+from scripts.initialize_pretrained_model import initialize_pretrained_model
 from bpreg.inference.inference_model import InferenceModel
 from bpreg.settings import *
 
@@ -68,6 +67,9 @@ def bpreg_inference(
         skip_existing=skip_existing,
         stringify_json=stringify_json,
     )
+
+    # copy documentation for json metadata files into repository 
+    copyfile("../docs/body-part-metadata.md", output_path + "README.md")
 
 
 def main():
