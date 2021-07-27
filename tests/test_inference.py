@@ -1,7 +1,7 @@
 import sys, os, json
 
 sys.path.append("../")
-from scripts.bpreg_inference import bpreg_inference
+from scripts.bpreg_inference import *
 
 # test if json files are craeted
 
@@ -22,7 +22,7 @@ def test_inference():
         if "test_results" in filepath: os.remove(filepath)
 
     # run 
-    bpreg_inference(input_path, output_path)
+    bpreg_inference(input_path, output_path, plot=True)
 
     # Test creation of json files
     json_output_files = [f for f in os.listdir(output_path) if f.endswith(".json")]
@@ -40,3 +40,12 @@ def test_inference():
 
     # Check if readme file is saved. 
     assert "README.md" in os.listdir(output_path)
+
+def test_plot_scores_in_json_files(): 
+    output_path = "../data/test_results/"
+    plot_scores_in_json_files(output_path)
+    
+    assert len([f for f in os.listdir(output_path) if f.endswith(".json")]) == len([f for f in os.listdir(output_path) if f.endswith(".png")]) 
+
+if __name__ == "__main__": 
+    test_plot_scores_in_json_files()

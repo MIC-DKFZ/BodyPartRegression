@@ -3,7 +3,7 @@
 The Body Part Regression (BPR) model translates the anatomy in a radiologic volume into a machine-interpretable form. 
 Each axial slice maps to a slice score. The slice scores monotonously increase with patient height. 
 With the help of a slice-score look-up table, the mapping between certain landmarks to slice scores can be checked. 
-The BPR model learns in a completely self-supervised fashion. There is no need for annotated data for training the model besides of evaluation purposes. 
+The BPR model learns in a completely self-supervised fashion. There is no need for annotated data for training the model, besides of evaluation purposes. 
 
 The BPR model can be used for sorting and labeling radiologic images by body parts. Moreover, it is useful for cropping specific body parts as a pre-processing or post-processing step of medical algorithms. If a body part is invalid for a certain medical algorithm, it can be cropped out before applying the algorithm to the volume. 
 
@@ -74,10 +74,13 @@ Tags for the `bpreg_predict` command:
 - `-o` (str): save path for created meta-data json-files
 - `--skip` (bool): skip already created .json metadata files (default: 1)
 - `--model` (str): specify model (default: public model from zenodo for CT volumes)
-
+- `--plot` (png): create and save plot for each volume with calculated slice score curve. 
 
 Through the `bpreg_predict` command for each nifti-file in the directory `input_path` a corresponding json-file 
-gets created and saved in the `output_path`. 
+gets created and saved in the `output_path`. Moreover, a README file will be saved in the outpath, where the information inside the JSON files is explained. 
+
+If your input data is not in the nifti-format you can stil apply the BPR model through converting the data to a matrix and 
+using the functions in the `bpreg.inference.inference_model` module in your own python script. 
 
 If you use this model for your work, please make sure to cite the model and the training data as explained at 
 [zenodo](https://zenodo.org/record/5113483#.YPaBkNaxWEA). 
@@ -97,5 +100,7 @@ The json-file contains all the metadata regarding the examined body part of the 
 - `valid z-spacing`: (0/1) equal to one if z-spacing seems to be plausible. The data sanity check is based on the slope of the curve from the cleaned slice-scores.
 
 The information from the meta-data file can be traced back to the `unprocessed slice-scores` and the `look-up table`. 
+
+
 
 

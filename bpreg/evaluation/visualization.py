@@ -15,6 +15,8 @@ limitations under the License.
 
 import matplotlib.pyplot as plt
 import numpy as np
+import json
+import pandas as pd
 
 
 class Visualization:
@@ -109,3 +111,47 @@ def grid_plot(
     if len(save_path) > 0:
         plt.savefig(save_path)
     plt.show()
+
+def plot_scores(filepath, save_path="", fontsize=18): 
+
+    def load_json(filepath): 
+        with open(filepath) as f: 
+            x = json.load(f)
+        return x
+
+    plt.figure(figsize=(12, 6))
+    x = load_json(filepath)
+
+    plt.plot(x["z"], x["cleaned slice scores"], label="cleaned slice scores")
+    plt.plot(x["z"], x["unprocessed slice scores"], label="unprocessed slice scores", linestyle="--")
+    
+    try: 
+        min_score = np.nanmin(x["unprocessed slice scores"])
+        max_score = np.nanmax(x["unprocessed slice scores"])
+        dflandmarks = pd.DataFrame(x["look-up table"]).T
+        landmarks = dflandmarks[(dflandmarks["mean"] > min_score) & (dflandmarks["mean"] < max_score)].sort_values(by="mean", ascending=False)
+        for landmark, row in landmarks.iloc[[0, -1]].iterrows(): 
+            plt.plot([0, np.nanmax(x["z"])], [row["mean"], row["mean"]], 
+                    linestyle = ":", color="black", linewidth=0.8)
+            plt.text(5, row["mean"]+1, landmark, fontsize=fontsize - 4,    
+                    bbox=dict(boxstyle="square",
+                    fc=(1., 1, 1),
+                    ))
+    except: pass
+
+    plt.xlabel("height [mm]", fontsize=fontsize)
+    plt.ylabel("Slice Scores", fontsize=fontsize)
+    plt.xticks(fontsize=fontsize-2)
+    plt.yticks(fontsize=fontsize-2)
+    plt.legend(loc=1, fontsize=fontsize)
+    if np.nanmax(x["z"]) != 0: plt.xlim((0, np.nanmax(x["z"])))
+    
+    filename = filepath.split("/")[-1]
+    if len(filename) > 60: 
+        plt.title(f"{filename[:60]}...\n", fontsize=fontsize-2)
+    else: 
+        plt.title(filename + "\n", fontsize=fontsize-2)
+    if len(save_path) > 0: 
+        plt.savefig(save_path)
+    else: 
+        plt.show()

@@ -44,7 +44,7 @@
 - add visualizations
 - report.txt 
 
-bpreg_predict -i data/test_cases/ -o data/test_results/ --skip 0
+bpreg_predict -i data/test_cases/ -o data/test_results/ --skip 0 --plot 1
 
 bpreg_predict -i data/test_cases/ -o data/test_results/ --skip 1
 

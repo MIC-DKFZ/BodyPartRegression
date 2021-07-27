@@ -22,7 +22,7 @@ sys.path.append("../")
 from scripts.initialize_pretrained_model import initialize_pretrained_model
 from bpreg.inference.inference_model import InferenceModel
 from bpreg.settings import *
-
+from bpreg.evaluation.visualization import plot_scores
 
 def bpreg_for_directory(
     model_path: str,
@@ -41,12 +41,21 @@ def bpreg_for_directory(
     for ifile, ofile in zip(ifiles, ofiles):
         ipath = os.path.join(input_dirpath, ifile)
         opath = os.path.join(output_dirpath, ofile)
+
         if os.path.exists(opath) and skip_existing == 1:
             print(f"JSON-file already exists. Skip file: {ifile}")
             continue
+
         print(f"Create body-part meta data file: {ofile}")
         model.nifti2json(ipath, opath, stringify_json=stringify_json)
 
+
+
+def plot_scores_in_json_files(output_path): 
+    json_files = [f for f in os.listdir(output_path) if f.endswith(".json")]
+    for file in json_files: 
+        save_path = output_path + file.replace(".json", ".png")
+        plot_scores(output_path + file, save_path=save_path)
 
 def bpreg_inference(
     input_path: str,
@@ -54,6 +63,7 @@ def bpreg_inference(
     model: str=DEFAULT_MODEL,
     skip_existing: bool=True,
     stringify_json: bool=False,
+    plot: bool=False, 
 ):
     # load public model, if it does not exists locally
     if (model == DEFAULT_MODEL) & ~os.path.exists(model):
@@ -68,32 +78,34 @@ def bpreg_inference(
         stringify_json=stringify_json,
     )
 
+    # plot slice scores if plot is True
+    if plot: 
+        print("Plot slice scores. ")
+        plot_scores_in_json_files(output_path)
+
     # copy documentation for json metadata files into repository 
-    copyfile("../docs/body-part-metadata.md", output_path + "README.md")
+    copyfile(os.path.join(MAIN_PATH, "docs/body-part-metadata.md"), os.path.join(output_path, "README.md"))
 
 
 def main():
-    # default_model = "../src/models/private_bpr_model/" # TODO
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default=DEFAULT_MODEL)
+    parser.add_argument("--plot", default=False)
     parser.add_argument("-i", default="")
     parser.add_argument("-o", default="")
     parser.add_argument("--skip", default=True)
     parser.add_argument("--str", default=False)
 
-    # TODO --plot 0/1
-    # TODO report
-
     value = parser.parse_args()
     model_path = value.model
+    plot = value.plot
     input_dirpath = value.i
     output_dirpath = value.o
     skip_existing = value.skip
     stringify_json = value.str
 
     bpreg_inference(
-        input_dirpath, output_dirpath, model_path, skip_existing, stringify_json
+        input_dirpath, output_dirpath, model_path, skip_existing, stringify_json, plot=plot
     )
 
 
