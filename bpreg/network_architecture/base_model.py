@@ -60,17 +60,7 @@ class BodyPartRegressionBase(pl.LightningModule):
         self.lambda_ = lambda_
         self.val_landmark_metric = []
         self.val_loss = []
-        # self.base_model = base_model
-        self.hparams = {
-            "alpha": alpha,
-            "lambda": lambda_,
-            "loss_order": loss_order,
-            "beta_h": beta_h,
-            "alpha_h": alpha_h,
-            "lr": lr,
-        }
-
-        # self.model = self.get_vgg()
+        self.save_hyperparameters()        
         self.mse = LMSE()
 
         if loss_order == "h":
