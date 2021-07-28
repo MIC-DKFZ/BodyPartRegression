@@ -22,6 +22,7 @@ starter_test.py
 *.pth
 *.pyc
 *.png
+*.zip
 
 epoch=* 
 events.* 
