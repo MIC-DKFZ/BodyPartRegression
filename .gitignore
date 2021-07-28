@@ -2,6 +2,7 @@ data/
 src/models/
 src/configs/local/
 .ipynb_checkpoints/
+*.ipynb_checkpoints/
 __pycache__/
 lightning_logs/
 docs/docker-docs.txt
@@ -22,6 +23,9 @@ starter_test.py
 *.pyc
 *.png
 
-
+epoch=* 
+events.* 
+hparams.yaml
+*checkpoint.ipynb
 
 
