@@ -23,9 +23,6 @@ sys.path.append("../../")
 from bpreg.utils.linear_transformations import *
 
 
-# TODO add description to Score class
-# TODO Transform min and transform max are mandatory
-
 
 class Scores:
     """Scores and additional meta data inforamtion based on the prediction from the Body Part Regression (bpr) model.

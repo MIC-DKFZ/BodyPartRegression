@@ -66,7 +66,7 @@ class Evaluation(Visualization):
 
         # setup data
         self.df_data_source_path = df_data_source_path
-        self.landmark_path = landmark_path  # TODO --> model dataclass with all attributes and _load_model function
+        self.landmark_path = landmark_path  
         self.data_path = data_path
         self._setup_data()
 

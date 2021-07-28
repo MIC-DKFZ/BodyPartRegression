@@ -33,10 +33,6 @@ from dataclasses import dataclass
 from tqdm import tqdm
 
 
-# TODO predict_tensor sonst überall rausnehmen
-# TODO predict_npy_array rausnehmen aus base_model
-# TODO create Tests to test load_model and InferenceModel
-
 
 class InferenceModel:
     """
@@ -167,12 +163,18 @@ class InferenceModel:
         return data_storage.json
 
 
-# TODO: Description hinzufügen
-# TODO: Dokumentation hinzufügen: params: {sigma, z-ratio threshold, body-part-examined table, model-name, ...}
-
-
 @dataclass
 class VolumeStorage:
+    """Body part metadata for one volume
+
+    Args:
+        scores (Scores): predicted slice scores
+        lookuptable (dict): reference table which contains expected scores for anatomies
+        body_parts ([type], optional): dictionary to define the body parts for the tag: "body part examined". Defaults to BODY_PARTS.
+        body_parts_included ([type], optional): dictionary to calculate the "body part examined tag". Defaults to BODY_PARTS_INCLUDED.
+        distinct_body_parts ([type], optional): dictionary to calculate the "body part examined tag". Defaults to DISTINCT_BODY_PARTS.
+        min_present_landmarks ([type], optional): dictionary to calculate the "body part examined tag". Defaults to MIN_PRESENT_LANDMARKS.
+    """
     def __init__(self, 
                  scores: Scores, 
                  lookuptable: dict, 
@@ -181,6 +183,7 @@ class VolumeStorage:
                  distinct_body_parts=DISTINCT_BODY_PARTS, 
                  min_present_landmarks=MIN_PRESENT_LANDMARKS, 
                  ):
+
         self.body_parts=body_parts
         self.body_parts_included = body_parts_included
         self.distinct_body_parts = distinct_body_parts

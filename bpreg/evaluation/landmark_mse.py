@@ -91,15 +91,3 @@ class LMSE:
     def get_normalizing_constant(self, expected_scores):
         return (expected_scores[-1] - expected_scores[0]) / 100
 
-    # TODO
-    def volumes2MSEs(self, model, dataset, reference_dataset):
-        score_matrix = model.compute_slice_score_matrix(dataset)
-        reference_score_matrix = model.compute_slice_score_matrix(reference_dataset)
-        expected_scores = np.nanmean(reference_score_matrix, axis=0)
-        d = self.get_normalizing_constant(expected_scores)
-        mse_values = self.from_instance(expected_scores, score_matrix, d)
-        dataset_ids = [
-            dataset.landmark_ids[i] for i in np.arange(len(score_matrix), dtype=int)
-        ]
-
-        return dataset_ids, mse_values

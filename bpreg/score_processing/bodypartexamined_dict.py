@@ -19,8 +19,6 @@ import numpy as np
 sys.path.append("../../")
 from bpreg.settings.settings import *
 
-# TODO Write tests for class
-
 
 class BodyPartExaminedDict:
     def __init__(self, lookuptable: dict, body_parts=BODY_PARTS):
