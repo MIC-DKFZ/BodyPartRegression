@@ -249,13 +249,25 @@ class Nifti2Npy:
 
         return x, pixel_spacings
 
-    def preprocess_nifti(self, filepath):
+    def preprocess_npy(self, X: np.array, pixel_spacings: tuple): 
+        x = self.rescale_xy(X)
+        x = self.resize_volume(x, pixel_spacings)
+        if isinstance(x, float) and np.isnan(x):
+            return np.nan
+
+        x = self.remove_empty_slices(x)
+        self.test_volume(x)
+
+        return x
+
+
+    def preprocess_nifti(self, filepath: str):
         x, pixel_spacings = self.load_volume(filepath)
         x = self.rescale_xy(x)
         x = self.resize_volume(x, pixel_spacings)
         return x, pixel_spacings
 
-    def convert_file(self, filepath, save=False, skip_existing=False):
+    def convert_file(self, filepath: str, save=False):
         filename = filepath.split("/")[-1]
         ofilepath = (
             self.opath + filename.replace(".nii", "").replace(".gz", "") + ".npy"
@@ -279,19 +291,12 @@ class Nifti2Npy:
             print(f"Unknown dimensions {x0.shape}. Skip file.")
             return None, None, None
 
-        x = self.rescale_xy(x0)
-        x = self.resize_volume(x, pixel_spacings)
-        if isinstance(x, float) and np.isnan(x):
-            return np.nan, x0, pixel_spacings
+        x = self.preprocess_npy(x0, pixel_spacings)
 
-        x = self.remove_empty_slices(x)
-        self.test_volume(x)
-
-        if save:
-            np.save(ofilepath, x.astype(np.float32))
+        if save and ~np.isnan(x): np.save(ofilepath, x.astype(np.float32))
         return x, x0, pixel_spacings
 
-    def convert(self, filepaths, save=False, skip_existing=False):
+    def convert(self, filepaths, save=False):
         df = self.dataframe_template(filepaths)
 
         for filepath in tqdm(filepaths):

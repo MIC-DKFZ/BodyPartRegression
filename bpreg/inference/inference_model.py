@@ -143,10 +143,22 @@ class InferenceModel:
             tangential_slope_max=self.tangential_slope_max,
         )
         return scores
+        
 
-    def npy2json(self, X, output_path, pixel_spacing=np.nan):
+    def npy2json(self, X_: np.array, output_path: str, pixel_spacings: tuple):
+        """
+        Method to predict slice scores from numpy arrays (in Hounsfiel dunits). 
+        Converts plain numpy array to numpy arrays which can be used by the DEFAULT_MODEL to predict the slice scores.n
+
+        Args:
+            X (np.array): matrix of CT volume in Hounsfield units with axis ordering: xyz
+            output_path (str): output path to save json file
+            pixel_spacing (tuple): pixel spacing in x, y and z direction. 
+        """
+        X = self.n2n.preprocess_npy(X_, pixel_spacings) 
+        X = X.transpose(2, 0, 1)
         slice_scores = self.predict_npy_array(X)
-        slice_scores = self.parse_scores(slice_scores, pixel_spacing)
+        slice_scores = self.parse_scores(slice_scores, pixel_spacings[2])
         data_storage = VolumeStorage(slice_scores, self.lookuptable)
         if len(output_path) > 0:
             data_storage.save_json(output_path)

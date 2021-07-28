@@ -1,5 +1,5 @@
 import sys, os, json
-
+import nibabel as nib 
 sys.path.append("../")
 from scripts.bpreg_inference import *
 
@@ -46,6 +46,24 @@ def test_plot_scores_in_json_files():
     plot_scores_in_json_files(output_path)
     
     assert len([f for f in os.listdir(output_path) if f.endswith(".json")]) == len([f for f in os.listdir(output_path) if f.endswith(".png")]) 
+
+
+def test_npy_inference(): 
+    """ Test if npy inference is equal to nifti inference. 
+    """
+    input_path = "../data/test_cases/" 
+    input_path += os.listdir(input_path)[0]
+
+    model = InferenceModel()
+    metadata1 = model.nifti2json(input_path, "")
+
+    img = nib.load(input_path)
+    pixel_spacings = img.header.get_zooms()
+    X = img.get_fdata(dtype=np.float32)
+    metadata2 = model.npy2json(X, "", pixel_spacings=pixel_spacings)
+
+    assert metadata1 == metadata2
+
 
 if __name__ == "__main__": 
     test_plot_scores_in_json_files()
