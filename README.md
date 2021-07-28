@@ -103,7 +103,7 @@ The information from the meta-data file can be traced back to the `unprocessed s
 
 --------------------------------------------------------------
 
-# Documentation to Body Part Regression 
+# Documentation for Body Part Regression 
 In the `docs/notebooks` folder, you can find a tutorial on how to use the body part regression model for inference. An example will be presented, were the lungs are detected and cropped automatically from CT volumes. Moreover, a tutorial for training and evaluating a Body Part Regression model can be found. 
 
 For a more detailed explanation to the theory behind Body Part Regression and the application use cases have a look into the master thesis "Body Part Regression for CT Volumes" from Sarah Schuhegger. 
