@@ -61,7 +61,7 @@ class BodyPartRegressionBase(pl.LightningModule):
         self.val_landmark_metric = []
         self.val_loss = []
         self.save_hyperparameters()        
-        self.mse = LMSE()
+        self.lmse = LMSE()
 
         if loss_order == "h":
             self.loss_order = order_loss_h(alpha=self.alpha_h, beta=self.beta_h)
@@ -103,12 +103,12 @@ class BodyPartRegressionBase(pl.LightningModule):
         val_dataloader = self.val_dataloader()
         train_dataloader = self.train_dataloader()
 
-        mse, mse_std, d = self.mse.from_dataset(
+        lmse, lmse_std, d = self.lmse.from_dataset(
             self, val_dataloader.dataset, train_dataloader.dataset
         )
 
-        self.log("mse", mse)
-        self.log("mse_std", mse_std)
+        self.log("lmse", lmse)
+        self.log("lmse_std", lmse_std)
         self.log("d", d)
 
     def validation_step(self, batch, batch_idx):
@@ -122,12 +122,12 @@ class BodyPartRegressionBase(pl.LightningModule):
         test_dataloader = self.test_dataloader()
         train_dataloader = self.train_dataloader()
 
-        mse, mse_std, d = self.mse.from_dataset(
+        lmse, lmse_std, d = self.lmse.from_dataset(
             self, test_dataloader.dataset, train_dataloader.dataset
         )
 
-        self.log("mse", mse)
-        self.log("mse_std", mse_std)
+        self.log("lmse", lmse)
+        self.log("lmse_std", lmse_std)
         self.log("d", d)
 
     def loss(self, scores_pred, slice_indices, z):
