@@ -15,9 +15,11 @@ limitations under the License.
 
 import matplotlib.pyplot as plt
 import numpy as np
-import json
+import json, random
 import pandas as pd
 
+from bpreg.settings import ModelSettings
+from bpreg.utils.training_utils import * 
 
 class Visualization:
     def __init__(self):
@@ -111,6 +113,24 @@ def grid_plot(
     if len(save_path) > 0:
         plt.savefig(save_path)
     plt.show()
+
+
+def plot_data(config: ModelSettings, kind: str="train", cols=3, rows=3): 
+    df = get_dataframe(config)
+    train_dataset, val_dataset, test_dataset = get_datasets(config, df)
+
+    datasets = {"train": train_dataset, "validation": val_dataset, "test": test_dataset}
+    dataset = datasets[kind]
+
+    X = []
+    titles  = []
+    for i in range(0, cols*rows): 
+        index = random.randint(0, len(dataset)- 1)
+        titles.append(index)
+        X.append(dataset[index][0][0, :, :])
+
+    grid_plot(X, titles=titles, cols=cols, rows=rows, vmin=-1, vmax=1, figsize=(15, 15))
+
 
 def plot_scores(filepath, save_path="", fontsize=18): 
 

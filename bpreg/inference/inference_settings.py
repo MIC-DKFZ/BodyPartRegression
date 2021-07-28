@@ -15,7 +15,7 @@ limitations under the License.
 
 from bpreg.inference.inference_model import InferenceModel
 from bpreg.dataset.bpr_dataset import BPRDataset
-from bpreg.settings.settings import DF_DATA_SOURCE_PATH, LANDMARK_PATH
+from bpreg.settings.settings import DATA_PATH, DF_DATA_SOURCE_PATH, LANDMARK_PATH
 import numpy as np
 import json
 
@@ -30,6 +30,7 @@ def postprocess_model_for_inference(
     model_path: str,
     df_data_source_path: str = DF_DATA_SOURCE_PATH,
     landmark_path: str = LANDMARK_PATH,
+    data_path: str = DATA_PATH,
     upper_tangential_slope_quantile: float = 0.995,
     lower_tangential_slope_quantile: float = 0.005,
     transform_min_landmark: str = "pelvis_start",
@@ -52,7 +53,12 @@ def postprocess_model_for_inference(
     # get model evaluation
     print("Initialize model.")
     modelEval = Evaluation(
-        model_path, df_data_source_path=df_data_source_path, landmark_path=landmark_path
+        model_path,
+        df_data_source_path=df_data_source_path,
+        landmark_path=landmark_path,
+        data_path=data_path,
+        landmark_start=transform_min_landmark,
+        landmark_end=transform_max_landmark,
     )
 
     # get lookuptables

@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 sys.path.append("../../")
 from bpreg.preprocessing.nifti2npy import Nifti2Npy
-from bpreg.training.create_configs import get_basic_config
+from scripts.create_config import get_basic_config
 
 
 def dicom2nifti(ifilepath, ofilepath):
@@ -94,4 +94,18 @@ def create_standard_config(base_path, npy_path, config_path, model_path):
         pickle.dump(config, f)
 
     return config
+
+
+def preprocess_ct_lymph_node_dataset(dicom_path, nifti_path, npy_path): 
+    """Convert DICOM files form CT Lymph node to downsampled npy volumes. 
+    """
+    # Convert Dicom to nifti
+    convert_ct_lymph_nodes_to_nifti(dicom_path, nifti_path)
+    
+    # Convert nifti files to npy and save meta_data.xlsx file 
+    nifti2npy(nifti_path, npy_path)
+    
+    # update meta data with train/val/test data from landmark file 
+    update_meta_data(landmark_filepath="data/ct-lymph-nodes-annotated-landmarks.xlsx", 
+                     meta_data_filepath="data/meta_data.xlsx")
 
