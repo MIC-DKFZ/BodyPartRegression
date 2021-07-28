@@ -103,4 +103,9 @@ The information from the meta-data file can be traced back to the `unprocessed s
 
 
 
+--------------------------------------------------------------
+
+
+Copyright © German Cancer Research Center (DKFZ), Division of Medical Image Computing (MIC). Please make sure that your usage of this code is in compliance with the code license:
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/MIC-DKFZ/basic_unet_example/blob/master/LICENSE)
 
