@@ -25,7 +25,7 @@
 **/values.dev.yaml
 
 data/
-docs/
+docs/notebooks/
 
 *.gz
 *.csv

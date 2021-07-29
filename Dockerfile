@@ -45,6 +45,7 @@ COPY src/models/private_bpr_model/config.json src/models/private_bpr_model/confi
 COPY src/models/private_bpr_model/inference-settings.json src/models/private_bpr_model/inference-settings.json
 COPY src/models/private_bpr_model/model.pt src/models/private_bpr_model/model.pt
 COPY src/models/private_bpr_model/settings.json src/models/private_bpr_model/settings.json
+COPY docs/body-part-metadata.md docs/body-part-metadata.md
 RUN pip3 install -e .
 
 

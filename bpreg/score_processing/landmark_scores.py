@@ -115,7 +115,7 @@ class LandmarkScores:
             "transformed": self.transformed_lookuptable,
         }
         with open(filepath, "w") as f:
-            json.dump(jsonDict, f)
+            json.dump(jsonDict, f, indent=4)
 
 
 class LandmarkScoreBundle:
