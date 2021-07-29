@@ -93,7 +93,7 @@ class ModelSettings:
         if len(save_path) == "":
             save_path = self.filepath
         with open(save_path, "w") as f:
-            json.dump(self.json_dict, f)
+            json.dump(self.json_dict, f, indent=4)
 
     def load(self, path=""):
         with open(path, "r") as f:

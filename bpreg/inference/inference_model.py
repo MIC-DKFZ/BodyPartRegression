@@ -185,7 +185,7 @@ class VolumeStorage:
         body_parts ([type], optional): dictionary to define the body parts for the tag: "body part examined". Defaults to BODY_PARTS.
         body_parts_included ([type], optional): dictionary to calculate the "body part examined tag". Defaults to BODY_PARTS_INCLUDED.
         distinct_body_parts ([type], optional): dictionary to calculate the "body part examined tag". Defaults to DISTINCT_BODY_PARTS.
-        min_present_landmarks ([type], optional): dictionary to calculate the "body part examined tag". Defaults to MIN_PRESENT_LANDMARKS.
+        min_present_landmarks ([type], optional): dictionary to calculate the "body part examined rtag". Defaults to MIN_PRESENT_LANDMARKS.
     """
     def __init__(self, 
                  scores: Scores, 
@@ -247,13 +247,20 @@ class VolumeStorage:
             "settings": self.settings
         }
 
-    def save_json(self, output_path, stringify_json=False):
+    def save_json(self, output_path: str, stringify_json=False):
+        """Store data in json file 
+
+        Args:
+            output_path (str): save path for json file 
+            stringify_json (bool, optional): if True, stringify output of parameters and
+            convert json file to a Kaapana friendly format
+        """
         data = self.json 
         if stringify_json: 
-            data = parse_json2str(data)
+            data = parse_json4kaapana(data)
 
         with open(output_path, "w") as f:
-            json.dump(data, f)
+            json.dump(data, f, indent=4)
 
 
 def load_model(

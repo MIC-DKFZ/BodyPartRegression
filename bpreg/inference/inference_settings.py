@@ -219,7 +219,7 @@ class InferenceSettingsStorage:
 
     def save(self, save_path=""):
         with open(save_path + "inference-settings.json", "w") as f:
-            json.dump(self.json_dict, f)
+            json.dump(self.json_dict, f, indent=4)
 
     def load(self, path=""):
         with open(path, "r") as f:
