@@ -21,9 +21,8 @@ def parse_json4kaapana(json_file):
     myDict = {}
     myDict["predicted_bodypart_string"] = json_file["body part examined tag"]
     myDict["prediction_parameters_string"] = json_file
-    parse_json2str(myDict)
-
-    return myDict
+    
+    return parse_json2str(myDict)
 
 def test_parser(): 
     myDict = {"a": [1, 2, 3, 4], 
