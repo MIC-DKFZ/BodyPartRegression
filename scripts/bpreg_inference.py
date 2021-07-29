@@ -30,9 +30,10 @@ def bpreg_for_directory(
     output_dirpath: str,
     skip_existing: bool = True,
     stringify_json: bool = False,
+    gpu_available: bool=True, 
 ):
     # test if gpu is available
-    gpu_available = torch.cuda.is_available()
+    if not torch.cuda.is_available(): gpu_available = False 
 
     model = InferenceModel(model_path, gpu=gpu_available)
     ifiles = [f for f in os.listdir(input_dirpath) if f.endswith((".nii.gz", ".nii"))]
@@ -63,6 +64,7 @@ def bpreg_inference(
     model: str=DEFAULT_MODEL,
     skip_existing: bool=True,
     stringify_json: bool=False,
+    gpu_available: bool=True, 
     plot: bool=False, 
 ):
     # load public model, if it does not exists locally
@@ -76,6 +78,7 @@ def bpreg_inference(
         output_path,
         skip_existing=skip_existing,
         stringify_json=stringify_json,
+        gpu_available=gpu_available
     )
 
     # plot slice scores if plot is True
@@ -95,6 +98,7 @@ def main():
     parser.add_argument("-o", default="")
     parser.add_argument("--skip", default=True)
     parser.add_argument("--str", default=False)
+    parser.add_argument("--gpu", default=True)
 
     value = parser.parse_args()
     model_path = value.model
@@ -103,9 +107,10 @@ def main():
     output_dirpath = value.o
     skip_existing = value.skip
     stringify_json = value.str
+    gpu_available = value.gpu
 
     bpreg_inference(
-        input_dirpath, output_dirpath, model_path, skip_existing, stringify_json, plot=plot
+        input_dirpath, output_dirpath, model_path, skip_existing, stringify_json, gpu_available=gpu_available, plot=plot
     )
 
 
