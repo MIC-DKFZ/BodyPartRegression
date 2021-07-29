@@ -2,7 +2,7 @@ import sys, os, json
 import nibabel as nib 
 sys.path.append("../")
 from scripts.bpreg_inference import *
-
+from bpreg.settings import * 
 # test if json files are craeted
 
 
@@ -11,8 +11,8 @@ def test_inference():
     folder if the inference method runs and creates json files. 
     """
 
-    input_path = "../data/test_cases/"
-    output_path = "../data/test_results/"
+    input_path = os.path.join(MAIN_PATH, "data/test_cases/")
+    output_path = os.path.join(MAIN_PATH, "data/test_results/")
 
     nifti_files = len(os.listdir(input_path))
 
