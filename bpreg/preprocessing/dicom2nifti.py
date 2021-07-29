@@ -16,7 +16,9 @@ limitations under the License.
 import numpy as np
 import pandas as pd
 import pydicom
+import argparse
 import glob
+import os
 import SimpleITK as sitk
 
 
@@ -111,3 +113,19 @@ class DicomHandler:
                 filename = "1-" + "0" * i + "1.dcm"
 
         return filename
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", default="")
+    parser.add_argument("-o", default="")
+
+    value = parser.parse_args()
+    input_dirpath = value.i
+    output_dirpath = value.o
+
+    dh = DicomHandler()
+    for file in os.listdir(input_dirpath): 
+        print(file)
+        ifilepath = os.path.join(input_dirpath, file)
+        ofilepath = os.path.join(output_dirpath, file.replace(".dcm", ".nii.gz"))
+        dh.dicom2nifti(ifilepath, ofilepath)
