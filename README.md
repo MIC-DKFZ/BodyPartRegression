@@ -1,3 +1,9 @@
+Copyright © German Cancer Research Center (DKFZ), Division of Medical Image Computing (MIC). Please make sure that your usage of this code is in compliance with the code license:
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/MIC-DKFZ/basic_unet_example/blob/master/LICENSE)
+
+--------------------------------------------------------------
+
+
 # Body Part Regression 
 
 The Body Part Regression (BPR) model translates the anatomy in a radiologic volume into a machine-interpretable form. 
@@ -108,12 +114,3 @@ The information from the meta-data file can be traced back to the `unprocessed s
 In the `docs/notebooks` folder, you can find a tutorial on how to use the body part regression model for inference. An example will be presented, were the lungs are detected and cropped automatically from CT volumes. Moreover, a tutorial for training and evaluating a Body Part Regression model can be found. 
 
 For a more detailed explanation to the theory behind Body Part Regression and the application use cases have a look into the master thesis "Body Part Regression for CT Volumes" from Sarah Schuhegger. 
-
---------------------------------------------------------------
-
-
-Copyright © German Cancer Research Center (DKFZ), Division of Medical Image Computing (MIC). Please make sure that your usage of this code is in compliance with the code license:
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/MIC-DKFZ/basic_unet_example/blob/master/LICENSE)
-
-
-
