@@ -178,6 +178,12 @@ class LandmarkScoreBundle:
         )
         return lmse, lmse_std
 
+    def nMSE_per_volume(self, target="validation", reference="train"):
+        lmse, lmse_std = self.lmse.lmse_per_volume_from_matrices(
+            self.dict[target].score_matrix, self.dict[reference].score_matrix
+        )
+        return lmse, lmse_std
+
     def accuracy(
         self, target_dataset, reference="train", class2landmark=CLASS_TO_LANDMARK_5
     ):
