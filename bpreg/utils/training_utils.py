@@ -63,7 +63,7 @@ def save_model(model, config: ModelSettings, path):
         torch.save(model.state_dict(), path + "model.pt")
 
     # save lookuptable
-    df_landmarks = pd.read_excel(config.landmark_path, sheet_name="landmarks-train")
+    df_landmarks = pd.read_excel(config.landmark_path, sheet_name="landmarks-train", engine="openpyxl")
     lscores = LandmarkScores(
         config.data_path,
         df_landmarks,
