@@ -249,7 +249,20 @@ class Nifti2Npy:
 
         return x, pixel_spacings
 
-    def preprocess_npy(self, X: np.array, pixel_spacings: tuple): 
+    def preprocess_npy(self, X: np.array, pixel_spacings: tuple, axis_ordering=(0, 1, 2)): 
+        """[summary]
+
+        Args:
+            X (np.array): volume to preprocess
+            pixel_spacings (tuple): pixel spacings in x, y and z-direction: (ps_x, ps_y, ps_z)
+            axis_ordering (tuple, optional): axis-ordering of volume X. 012 corresponds to axis ordering of xyz
+
+        Returns:
+            preprocessed npy-array
+        """
+        # convert X to corect axis ordering
+        X = X.transpose(tuple(np.argsort(axis_ordering)))
+        
         x = self.rescale_xy(X)
         x = self.resize_volume(x, pixel_spacings)
         if isinstance(x, float) and np.isnan(x):

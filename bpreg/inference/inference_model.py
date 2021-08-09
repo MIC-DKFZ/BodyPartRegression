@@ -66,7 +66,7 @@ class InferenceModel:
 
         path = self.base_dir + "inference-settings.json"
         if not os.path.exists(path):
-            print("WARNING: For this model no inference settings can be load!")
+            print("WARNING: For this model, no inference settings can be load!")
             return
 
         with open(path, "rb") as f:
@@ -145,18 +145,22 @@ class InferenceModel:
         return scores
         
 
-    def npy2json(self, X_: np.array, output_path: str, pixel_spacings: tuple):
+    def npy2json(self, X_: np.array, output_path: str, pixel_spacings: tuple, axis_ordering=(0, 1, 2)):
         """
         Method to predict slice scores from numpy arrays (in Hounsfiel dunits). 
         Converts plain numpy array to numpy arrays which can be used by the DEFAULT_MODEL to predict the slice scores.n
 
         Args:
-            X (np.array): matrix of CT volume in Hounsfield units with axis ordering: xyz
+            X (np.array): matrix of CT volume in Hounsfield units. 
             output_path (str): output path to save json file
             pixel_spacing (tuple): pixel spacing in x, y and z direction. 
+            axis_ordering (tuple): Axis ordering of CT volume. (0,1,2) is equivalent to the axis ordering xyz.
         """
-        X = self.n2n.preprocess_npy(X_, pixel_spacings) 
+        X = self.n2n.preprocess_npy(X_, pixel_spacings, axis_ordering=axis_ordering) 
+
+        # convert axis ordering to zxy
         X = X.transpose(2, 0, 1)
+        
         slice_scores = self.predict_npy_array(X)
         slice_scores = self.parse_scores(slice_scores, pixel_spacings[2])
         data_storage = VolumeStorage(slice_scores, self.lookuptable)
@@ -273,7 +277,7 @@ def load_model(
     config.load(path=config_filepath)
 
     model = BodyPartRegression(alpha=config.alpha, lr=config.lr)
-    model.load_state_dict(torch.load(model_filepath, map_location=torch.device(device)))
+    model.load_state_dict(torch.load(model_filepath, map_location=torch.device(device)), strict=False)
     model.eval()
     model.to(device)
 
