@@ -49,7 +49,7 @@ class LandmarkScores:
         self.filenames = [
             f.replace(".npy", "") + ".npy" for f in df["filename"] if isinstance(f, str)
         ]
-        self.filepaths = [data_path + f for f in self.filenames]
+        self.filepaths = [os.path.join(data_path, f) for f in self.filenames]
         self.landmark_names = [
             l for l in df.columns if not l in drop_cols + ["filename"]
         ]

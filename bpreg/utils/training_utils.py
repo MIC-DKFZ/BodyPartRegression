@@ -16,7 +16,7 @@ limitations under the License.
 import pickle, sys, cv2
 import pandas as pd
 import numpy as np
-import torch
+import torch, os
 import pytorch_lightning as pl
 
 sys.path.append("../")
@@ -57,7 +57,7 @@ def run_fast_dev(
 
 def save_model(model, config: ModelSettings, path):
     print("save model at: ", path)
-    config.save(save_path=path + "config.json")
+    config.save(save_path=os.path.join(path, "config.json"))
 
     if config.save_model:
         torch.save(model.state_dict(), path + "model.pt")
@@ -71,7 +71,7 @@ def save_model(model, config: ModelSettings, path):
         landmark_start=np.nan,
         landmark_end=np.nan,
     )
-    lscores.save_lookuptable(filepath=path + "lookuptable.json")
+    lscores.save_lookuptable(filepath=os.path.join(path , "lookuptable.json"))
 
 
 def data_preprocessing_ssbr(df: pd.DataFrame, config: ModelSettings):
@@ -162,7 +162,7 @@ def get_dataframe(config: ModelSettings):
     df = pd.read_excel(config.df_data_source_path, engine="openpyxl")
 
     # only use volumes with more than 30 slices
-    df = df[(df["z"] >= 30)]
+    if "z" in df.columns: ddf = df[(df["z"] >= 30)]
     return df
 
 

@@ -42,7 +42,7 @@ def test_inference():
     assert "README.md" in os.listdir(output_path)
 
 def test_plot_scores_in_json_files(): 
-    output_path = "../data/test_results/"
+    output_path = os.path.join(MAIN_PATH, "data/test_results/")
     plot_scores_in_json_files(output_path)
     
     assert len([f for f in os.listdir(output_path) if f.endswith(".json")]) == len([f for f in os.listdir(output_path) if f.endswith(".png")]) 
@@ -51,7 +51,7 @@ def test_plot_scores_in_json_files():
 def test_npy_inference(): 
     """ Test if npy inference is equal to nifti inference. 
     """
-    input_path = "../data/test_cases/" 
+    input_path = os.path.join(MAIN_PATH, "data/test_cases/")
     input_path += os.listdir(input_path)[0]
 
     model = InferenceModel()

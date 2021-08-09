@@ -149,7 +149,7 @@ class Evaluation(Visualization):
         )
 
     def plot_slices2scores(
-        self, max_cols=4, nearby_values=[0, 25, 50, 75, 100], save_path=""
+        self, max_cols=4, nearby_values=[0, 25, 50, 75, 100], save_path="", fontsize=16
     ):
         _, ax = plt.subplots(len(nearby_values), max_cols, figsize=(14, 16))
 
@@ -175,7 +175,7 @@ class Evaluation(Visualization):
                     continue
 
                 ax[row, col].imshow(X[slice_index, :, :], cmap="gray")
-                ax[row, col].set_title(np.round(slice_score, 2), fontsize=14)
+                ax[row, col].set_title(np.round(slice_score, 2), fontsize=fontsize)
                 ax[row, col].set_yticklabels([])
                 ax[row, col].set_xticklabels([])
                 ax[row, col].set_yticks([])
@@ -183,7 +183,7 @@ class Evaluation(Visualization):
                 col += 1
         plt.tight_layout()
         if len(save_path) > 0:
-            plt.savefig(save_path + "model-evaluation-nearby-slices.png")
+            plt.savefig(save_path)
 
 
 if __name__ == "__main__":

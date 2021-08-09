@@ -84,7 +84,7 @@ class Visualization:
         plt.xticks(fontsize=fontsize - 2)
         plt.yticks(fontsize=fontsize - 2)
         plt.xlabel("Slice Scores", fontsize=fontsize)
-        plt.ylabel("Density Frequency Distribution", fontsize=fontsize)
+        plt.ylabel("Relative Frequency", fontsize=fontsize)
         plt.xlim((-10, 110))
 
 

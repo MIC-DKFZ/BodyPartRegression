@@ -39,8 +39,8 @@ class BodyPartRegression(BodyPartRegressionBase):
         loss_order: str = "h",
         beta_h: float = 0.025,
         alpha_h: float = 0.5,
-        base_model="vgg",
-        weight_decay=0,
+        base_model: str="vgg",
+        weight_decay: int=0,
     ):
 
         BodyPartRegressionBase.__init__(
@@ -63,15 +63,16 @@ class BodyPartRegression(BodyPartRegressionBase):
         self.model = self.get_vgg()
 
     def get_vgg(self):
-        vgg16 = models.vgg16(pretrained=self.pretrained)
-        vgg16.features[0] = torch.nn.Conv2d(
+        vgg = models.vgg16(pretrained=self.pretrained)
+        vgg.features[0] = torch.nn.Conv2d(
             1, 64, kernel_size=3, stride=1, padding=1, bias=False
         )
 
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        vgg16.to(device)
+        vgg.to(device)
 
-        return vgg16.features
+        return vgg.features
+        
 
     def forward(self, x: torch.Tensor):
         x = self.model(x.float())

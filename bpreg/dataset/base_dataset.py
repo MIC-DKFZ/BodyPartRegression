@@ -12,8 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+import os
 import numpy as np
+from numpy.lib.arraysetops import isin
 import pandas as pd
 import random, math, cv2
 import albumentations as A
@@ -55,7 +56,7 @@ class BaseDataset(Dataset):
 
         self.data_path = data_path
         self.filenames = filenames
-        self.filepaths = [data_path + f for f in filenames]
+        self.filepaths = [os.path.join(data_path, f) for f in filenames]
         self.z_spacings = z_spacings  # in mm
         self.length = len(self.filepaths)
         self.num_slices = num_slices
@@ -105,7 +106,7 @@ class BaseDataset(Dataset):
 
     def get_full_volume(self, idx: int):
         filepath = self.filepaths[idx]
-        volume = np.load(filepath)
+        volume = np.load(parse2plainname(filepath) + ".npy") 
         return swap_axis(volume)
 
     def get_landmark_idx(self, idx: int):
@@ -130,7 +131,7 @@ class BaseDataset(Dataset):
             landmark_indices = landmark_indices[defined_landmarks].astype(int)
 
             # extract slices of landmark positions for file
-            slices = get_slices(self.data_path + file, landmark_indices)
+            slices = get_slices(os.path.join(self.data_path, file), landmark_indices)
 
             landmark_slices_per_volume.append(slices)
             defined_landmarks_per_volume.append(defined_landmarks)
@@ -144,7 +145,7 @@ def get_full_volume_from_filepath(filepath: str):
 
 
 def get_slices(filepath, indices):
-    volume = np.load(filepath, mmap_mode="r")
+    volume = np.load(parse2plainname(filepath) + ".npy", mmap_mode="r")
     x = volume[:, :, indices]
     return swap_axis(x)
 
@@ -154,8 +155,21 @@ def swap_axis(x):
 
 
 def filename_to_id(filename, filename_array):
-    ids = np.where(filename == filename_array)[0]
+    filename = parse2plainname(filename)
+    filename_array = parse2plainname(filename_array)
+
+
+    ids = np.where(filename == np.array(filename_array))[0]
     if len(ids) == 0:
-        raise ValueError(f"filename {filename} is not in the filename list")
+        raise ValueError(f"filename {filename} is not in the filename list: {filename_array}")
     else:
         return ids[0]
+
+
+def parse2plainname(value): 
+    if isinstance(value, str): 
+        value = value.replace(".nii", "").replace(".gz", "").replace(".npy", "")
+    else: 
+        value = [v.replace(".nii", "").replace(".gz", "").replace(".npy", "") for v in value]
+    return value
+
