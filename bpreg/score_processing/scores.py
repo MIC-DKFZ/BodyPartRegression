@@ -67,6 +67,9 @@ class Scores:
         self.scale = 100
         self.original_values = scores
         self.original_transformed_values = self.transform_scores(scores.copy())
+        self.a_original, self.b_original = self.fit_linear_line(x=np.arange(len(self.original_transformed_values)), 
+                                                                y=self.original_transformed_values)
+
 
         self.values = self.filter_scores(scores)
         self.values = self.transform_scores(self.values)
@@ -78,7 +81,7 @@ class Scores:
         self.z = np.arange(len(scores)) * zspacing
         self.valid_z = self.z[~np.isnan(self.values)]
         self.valid_values = self.values[~np.isnan(self.values)]
-        self.a, self.b = self.fit_linear_line()
+        self.a, self.b = self.fit_linear_line(x=self.valid_z, y=self.valid_values)
 
         # data sanity chekcs
         self.r_slope_threshold = r_slope_threshold
@@ -164,28 +167,40 @@ class Scores:
             | (self.slopes > self.tangential_slope_max)
         )[0]
 
-        # identify if outliers lie before or after boundary index
-        outlier_indices_left_tail = outlier_indices[
-            np.where(outlier_indices < self.min_boundary_idx)[0]
-        ]
-        outlier_indices_right_tail = outlier_indices[
-            np.where(outlier_indices > self.max_boundary_idx)[0]
-        ]
+        # if unprocessed slice scores increase  
+        if self.a_original > 0: 
+            # identify if outliers lie before or after boundary index
+            outlier_indices_left_tail = outlier_indices[
+                np.where(outlier_indices < self.min_boundary_idx)[0]
+            ]
+            outlier_indices_right_tail = outlier_indices[
+                np.where(outlier_indices > self.max_boundary_idx)[0]
+            ]
+
+        # if unprocessed slice scores decrease  
+        else: 
+            # identify if outliers lie before or after boundary index
+            outlier_indices_left_tail = outlier_indices[
+                np.where(outlier_indices < self.max_boundary_idx)[0]
+            ]
+            outlier_indices_right_tail = outlier_indices[
+                np.where(outlier_indices > self.min_boundary_idx)[0]
+            ]
 
         # set left and right tail with outlier slopes to nan
         if len(outlier_indices_left_tail) > 0:
             x[: np.max(outlier_indices_left_tail)] = np.nan
         if len(outlier_indices_right_tail) > 0:
             x[np.min(outlier_indices_right_tail) :] = np.nan
-
         return x
 
-    def fit_linear_line(self):
-        if len(self.valid_z) < 2:
+    
+    def fit_linear_line(self, x, y):
+        if len(x) < 2:
             return np.nan, np.nan
-        X = np.full((len(self.valid_z), 2), 1.0, dtype=float)
-        X[:, 1] = self.valid_z
-        b, a = np.linalg.inv(X.T @ X) @ X.T @ self.valid_values
+        X = np.full((len(x), 2), 1.0, dtype=float)
+        X[:, 1] = x
+        b, a = np.linalg.inv(X.T @ X) @ X.T @ y
         return a, b
 
     def calculate_expected_zspacing(self):

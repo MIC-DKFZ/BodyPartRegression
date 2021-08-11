@@ -54,7 +54,9 @@ class BodyPartExaminedTag:
         distinct_body_parts=DISTINCT_BODY_PARTS,
         min_present_landmarks=MIN_PRESENT_LANDMARKS,
         zrange_threshold=100,  # in mm
+        ignore_invalid_z: bool=False, 
     ):
+        self.ignore_invalid_z = ignore_invalid_z
         self.body_parts_included = body_parts_included
         self.min_present_landmarks = min_present_landmarks
         self.distinct_body_parts = distinct_body_parts
@@ -70,7 +72,7 @@ class BodyPartExaminedTag:
 
     def estimate_tag(self, scores: Scores):
         # if z-spacing is invalid return NONE as body part examined
-        if scores.valid_zspacing == 0:
+        if (scores.valid_zspacing == 0) and not self.ignore_invalid_z:
             return "NONE"
 
         # check if z-range is greater than 100 mm

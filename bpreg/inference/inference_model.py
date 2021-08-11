@@ -145,7 +145,7 @@ class InferenceModel:
         return scores
         
 
-    def npy2json(self, X_: np.array, output_path: str, pixel_spacings: tuple, axis_ordering=(0, 1, 2)):
+    def npy2json(self, X_: np.array, output_path: str, pixel_spacings: tuple, axis_ordering=(0, 1, 2), ignore_invalid_z: bool =False):
         """
         Method to predict slice scores from numpy arrays (in Hounsfiel dunits). 
         Converts plain numpy array to numpy arrays which can be used by the DEFAULT_MODEL to predict the slice scores.n
@@ -155,6 +155,7 @@ class InferenceModel:
             output_path (str): output path to save json file
             pixel_spacing (tuple): pixel spacing in x, y and z direction. 
             axis_ordering (tuple): Axis ordering of CT volume. (0,1,2) is equivalent to the axis ordering xyz.
+            ignore_invalid_z (bool): If true, than invalid z-spacing will be ignored for predicting the body part examined and not NONE will be given back. 
         """
         X = self.n2n.preprocess_npy(X_, pixel_spacings, axis_ordering=axis_ordering) 
 
@@ -163,17 +164,26 @@ class InferenceModel:
         
         slice_scores = self.predict_npy_array(X)
         slice_scores = self.parse_scores(slice_scores, pixel_spacings[2])
-        data_storage = VolumeStorage(slice_scores, self.lookuptable)
+        data_storage = VolumeStorage(slice_scores, self.lookuptable, ignore_invalid_z=ignore_invalid_z)
         if len(output_path) > 0:
             data_storage.save_json(output_path)
         return data_storage.json
 
-    def nifti2json(self, nifti_path, output_path, stringify_json=False):
+    def nifti2json(self, nifti_path: str, output_path: str="", stringify_json: bool=False, ignore_invalid_z: bool =False):
+        """
+        Main method to convert NIFTI CT volumes int JSON meta data files. 
+        Args:
+            nifti_path (str): path of input NIFTI file
+            output_path (str): output path to save JSON file
+            stringify_json (bool): Set it to true for Kaapana JSON format 
+            axis_ordering (tuple): Axis ordering of CT volume. (0,1,2) is equivalent to the axis ordering xyz.
+            ignore_invalid_z (bool): If true, than invalid z-spacing will be ignored for predicting the body part examined and not NONE will be given back. 
+        """
         slice_scores = self.predict_nifti(nifti_path)
         if isinstance(slice_scores, float) and np.isnan(slice_scores):
             return np.nan
 
-        data_storage = VolumeStorage(slice_scores, self.lookuptable)
+        data_storage = VolumeStorage(slice_scores, self.lookuptable, ignore_invalid_z=ignore_invalid_z)
         if len(output_path) > 0:
             data_storage.save_json(output_path, stringify_json=stringify_json)
         return data_storage.json
@@ -198,8 +208,10 @@ class VolumeStorage:
                  body_parts_included=BODY_PARTS_INCLUDED, 
                  distinct_body_parts=DISTINCT_BODY_PARTS, 
                  min_present_landmarks=MIN_PRESENT_LANDMARKS, 
+                 ignore_invalid_z: bool=False, 
                  ):
 
+        self.ignore_invalid_z = ignore_invalid_z
         self.body_parts=body_parts
         self.body_parts_included = body_parts_included
         self.distinct_body_parts = distinct_body_parts
@@ -223,7 +235,8 @@ class VolumeStorage:
         self.bpet = BodyPartExaminedTag(lookuptable,         
                                         body_parts_included=self.body_parts_included,
                                         distinct_body_parts=self.distinct_body_parts,
-                                        min_present_landmarks=self.min_present_landmarks)
+                                        min_present_landmarks=self.min_present_landmarks, 
+                                        ignore_invalid_z=self.ignore_invalid_z)
 
         self.settings = {"slice score processing": scores.settings, 
                             "body part examined dict": self.body_parts, 
