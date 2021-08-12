@@ -7,7 +7,10 @@ Copyright © German Cancer Research Center (DKFZ), Division of Medical Image Com
 # Body Part Regression 
 
 The Body Part Regression (BPR) model translates the anatomy in a radiologic volume into a machine-interpretable form. 
-Each axial slice maps to a slice score. The slice scores monotonously increase with patient height. 
+Each axial slice maps to a slice score. The slice scores monotonously increase with patient height. In the following figure, you can find example slices for the predicted slice scores: 0, 25, 50, 75, and 100. In each row independent random CT slices are visible with nearly the same target. It can be seen, that the start of the pelvis maps to 0, the upper pelvis region maps to 25, the start of the lungs to 50, the shoulder region to 75, and the head to 100: 
+
+![decision tree](docs/images/model-evaluation-nearby-scores.jpg)
+
 With the help of a slice-score look-up table, the mapping between certain landmarks to slice scores can be checked. 
 The BPR model learns in a completely self-supervised fashion. There is no need for annotated data for training the model, besides of evaluation purposes. 
 
@@ -81,15 +84,43 @@ Tags for the `bpreg_predict` command:
 - `--skip` (bool): skip already created .json metadata files (default: 1)
 - `--model` (str): specify model (default: public model from zenodo for CT volumes)
 - `--plot` (png): create and save plot for each volume with calculated slice score curve. 
-
+- 
 Through the `bpreg_predict` command for each nifti-file in the directory `input_path` a corresponding json-file 
-gets created and saved in the `output_path`. Moreover, a README file will be saved in the outpath, where the information inside the JSON files is explained. 
+gets created and saved in the `output_path`. Moreover, a README file will be saved in the output path, where the information inside the JSON files is explained. 
 
-If your input data is not in the nifti-format you can stil apply the BPR model through converting the data to a matrix and 
+If your input data is not in the nifti-format you can stil apply the BPR model by converting the data to a matrix and 
 using the functions in the `bpreg.inference.inference_model` module in your own python script. 
 
 If you use this model for your work, please make sure to cite the model and the training data as explained at 
 [zenodo](https://zenodo.org/record/5113483#.YPaBkNaxWEA). 
+
+The meta-data files can be used for three main use cases. 
+1. Predicting the examined body part
+2. Filter corrupted CT images
+3. Cropping required region from  CT images 
+
+
+### 1. Predicting the examined body part
+The label for the predicted examined body part can be found under `body part examined tag` in the meta-data file. 
+In the following figure, you can find a comparison between the BodyPartExamined tag from the DICOM meta-data header and the predicted `body part examined tag` from this method.
+The predicted body part examined tag is more fine-grained and contains less misleading and missing values than the BodyPartExamined tag from the DICOM header: 
+
+![decision tree](docs/images/bpe-pie-charts.jpg)
+
+
+### 2. Filter corrupted CT images 
+Some of the predicted body part examined tags are `NONE`, which means that the predicted slice score curve for this CT volume looks unexpected (then the`valid z-spacing` tag from the meta-data is equal to 0). Based on the `NONE` tag corrupted CT volumes can be automatically found. In the following, you find in the left a typical CT volume with a corresponding typical slice score curve. Next to the typical CT volume several corrupted CT volumes are shown with the corresponding slice score curves. It can be seen that the slice score curves from the corrupted CT volumes are clearly different from the expected slice score curve. If the slice score curve is looking is monotonously increasing as in the left figure but the predicted body part examined tag is still `NONE` then this happens because the z-spacing of the CT volume seems to be wrong. 
+
+![decision tree](docs/images/corrupted-slice-scores.jpg)
+
+
+### 3. Cropping required region from CT images
+The meta-data can be used as well to crop appropriate regions from a CT volume. 
+This can be helpful for medical computer vision algorithms. It can be implemented as a pre-processing or post-processing step and leads to less false-positive predictions in regions which the model has not seen during training: 
+![decision tree](docs/images/known-region-cropping.jpg)
+
+
+
 
 
 --------------------------------------------------------------
@@ -113,4 +144,5 @@ The information from the meta-data file can be traced back to the `unprocessed s
 
 In the `docs/notebooks` folder, you can find a tutorial on how to use the body part regression model for inference. An example will be presented, were the lungs are detected and cropped automatically from CT volumes. Moreover, a tutorial for training and evaluating a Body Part Regression model can be found. 
 
-For a more detailed explanation to the theory behind Body Part Regression and the application use cases have a look into the master thesis "Body Part Regression for CT Volumes" from Sarah Schuhegger. 
+For a more detailed explanation to the theory behind Body Part Regression and the application use cases have a look into the master thesis "Body Part Regression for CT Images" from Sarah Schuhegger. 
+
