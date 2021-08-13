@@ -2,40 +2,30 @@ import os
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 
-
-def resolve_requirements(file):
-    requirements = []
-    with open(file) as f:
-        req = f.read().splitlines()
-        for r in req:
-            if r.startswith("-r"):
-                requirements += resolve_requirements(
-                    os.path.join(os.path.dirname(file), r.split(" ")[1])
-                )
-            else:
-                requirements.append(r)
-    return requirements
-
-
-# load requirements
-requirements = resolve_requirements(
-    os.path.join(os.path.dirname(__file__), "requirements.txt")
-)
-
 # read readme
 with open("README.md", "r") as f:
     readme = f.read()
 
 setup(
     name="bpreg",
-    version="0.0.1",
+    version="1.0",
     packages=find_packages(),
     include_package_data=True,
     test_suite="unittest",
-    install_requires=requirements,
+    install_requires=[
+        "pytorch_lightning==1.2.10", 
+        "nibabel==3.2.1", 
+        "scipy==1.7.0", 
+        "albumentations==0.5.2", 
+        "dataclasses", 
+        "pandas==1.2.1", 
+        "torch==1.8.1",  
+        "torchvision==0.9.1"
+    ],
     long_description=readme,
+    long_description_content_type = "text/markdown",
     author="Division of Medical Image Computing, German Cancer Research Center",
-    maintainer_email="",
+    maintainer_email="s.schuhegger@dkfz-heidelberg.de",
     entry_points={
         "console_scripts": [
             "bpreg_predict = scripts.bpreg_inference:main",
