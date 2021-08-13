@@ -105,19 +105,19 @@ The label for the predicted examined body part can be found under `body part exa
 In the following figure, you can find a comparison between the BodyPartExamined tag from the DICOM meta-data header and the predicted `body part examined tag` from this method.
 The predicted body part examined tag is more fine-grained and contains less misleading and missing values than the BodyPartExamined tag from the DICOM header: 
 
-![decision tree](docs/images/bpe-pie-charts.jpg)
+![Pie charts of comparisson between DICOM BodyPartExamined tag and predicted body part examined tag](docs/images/bpe-pie-charts.jpg)
 
 
 ### 2. Filter corrupted CT images 
 Some of the predicted body part examined tags are `NONE`, which means that the predicted slice score curve for this CT volume looks unexpected (then the`valid z-spacing` tag from the meta-data is equal to 0). Based on the `NONE` tag corrupted CT volumes can be automatically found. In the following, you find in the left a typical CT volume with a corresponding typical slice score curve. Next to the typical CT volume several corrupted CT volumes are shown with the corresponding slice score curves. It can be seen that the slice score curves from the corrupted CT volumes are clearly different from the expected slice score curve. If the slice score curve is looking is monotonously increasing as in the left figure but the predicted body part examined tag is still `NONE` then this happens because the z-spacing of the CT volume seems to be wrong. 
 
-![decision tree](docs/images/corrupted-slice-scores.jpg)
+![Example figures of slice score curves from corrupted CT images](docs/images/corrupted-slice-scores.jpg)
 
 
 ### 3. Cropping required region from CT images
 The meta-data can be used as well to crop appropriate regions from a CT volume. 
 This can be helpful for medical computer vision algorithms. It can be implemented as a pre-processing or post-processing step and leads to less false-positive predictions in regions which the model has not seen during training: 
-![decision tree](docs/images/known-region-cropping.jpg)
+![Figure of known region cropping process as pre-processing step or post-processing step for a lung segmentation method](docs/images/known-region-cropping.jpg)
 
 
 
