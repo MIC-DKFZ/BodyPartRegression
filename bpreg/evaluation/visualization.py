@@ -142,8 +142,8 @@ def plot_scores(filepath, save_path="", fontsize=18):
     plt.figure(figsize=(12, 6))
     x = load_json(filepath)
 
-    plt.plot(x["z"], x["cleaned slice scores"], label="cleaned slice scores")
-    plt.plot(x["z"], x["unprocessed slice scores"], label="unprocessed slice scores", linestyle="--")
+    plt.plot(x["z"], x["cleaned slice scores"], label="Cleaned Slice Scores")
+    plt.plot(x["z"], x["unprocessed slice scores"], label="Unprocessed Slice Scores", linestyle="--")
     
     try: 
         min_score = np.nanmin(x["unprocessed slice scores"])
@@ -159,7 +159,7 @@ def plot_scores(filepath, save_path="", fontsize=18):
                     ))
     except: pass
 
-    plt.xlabel("height [mm]", fontsize=fontsize)
+    plt.xlabel("Height [mm]", fontsize=fontsize)
     plt.ylabel("Slice Scores", fontsize=fontsize)
     plt.xticks(fontsize=fontsize-2)
     plt.yticks(fontsize=fontsize-2)
