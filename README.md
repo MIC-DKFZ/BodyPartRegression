@@ -146,3 +146,7 @@ In the `docs/notebooks` folder, you can find a tutorial on how to use the body p
 
 For a more detailed explanation to the theory behind Body Part Regression and the application use cases have a look into the master thesis "Body Part Regression for CT Images" from Sarah Schuhegger. 
 
+
+--------------------------------------------------------------
+### Cite Software 
+Sarah Schuhegger. (2021). MIC-DKFZ/BodyPartRegression: (v1.0). Zenodo. https://doi.org/10.5281/zenodo.5195341
