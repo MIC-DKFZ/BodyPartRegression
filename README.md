@@ -88,8 +88,8 @@ Tags for the `bpreg_predict` command:
 Through the `bpreg_predict` command for each nifti-file in the directory `input_path` a corresponding json-file 
 gets created and saved in the `output_path`. Moreover, a README file will be saved in the output path, where the information inside the JSON files is explained. 
 
-If your input data is not in the nifti-format you can stil apply the BPR model by converting the data to a matrix and 
-using the functions in the `bpreg.inference.inference_model` module in your own python script. 
+If your input data is not in the nifti-format you can still apply the BPR model by converting the data to a numpy matrix. 
+A tutorial for using the package for CT images in the numpy format can be found in the notebook: `docs/notebooks/inference-example-with-npy-arrays`.
 
 If you use this model for your work, please make sure to cite the model and the training data as explained at 
 [zenodo](https://zenodo.org/record/5113483#.YPaBkNaxWEA). 
