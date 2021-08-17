@@ -40,10 +40,9 @@ COPY README.md .
 
 COPY bpreg bpreg/
 
-COPY src/models/private_bpr_model/config.json src/models/private_bpr_model/config.json
-COPY src/models/private_bpr_model/inference-settings.json src/models/private_bpr_model/inference-settings.json
-COPY src/models/private_bpr_model/model.pt src/models/private_bpr_model/model.pt
-COPY src/models/private_bpr_model/settings.json src/models/private_bpr_model/settings.json
+COPY src/models/public_bpr_model/config.json src/models/public_bpr_model/config.json
+COPY src/models/public_bpr_model/inference-settings.json src/models/public_bpr_model/inference-settings.json
+COPY src/models/public_bpr_model/model.pt src/models/public_bpr_model/model.pt
 COPY docs/body-part-metadata.md docs/body-part-metadata.md
 RUN pip3 install -e .
 
