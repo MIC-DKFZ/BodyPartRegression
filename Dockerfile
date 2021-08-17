@@ -39,7 +39,6 @@ COPY setup.py .
 COPY README.md .
 
 COPY bpreg bpreg/
-COPY scripts scripts/
 
 COPY src/models/private_bpr_model/config.json src/models/private_bpr_model/config.json
 COPY src/models/private_bpr_model/inference-settings.json src/models/private_bpr_model/inference-settings.json

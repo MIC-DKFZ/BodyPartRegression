@@ -28,6 +28,8 @@ from bpreg.settings.settings import *
 from bpreg.settings.model_settings import ModelSettings
 from bpreg.score_processing.bodypartexamined_tag import *
 from bpreg.utils.json_parser import * 
+from bpreg.scripts.initialize_pretrained_model import initialize_pretrained_model
+
 
 from dataclasses import dataclass
 from tqdm import tqdm
@@ -283,6 +285,10 @@ class VolumeStorage:
 def load_model(
     base_dir, model_file="model.pt", config_file="config.json", device="cuda"
 ):
+    # load public model, if it does not exist locally
+    if (base_dir == DEFAULT_MODEL) & ~os.path.exists(base_dir):
+        initialize_pretrained_model()
+
     config_filepath = base_dir + config_file
     model_filepath = base_dir + model_file
 

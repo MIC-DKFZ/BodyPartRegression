@@ -5,6 +5,7 @@ src/configs/local/
 *.ipynb_checkpoints/
 __pycache__/
 lightning_logs/
+dist/
 docs/docker-docs.txt
 starter.py 
 .vscode/*

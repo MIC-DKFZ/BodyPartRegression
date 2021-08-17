@@ -117,6 +117,7 @@ def grid_plot(
 
 def plot_data(config: ModelSettings, kind: str="train", cols=3, rows=3): 
     df = get_dataframe(config)
+    df = df[~df.pixel_spacingz.isna()]
     train_dataset, val_dataset, test_dataset = get_datasets(config, df)
 
     datasets = {"train": train_dataset, "validation": val_dataset, "test": test_dataset}

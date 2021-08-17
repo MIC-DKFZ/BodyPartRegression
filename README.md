@@ -88,8 +88,8 @@ Tags for the `bpreg_predict` command:
 Through the `bpreg_predict` command for each nifti-file in the directory `input_path` a corresponding json-file 
 gets created and saved in the `output_path`. Moreover, a README file will be saved in the output path, where the information inside the JSON files is explained. 
 
-If your input data is not in the nifti-format you can stil apply the BPR model by converting the data to a matrix and 
-using the functions in the `bpreg.inference.inference_model` module in your own python script. 
+If your input data is not in the nifti-format you can still apply the BPR model by converting the data to a numpy matrix. 
+A tutorial for using the package for CT images in the numpy format can be found in the notebook: `docs/notebooks/inference-example-with-npy-arrays`.
 
 If you use this model for your work, please make sure to cite the model and the training data as explained at 
 [zenodo](https://zenodo.org/record/5113483#.YPaBkNaxWEA). 
@@ -105,19 +105,19 @@ The label for the predicted examined body part can be found under `body part exa
 In the following figure, you can find a comparison between the BodyPartExamined tag from the DICOM meta-data header and the predicted `body part examined tag` from this method.
 The predicted body part examined tag is more fine-grained and contains less misleading and missing values than the BodyPartExamined tag from the DICOM header: 
 
-![decision tree](docs/images/bpe-pie-charts.jpg)
+![Pie charts of comparisson between DICOM BodyPartExamined tag and predicted body part examined tag](docs/images/bpe-pie-charts.jpg)
 
 
 ### 2. Filter corrupted CT images 
 Some of the predicted body part examined tags are `NONE`, which means that the predicted slice score curve for this CT volume looks unexpected (then the`valid z-spacing` tag from the meta-data is equal to 0). Based on the `NONE` tag corrupted CT volumes can be automatically found. In the following, you find in the left a typical CT volume with a corresponding typical slice score curve. Next to the typical CT volume several corrupted CT volumes are shown with the corresponding slice score curves. It can be seen that the slice score curves from the corrupted CT volumes are clearly different from the expected slice score curve. If the slice score curve is looking is monotonously increasing as in the left figure but the predicted body part examined tag is still `NONE` then this happens because the z-spacing of the CT volume seems to be wrong. 
 
-![decision tree](docs/images/corrupted-slice-scores.jpg)
+![Example figures of slice score curves from corrupted CT images](docs/images/corrupted-slice-scores.jpg)
 
 
 ### 3. Cropping required region from CT images
 The meta-data can be used as well to crop appropriate regions from a CT volume. 
 This can be helpful for medical computer vision algorithms. It can be implemented as a pre-processing or post-processing step and leads to less false-positive predictions in regions which the model has not seen during training: 
-![decision tree](docs/images/known-region-cropping.jpg)
+![Figure of known region cropping process as pre-processing step or post-processing step for a lung segmentation method](docs/images/known-region-cropping.jpg)
 
 
 
