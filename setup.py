@@ -8,7 +8,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="bpreg",
-    version="1.0",
+    version="1.0.2", # 1.0.0
     packages=find_packages(),
     include_package_data=True,
     test_suite="unittest",
@@ -20,7 +20,7 @@ setup(
         "dataclasses", 
         "pandas==1.2.1", 
         "torch==1.8.1",  
-        "torchvision==0.9.1"
+        "torchvision==0.9.1",
     ],
     long_description=readme,
     long_description_content_type = "text/markdown",
@@ -28,7 +28,7 @@ setup(
     maintainer_email="s.schuhegger@dkfz-heidelberg.de",
     entry_points={
         "console_scripts": [
-            "bpreg_predict = scripts.bpreg_inference:main",
+            "bpreg_predict = bpreg.scripts.bpreg_inference:main",
         ]
     },
 )
