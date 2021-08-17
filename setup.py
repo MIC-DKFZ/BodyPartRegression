@@ -1,6 +1,4 @@
-import os
 from setuptools import setup, find_packages
-from setuptools.command.install import install
 
 # read readme
 with open("README.md", "r") as f:
@@ -8,8 +6,9 @@ with open("README.md", "r") as f:
 
 setup(
     name="bpreg",
-    version="1.0.2", # 1.0.0
+    version="1.0.4", # 1.0.0
     packages=find_packages(),
+    url="https://github.com/MIC-DKFZ/BodyPartRegression",
     include_package_data=True,
     test_suite="unittest",
     install_requires=[
@@ -25,6 +24,7 @@ setup(
     long_description=readme,
     long_description_content_type = "text/markdown",
     author="Division of Medical Image Computing, German Cancer Research Center",
+    author_email="mic-office@dkfz.de", 
     maintainer_email="s.schuhegger@dkfz-heidelberg.de",
     entry_points={
         "console_scripts": [
