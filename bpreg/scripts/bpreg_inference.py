@@ -19,7 +19,6 @@ import torch
 from shutil import copyfile
 
 sys.path.append("../")
-from scripts.initialize_pretrained_model import initialize_pretrained_model
 from bpreg.inference.inference_model import InferenceModel
 from bpreg.settings import *
 from bpreg.evaluation.visualization import plot_scores
@@ -67,9 +66,6 @@ def bpreg_inference(
     gpu_available: bool=True, 
     plot: bool=False, 
 ):
-    # load public model, if it does not exists locally
-    if (model == DEFAULT_MODEL) & ~os.path.exists(model):
-        initialize_pretrained_model()
 
     # run body part regression for each file in the dictionary
     bpreg_for_directory(

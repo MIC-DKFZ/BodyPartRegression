@@ -1,7 +1,7 @@
 import sys, os, json
 import nibabel as nib 
 sys.path.append("../")
-from scripts.bpreg_inference import *
+from bpreg.scripts.bpreg_inference import *
 from bpreg.settings import * 
 # test if json files are craeted
 
