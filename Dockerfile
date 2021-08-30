@@ -24,6 +24,27 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
 
+RUN apt-get update && apt-get install -y \
+    git \
+    htop \
+    zip \
+    unzip \
+    curl \
+ && rm -rf /var/lib/apt/lists/*
+
+# Clone directory from git
+RUN git clone  --single-branch --branch master https://github.com/MIC-DKFZ/BodyPartRegression.git && cd BodyPartRegression && git checkout v1.0 
+
+# Download public model from zenodo 
+RUN touch BodyPartRegression/src/models/public_bpr_model.zip
+RUN curl https://zenodo.org/record/5113483/files/public_bpr_model.zip?download=1 -o BodyPartRegression/src/models/public_bpr_model.zip 
+
+# Unzip model 
+RUN cd BodyPartRegression/src/models && unzip public_bpr_model.zip 
+
+# Go to main directory
+RUN cd ../../
+
 # Copy files 
 WORKDIR /app
 
@@ -43,7 +64,6 @@ COPY bpreg bpreg/
 COPY src/models/public_bpr_model/config.json src/models/public_bpr_model/config.json
 COPY src/models/public_bpr_model/inference-settings.json src/models/public_bpr_model/inference-settings.json
 COPY src/models/public_bpr_model/model.pt src/models/public_bpr_model/model.pt
-COPY docs/body-part-metadata.md docs/body-part-metadata.md
 RUN pip3 install -e .
 
 
