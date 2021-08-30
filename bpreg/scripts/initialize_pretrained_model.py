@@ -19,9 +19,12 @@ from bpreg.settings.settings import MAIN_PATH
 PUBLIC_MODEL_URL = (
     "https://zenodo.org/record/5113483/files/public_bpr_model.zip?download=1"
 )
-SAVE_PUBLIC_MODEL_PATH = os.path.join(
-    MAIN_PATH, "src/models/public_inference_model.zip"
+
+SAVE_PUBLIC_MODEL_DIR_PATH =  os.path.join(
+    MAIN_PATH, "src/models/"
 )
+SAVE_PUBLIC_MODEL_PATH = os.path.join(SAVE_PUBLIC_MODEL_DIR_PATH, "public_inference_model.zip")
+
 
 
 def initialize_pretrained_model():
@@ -33,6 +36,9 @@ def initialize_pretrained_model():
 
     with requests.get(PUBLIC_MODEL_URL, stream="True") as r:
         r.raise_for_status()
+        if not os.path.exists(os.path.join(MAIN_PATH, "src")): os.mkdir(os.path.join(MAIN_PATH, "src"))
+        if not os.path.exists(os.path.join(MAIN_PATH, "src/models/")): os.mkdir(os.path.join(MAIN_PATH, "src/models/"))
+
         with open(SAVE_PUBLIC_MODEL_PATH, "wb") as f:
             for chunk in r.iter_content(chunk_size=None):
                 f.write(chunk)

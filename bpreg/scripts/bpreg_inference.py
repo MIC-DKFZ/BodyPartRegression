@@ -33,8 +33,14 @@ def bpreg_for_directory(
 ):
     # test if gpu is available
     if not torch.cuda.is_available(): gpu_available = False 
-
     model = InferenceModel(model_path, gpu=gpu_available)
+
+    if input_dirpath == "": 
+        raise ValueError("Input path is not defined. Please define the input path via -i <input_path>.")
+
+    if output_dirpath == "": 
+        raise ValueError("Output path is not defined. Please define the output path via -o <output_path>.")
+
     ifiles = [f for f in os.listdir(input_dirpath) if f.endswith((".nii.gz", ".nii"))]
     ofiles = [f.replace(".nii", "").replace(".gz", "") + ".json" for f in ifiles]
 
@@ -54,8 +60,8 @@ def bpreg_for_directory(
 def plot_scores_in_json_files(output_path): 
     json_files = [f for f in os.listdir(output_path) if f.endswith(".json")]
     for file in json_files: 
-        save_path = output_path + file.replace(".json", ".png")
-        plot_scores(output_path + file, save_path=save_path)
+        save_path = os.path.join(output_path, file.replace(".json", ".png"))
+        plot_scores(os.path.join(output_path, file), save_path=save_path)
 
 def bpreg_inference(
     input_path: str,
@@ -83,7 +89,7 @@ def bpreg_inference(
         plot_scores_in_json_files(output_path)
 
     # copy documentation for json metadata files into repository 
-    copyfile(os.path.join(MAIN_PATH, "docs/body-part-metadata.md"), os.path.join(output_path, "README.md"))
+    copyfile(os.path.join(MAIN_PATH, "bpreg/settings/body-part-metadata.md"), os.path.join(output_path, "README.md"))
 
 
 def main():
