@@ -27,46 +27,37 @@ With a simple command from the terminal, the body part information can be calcul
 ## 1. Install package
 You can either use conda or just pip to install the bpreg package. 
 
-### 1.1 Install package with conda
-
-1. Clone the bodypartregression repository from phabricator and move into the bodypartregression/ folder
-```
-cd bodypartregression/
-```
-2. Create new conda environment and activate environment with: 
-```
-conda create -n venv_name
-conda activate venv_name
-```
-3. Install pip into the environment
-```
-conda install pip
-```
-4. Install the package with pip through the command (with your personal anaconda path): 
-```
-/home/anaconda3/envs/venv_name/bin/pip install -e .
-```
-You can find your personal anaconda path through the command: 
-```
-which anaconda
-```
-
-
-
-## 1.2 Install package without conda
+## 1.1 Install package without conda
 
 1. Create a new python environment and activate it through: 
 ```
 python -m venv venv_name
 source venv_name/bin/activate
 ```
-2. Clone the bodypartregression repository from phabricator and move into the bodypartregression/ folder 
+
+2. Install the package through: 
 ```
-cd bodypartregression/
+pip install bpreg
 ```
-3. Install the package through: 
+
+### 1.2 Install package with conda
+
+1. Create new conda environment and activate environment with: 
 ```
-pip install -e .
+conda create -n venv_name
+conda activate venv_name
+```
+2. Install pip into the environment
+```
+conda install pip
+```
+3. Install the package with pip through the command (with your personal anaconda path): 
+```
+/home/anaconda3/envs/venv_name/bin/pip install bpreg
+```
+You can find your personal anaconda path through the command: 
+```
+which anaconda
 ```
 
 
