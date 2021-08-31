@@ -51,7 +51,7 @@ class InferenceModel:
         device (str, optional): [description]. "cuda" or "cpu"
     """
 
-    def __init__(self, base_dir: str=DEFAULT_MODEL, gpu: bool = 1):
+    def __init__(self, base_dir: str=DEFAULT_MODEL, gpu: bool = 1, warning_to_error: bool=False):
 
         self.base_dir = base_dir
         self.device = "cpu"
@@ -64,7 +64,7 @@ class InferenceModel:
         self.n2n = Nifti2Npy(
             target_pixel_spacing=3.5, min_hu=-1000, max_hu=1500, size=128
         )
-        self.warning_to_error = False 
+        self.warning_to_error = warning_to_error 
 
     def load_inference_settings(self):
 
