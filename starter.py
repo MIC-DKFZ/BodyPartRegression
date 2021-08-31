@@ -75,7 +75,7 @@ print("#")
 
 # initialize model
 model_base_dir = "src/models/public_bpr_model/"
-model_inference = InferenceModel(model_base_dir, gpu=gpu_available)
+model_inference = InferenceModel(model_base_dir, gpu=gpu_available, warning_to_error=True)
 
 # Loop for every batch-element (usually series)
 batch_folders = [f for f in glob(join('/', workflow_dir, batch_name, '*'))]

@@ -25,7 +25,7 @@ from bpreg.inference import InferenceModel
 gpu_available=0
 stringify_json=1
 model_base_dir = "src/models/public_bpr_model/"
-model_inference = InferenceModel(model_base_dir, gpu=gpu_available)
+model_inference = InferenceModel(model_base_dir, gpu=gpu_available, warning_to_error=True)
 
 element_input_dir = "data/test_cases/"
 element_output_dir = "data/test_results/"
