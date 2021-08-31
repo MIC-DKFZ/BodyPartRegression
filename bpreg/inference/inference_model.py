@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from logging import warn
 import numpy as np
 import os, sys
 import torch
@@ -63,13 +64,13 @@ class InferenceModel:
         self.n2n = Nifti2Npy(
             target_pixel_spacing=3.5, min_hu=-1000, max_hu=1500, size=128
         )
+        self.warning_to_error = False 
 
     def load_inference_settings(self):
 
         path = self.base_dir + "inference-settings.json"
         if not os.path.exists(path):
             print("WARNING: For this model, no inference settings can be load!")
-            return
 
         with open(path, "rb") as f:
             settings = json.load(f)
@@ -119,10 +120,15 @@ class InferenceModel:
         except: x, pixel_spacings = np.nan, np.nan 
 
         if isinstance(x, float) and np.isnan(x):
-            print(
-                f"WARNING: File {nifti_path.split('/')[-1]} can not be converted to a 3-dimensional volume ",
-                f"of the size {self.n2n.size}x{self.n2n.size}xz",
-            )
+            x, pixel_spacings = self.n2n.load_volume(nifti_path)
+            if not isinstance(x, np.ndarray):   
+                if self.warning_to_error: ValueError("File {nifti_path} can not be loaded.")
+                return np.nan 
+
+            warning_msg = f"File {nifti_path.split('/')[-1]} with shape {x.shape} and pixel spacings {pixel_spacings} can not be converted to a 3-dimensional volume " + \
+                f"of the size {self.n2n.size}x{self.n2n.size}xz;"
+            print("WARNING: ", warning_msg)
+            if self.warning_to_error: raise ValueError(warning_msg)
             return np.nan
 
         x = np.transpose(x, (2, 0, 1))[:, np.newaxis, :, :]

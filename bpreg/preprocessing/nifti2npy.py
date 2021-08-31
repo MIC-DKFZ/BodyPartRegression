@@ -15,11 +15,11 @@ limitations under the License.
 
 import numpy as np
 import nibabel as nib
-from numpy.lib.arraysetops import isin
 
 import pandas as pd
 from tqdm import tqdm
 import albumentations as A
+import matplotlib.pyplot as plt 
 from scipy.ndimage import gaussian_filter
 
 
@@ -75,9 +75,17 @@ class Nifti2Npy:
         self.reference_downscaling_factor = reference_downscaling_factor
 
     def padding(self, x):
+        pad_widths_x = ((self.size - x.shape[0]) // 2, (self.size - x.shape[0] + 1) // 2)
+        pad_widths_y = ((self.size - x.shape[1]) // 2, (self.size - x.shape[1] + 1) // 2)
+
+        if pad_widths_x[0] < 0 or pad_widths_x[1] < 0: 
+            pad_widths_x = (0, 0)
+        if pad_widths_y[0] < 0 or pad_widths_y[1] < 0: 
+            pad_widths_y = (0, 0)
+
         pad_width = (
-            ((self.size - x.shape[0]) // 2, (self.size - x.shape[0] + 1) // 2),
-            ((self.size - x.shape[1]) // 2, (self.size - x.shape[1] + 1) // 2),
+            pad_widths_x,
+            pad_widths_y, 
             (0, 0),
         )
         x_pad = np.pad(
@@ -238,7 +246,7 @@ class Nifti2Npy:
         try:
             x = img_nii.get_fdata(dtype=np.float32)
         except EOFError:
-            print(f"Corrupted file {filepath}")
+            print(f"WARNING: Corrupted file {filepath}")
             return None, None
         pixel_spacings = np.array(list(img_nii.header.get_zooms()))
         affine = img_nii.affine[:3, :3]

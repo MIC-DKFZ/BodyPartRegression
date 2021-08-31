@@ -49,7 +49,7 @@ def bpreg_for_directory(
         opath = os.path.join(output_dirpath, ofile)
 
         if os.path.exists(opath) and skip_existing == 1:
-            print(f"JSON-file already exists. Skip file: {ifile}")
+            # print(f"JSON-file already exists. Skip file: {ifile}") # TODO 
             continue
 
         print(f"Create body-part meta data file: {ofile}")
