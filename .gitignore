@@ -8,12 +8,10 @@ __pycache__/
 lightning_logs/
 dist/
 docs/docker-docs.txt
-starter.py 
 .vscode/*
 .vscode/settings.json
 .~lock*
 bpreg.egg-info/
-starter_test.py
 *.gz
 *.csv
 *.xlsx
