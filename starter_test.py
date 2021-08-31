@@ -32,7 +32,7 @@ model_inference = InferenceModel(
 element_input_dir = "data/test_cases/"
 element_output_dir = "data/test_results/"
 
-for filename in os.listdir(element_input_dir):
+for filename in [f for f in os.listdir(element_input_dir) if "nii" in f]:
     json_filename = filename.replace(".nii", "").replace(".gz", "") + ".json"
     input_path = join(element_input_dir, filename)
     output_path = join(element_output_dir, json_filename)

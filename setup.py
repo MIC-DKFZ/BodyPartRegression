@@ -6,7 +6,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="bpreg",
-    version="1.0.0",
+    version="1.1.0",
     packages=find_packages(),
     url="https://github.com/MIC-DKFZ/BodyPartRegression",
     include_package_data=True,

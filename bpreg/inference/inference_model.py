@@ -128,7 +128,7 @@ class InferenceModel:
             x, pixel_spacings = self.n2n.load_volume(nifti_path)
             if not isinstance(x, np.ndarray):
                 if self.warning_to_error:
-                    ValueError("File {nifti_path} can not be loaded.")
+                    raise ValueError(f"File {nifti_path} can not be loaded.")
                 return np.nan
 
             warning_msg = (
