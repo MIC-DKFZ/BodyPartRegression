@@ -174,5 +174,6 @@ def plot_scores(filepath, save_path="", fontsize=18):
         plt.title(filename + "\n", fontsize=fontsize-2)
     if len(save_path) > 0: 
         plt.savefig(save_path)
+        plt.close() 
     else: 
         plt.show()

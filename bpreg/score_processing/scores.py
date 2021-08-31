@@ -50,7 +50,7 @@ class Scores:
         tangential_slope_min: float = -0.037,
         tangential_slope_max: float = 0.25,
         slope_mean: float = np.nan,
-        background_scores=[110.83, 6.14],
+        background_scores=[110.83, 6.14, 108.92, 6.22],
         r_slope_threshold: float = 0.28,
     ):
 
