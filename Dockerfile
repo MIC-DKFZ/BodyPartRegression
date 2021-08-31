@@ -42,31 +42,18 @@ RUN curl https://zenodo.org/record/5113483/files/public_bpr_model.zip?download=1
 # Unzip model 
 RUN cd BodyPartRegression/src/models && unzip public_bpr_model.zip 
 
-# Go to main directory
-RUN cd ../../
-
-# Copy files 
+# prepare workdir 
 WORKDIR /app
+RUN mv /BodyPartRegression/* /app/
+RUN cd /app && ls 
+
+RUN ls 
+RUN pwd 
 
 # Install pip requirements
-COPY requirements.txt .
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
-
-# Copy code
-COPY starter_test.py .
-COPY starter.py .
-COPY setup.py . 
-COPY README.md .
-
-COPY bpreg bpreg/
-
-COPY src/models/public_bpr_model/config.json src/models/public_bpr_model/config.json
-COPY src/models/public_bpr_model/inference-settings.json src/models/public_bpr_model/inference-settings.json
-COPY src/models/public_bpr_model/model.pt src/models/public_bpr_model/model.pt
 RUN pip3 install -e .
-
-
 
 # Creates a non-root user with an explicit UID and adds permission to access the /app folder
 # For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
