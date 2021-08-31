@@ -114,6 +114,7 @@ class DicomHandler:
 
         return filename
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", default="")
@@ -124,7 +125,7 @@ if __name__ == "__main__":
     output_dirpath = value.o
 
     dh = DicomHandler()
-    for file in os.listdir(input_dirpath): 
+    for file in os.listdir(input_dirpath):
         print(file)
         ifilepath = os.path.join(input_dirpath, file)
         ofilepath = os.path.join(output_dirpath, file.replace(".dcm", ".nii.gz"))

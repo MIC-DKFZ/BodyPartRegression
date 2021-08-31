@@ -40,7 +40,8 @@ from bpreg.settings import ModelSettings
 cv2.setNumThreads(1)
 np.seterr(divide="ignore", invalid="ignore")
 
-def train_config(config: ModelSettings): 
+
+def train_config(config: ModelSettings):
     seed_everything(config.random_seed)
 
     # load data
@@ -87,14 +88,15 @@ def train_config(config: ModelSettings):
     )
 
     trainer.fit(model, train_dataloader, val_dataloader)
-    if config.save_model: save_model(model, config, path=logger_uar.log_dir + "/")
+    if config.save_model:
+        save_model(model, config, path=logger_uar.log_dir + "/")
+
 
 def train_json(json_path: str):
     config = ModelSettings()
     config.load(json_path)
     print(config)
     train_config(config)
-
 
 
 def train_json_list(config_filepaths: list):

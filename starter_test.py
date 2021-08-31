@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import os 
+import os
 from os import getenv
 from os.path import join, exists
 from glob import glob
@@ -22,21 +22,22 @@ from pathlib import Path
 from bpreg.inference import InferenceModel
 
 
-gpu_available=0
-stringify_json=1
+gpu_available = 0
+stringify_json = 1
 model_base_dir = "src/models/public_bpr_model/"
-model_inference = InferenceModel(model_base_dir, gpu=gpu_available, warning_to_error=True)
+model_inference = InferenceModel(
+    model_base_dir, gpu=gpu_available, warning_to_error=True
+)
 
 element_input_dir = "data/test_cases/"
 element_output_dir = "data/test_results/"
 
-for filename in os.listdir(element_input_dir): 
+for filename in os.listdir(element_input_dir):
     json_filename = filename.replace(".nii", "").replace(".gz", "") + ".json"
     input_path = join(element_input_dir, filename)
     output_path = join(element_output_dir, json_filename)
-    
-    print(f"Save .json file: {output_path}")
-    model_inference.nifti2json(nifti_path=input_path, 
-                              output_path=output_path, 
-                              stringify_json=stringify_json)
 
+    print(f"Save .json file: {output_path}")
+    model_inference.nifti2json(
+        nifti_path=input_path, output_path=output_path, stringify_json=stringify_json
+    )

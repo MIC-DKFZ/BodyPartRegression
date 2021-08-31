@@ -63,7 +63,9 @@ def save_model(model, config: ModelSettings, path):
         torch.save(model.state_dict(), path + "model.pt")
 
     # save lookuptable
-    df_landmarks = pd.read_excel(config.landmark_path, sheet_name="landmarks-train", engine="openpyxl")
+    df_landmarks = pd.read_excel(
+        config.landmark_path, sheet_name="landmarks-train", engine="openpyxl"
+    )
     lscores = LandmarkScores(
         config.data_path,
         df_landmarks,
@@ -71,7 +73,7 @@ def save_model(model, config: ModelSettings, path):
         landmark_start=np.nan,
         landmark_end=np.nan,
     )
-    lscores.save_lookuptable(filepath=os.path.join(path , "lookuptable.json"))
+    lscores.save_lookuptable(filepath=os.path.join(path, "lookuptable.json"))
 
 
 def data_preprocessing_ssbr(df: pd.DataFrame, config: ModelSettings):
@@ -162,7 +164,8 @@ def get_dataframe(config: ModelSettings):
     df = pd.read_excel(config.df_data_source_path, engine="openpyxl")
 
     # only use volumes with more than 30 slices
-    if "z" in df.columns: ddf = df[(df["z"] >= 30)]
+    if "z" in df.columns:
+        ddf = df[(df["z"] >= 30)]
     return df
 
 

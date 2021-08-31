@@ -19,7 +19,7 @@ import nibabel as nib
 import pandas as pd
 from tqdm import tqdm
 import albumentations as A
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
 
 
@@ -75,17 +75,23 @@ class Nifti2Npy:
         self.reference_downscaling_factor = reference_downscaling_factor
 
     def padding(self, x):
-        pad_widths_x = ((self.size - x.shape[0]) // 2, (self.size - x.shape[0] + 1) // 2)
-        pad_widths_y = ((self.size - x.shape[1]) // 2, (self.size - x.shape[1] + 1) // 2)
+        pad_widths_x = (
+            (self.size - x.shape[0]) // 2,
+            (self.size - x.shape[0] + 1) // 2,
+        )
+        pad_widths_y = (
+            (self.size - x.shape[1]) // 2,
+            (self.size - x.shape[1] + 1) // 2,
+        )
 
-        if pad_widths_x[0] < 0 or pad_widths_x[1] < 0: 
+        if pad_widths_x[0] < 0 or pad_widths_x[1] < 0:
             pad_widths_x = (0, 0)
-        if pad_widths_y[0] < 0 or pad_widths_y[1] < 0: 
+        if pad_widths_y[0] < 0 or pad_widths_y[1] < 0:
             pad_widths_y = (0, 0)
 
         pad_width = (
             pad_widths_x,
-            pad_widths_y, 
+            pad_widths_y,
             (0, 0),
         )
         x_pad = np.pad(
@@ -257,7 +263,9 @@ class Nifti2Npy:
 
         return x, pixel_spacings
 
-    def preprocess_npy(self, X: np.array, pixel_spacings: tuple, axis_ordering=(0, 1, 2)): 
+    def preprocess_npy(
+        self, X: np.array, pixel_spacings: tuple, axis_ordering=(0, 1, 2)
+    ):
         """[summary]
 
         Args:
@@ -270,7 +278,7 @@ class Nifti2Npy:
         """
         # convert X to corect axis ordering
         X = X.transpose(tuple(np.argsort(axis_ordering)))
-        
+
         x = self.rescale_xy(X)
         x = self.resize_volume(x, pixel_spacings)
         if isinstance(x, float) and np.isnan(x):
@@ -280,7 +288,6 @@ class Nifti2Npy:
         self.test_volume(x)
 
         return x
-
 
     def preprocess_nifti(self, filepath: str):
         x, pixel_spacings = self.load_volume(filepath)
@@ -314,7 +321,8 @@ class Nifti2Npy:
 
         x = self.preprocess_npy(x0, pixel_spacings)
 
-        if save and ~np.isnan(x): np.save(ofilepath, x.astype(np.float32))
+        if save and ~np.isnan(x):
+            np.save(ofilepath, x.astype(np.float32))
         return x, x0, pixel_spacings
 
     def convert(self, filepaths, save=False):

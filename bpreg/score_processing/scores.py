@@ -23,7 +23,6 @@ sys.path.append("../../")
 from bpreg.utils.linear_transformations import *
 
 
-
 class Scores:
     """Scores and additional meta data inforamtion based on the prediction from the Body Part Regression (bpr) model.
 
@@ -67,9 +66,10 @@ class Scores:
         self.scale = 100
         self.original_values = scores
         self.original_transformed_values = self.transform_scores(scores.copy())
-        self.a_original, self.b_original = self.fit_linear_line(x=np.arange(len(self.original_transformed_values)), 
-                                                                y=self.original_transformed_values)
-
+        self.a_original, self.b_original = self.fit_linear_line(
+            x=np.arange(len(self.original_transformed_values)),
+            y=self.original_transformed_values,
+        )
 
         self.values = self.filter_scores(scores)
         self.values = self.transform_scores(self.values)
@@ -91,14 +91,16 @@ class Scores:
         self.reverse_zordering = self.is_zordering_reverse()
 
         # define settings
-        self.settings = {"transform_min": self.transform_min,
-                "transform_max": self.transform_max,
-                "slope_mean": self.slope_mean,
-                "tangential_slope_min": self.tangential_slope_min,
-                "tangential_slope_max": self.tangential_slope_max,
-                "r_slope_threshold": self.r_slope_threshold, 
-                "smoothing_sigma": self.smoothing_sigma, 
-                "background_scores": self.background_scores}
+        self.settings = {
+            "transform_min": self.transform_min,
+            "transform_max": self.transform_max,
+            "slope_mean": self.slope_mean,
+            "tangential_slope_min": self.tangential_slope_min,
+            "tangential_slope_max": self.tangential_slope_max,
+            "r_slope_threshold": self.r_slope_threshold,
+            "smoothing_sigma": self.smoothing_sigma,
+            "background_scores": self.background_scores,
+        }
 
     def __len__(self):
         return len(self.original_values)
@@ -167,8 +169,8 @@ class Scores:
             | (self.slopes > self.tangential_slope_max)
         )[0]
 
-        # if unprocessed slice scores increase  
-        if self.a_original > 0: 
+        # if unprocessed slice scores increase
+        if self.a_original > 0:
             # identify if outliers lie before or after boundary index
             outlier_indices_left_tail = outlier_indices[
                 np.where(outlier_indices < self.min_boundary_idx)[0]
@@ -177,8 +179,8 @@ class Scores:
                 np.where(outlier_indices > self.max_boundary_idx)[0]
             ]
 
-        # if unprocessed slice scores decrease  
-        else: 
+        # if unprocessed slice scores decrease
+        else:
             # identify if outliers lie before or after boundary index
             outlier_indices_left_tail = outlier_indices[
                 np.where(outlier_indices < self.max_boundary_idx)[0]
@@ -194,7 +196,6 @@ class Scores:
             x[np.min(outlier_indices_right_tail) :] = np.nan
         return x
 
-    
     def fit_linear_line(self, x, y):
         if len(x) < 2:
             return np.nan, np.nan

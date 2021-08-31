@@ -90,4 +90,3 @@ class LMSE:
 
     def get_normalizing_constant(self, expected_scores):
         return (expected_scores[-1] - expected_scores[0]) / 100
-

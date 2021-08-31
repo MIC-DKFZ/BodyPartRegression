@@ -22,7 +22,6 @@ from bpreg.utils.linear_transformations import *
 from bpreg.dataset.base_dataset import BaseDataset
 
 
-
 class ValidationVolume:
     def __init__(
         self,

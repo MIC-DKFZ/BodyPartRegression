@@ -19,8 +19,8 @@ from glob import glob
 from pathlib import Path
 from bpreg.inference.inference_model import InferenceModel
 
-execution_timeout=10
- 
+execution_timeout = 10
+
 # Counter to check if smth has been processed
 processed_count = 0
 
@@ -44,9 +44,10 @@ gpu_available = getenv("CUDA_VISIBLE_DEVICES", False)
 
 stringify_json = getenv("STRINGIFY_JSON", "False")
 
-if stringify_json.lower() == "false": 
+if stringify_json.lower() == "false":
     stringify_json = False
-else: stringify_json = True
+else:
+    stringify_json = True
 
 
 # File-extension to search for in the input-dir
@@ -75,16 +76,18 @@ print("#")
 
 # initialize model
 model_base_dir = "src/models/public_bpr_model/"
-model_inference = InferenceModel(model_base_dir, gpu=gpu_available, warning_to_error=True)
+model_inference = InferenceModel(
+    model_base_dir, gpu=gpu_available, warning_to_error=True
+)
 
 # Loop for every batch-element (usually series)
-batch_folders = [f for f in glob(join('/', workflow_dir, batch_name, '*'))]
+batch_folders = [f for f in glob(join("/", workflow_dir, batch_name, "*"))]
 for batch_element_dir in batch_folders:
     print("#")
     print("# Processing batch-element {batch_element_dir}")
     print("#")
     element_input_dir = join(batch_element_dir, operator_in_dir)
-    element_output_dir = join(batch_element_dir, operator_out_dir) 
+    element_output_dir = join(batch_element_dir, operator_out_dir)
 
     # check if input dir is present
     if not exists(element_input_dir):
@@ -107,12 +110,14 @@ for batch_element_dir in batch_folders:
         filename = input_file.split("/")[-1]
         filename = filename.replace(".nii", "").replace(".gz", "") + ".json"
         output_path = join(element_output_dir, filename)
-        
-        model_inference.nifti2json(nifti_path=input_file, 
-                                   output_path=output_path, 
-                                   stringify_json=stringify_json)
+
+        model_inference.nifti2json(
+            nifti_path=input_file,
+            output_path=output_path,
+            stringify_json=stringify_json,
+        )
         processed_count += 1
-    
+
 print("#")
 print("##################################################")
 print("#")
@@ -131,8 +136,8 @@ if processed_count == 0:
     print("##################################################")
     print("#")
 
-    batch_input_dir = join('/', workflow_dir, operator_in_dir)
-    batch_output_dir = join('/', workflow_dir, operator_in_dir)
+    batch_input_dir = join("/", workflow_dir, operator_in_dir)
+    batch_output_dir = join("/", workflow_dir, operator_in_dir)
 
     # check if input dir present
     if not exists(batch_input_dir):
@@ -154,12 +159,11 @@ if processed_count == 0:
             filename = input_file.split("/")[-1]
             filename = filename.replace(".nii", "").replace(".gz", "") + ".json"
             output_path = join(element_output_dir, filename)
-            
-            model_inference.nifti2json(nifti_path=input_file, 
-                                    output_path=output_path)
+
+            model_inference.nifti2json(nifti_path=input_file, output_path=output_path)
 
             processed_count += 1
-        
+
     print("#")
     print("##################################################")
     print("#")
@@ -181,5 +185,3 @@ if processed_count == 0:
     exit(1)
 else:
     print("# DONE #")
-
-    

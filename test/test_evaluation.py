@@ -10,7 +10,7 @@ def test_landmark_mse():
 
     normMSE = LMSE()
     mse, mse_std = normMSE.from_matrices(vm, tm)
-    
+
     assert np.round(mse, 1) == 58.7
     assert np.round(mse_std, 1) == 54.1
 

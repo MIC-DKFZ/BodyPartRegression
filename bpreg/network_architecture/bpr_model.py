@@ -39,8 +39,8 @@ class BodyPartRegression(BodyPartRegressionBase):
         loss_order: str = "h",
         beta_h: float = 0.025,
         alpha_h: float = 0.5,
-        base_model: str="vgg",
-        weight_decay: int=0,
+        base_model: str = "vgg",
+        weight_decay: int = 0,
     ):
 
         BodyPartRegressionBase.__init__(
@@ -72,7 +72,6 @@ class BodyPartRegression(BodyPartRegressionBase):
         vgg.to(device)
 
         return vgg.features
-        
 
     def forward(self, x: torch.Tensor):
         x = self.model(x.float())

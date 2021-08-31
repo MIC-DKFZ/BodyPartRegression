@@ -106,7 +106,7 @@ class BaseDataset(Dataset):
 
     def get_full_volume(self, idx: int):
         filepath = self.filepaths[idx]
-        volume = np.load(parse2plainname(filepath) + ".npy") 
+        volume = np.load(parse2plainname(filepath) + ".npy")
         return swap_axis(volume)
 
     def get_landmark_idx(self, idx: int):
@@ -158,18 +158,20 @@ def filename_to_id(filename, filename_array):
     filename = parse2plainname(filename)
     filename_array = parse2plainname(filename_array)
 
-
     ids = np.where(filename == np.array(filename_array))[0]
     if len(ids) == 0:
-        raise ValueError(f"filename {filename} is not in the filename list: {filename_array}")
+        raise ValueError(
+            f"filename {filename} is not in the filename list: {filename_array}"
+        )
     else:
         return ids[0]
 
 
-def parse2plainname(value): 
-    if isinstance(value, str): 
+def parse2plainname(value):
+    if isinstance(value, str):
         value = value.replace(".nii", "").replace(".gz", "").replace(".npy", "")
-    else: 
-        value = [v.replace(".nii", "").replace(".gz", "").replace(".npy", "") for v in value]
+    else:
+        value = [
+            v.replace(".nii", "").replace(".gz", "").replace(".npy", "") for v in value
+        ]
     return value
-

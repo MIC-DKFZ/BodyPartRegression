@@ -54,7 +54,7 @@ class BodyPartExaminedTag:
         distinct_body_parts=DISTINCT_BODY_PARTS,
         min_present_landmarks=MIN_PRESENT_LANDMARKS,
         zrange_threshold=100,  # in mm
-        ignore_invalid_z: bool=False, 
+        ignore_invalid_z: bool = False,
     ):
         self.ignore_invalid_z = ignore_invalid_z
         self.body_parts_included = body_parts_included

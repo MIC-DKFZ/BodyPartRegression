@@ -25,16 +25,15 @@ sys.path.append("../../")
 from bpreg.preprocessing.nifti2npy import Nifti2Npy
 from bpreg.network_architecture.bpr_model import BodyPartRegression
 from bpreg.score_processing import Scores, BodyPartExaminedDict
-from bpreg.settings.settings import * 
+from bpreg.settings.settings import *
 from bpreg.settings.model_settings import ModelSettings
 from bpreg.score_processing.bodypartexamined_tag import *
-from bpreg.utils.json_parser import * 
+from bpreg.utils.json_parser import *
 from bpreg.scripts.initialize_pretrained_model import initialize_pretrained_model
 
 
 from dataclasses import dataclass
 from tqdm import tqdm
-
 
 
 class InferenceModel:
@@ -51,7 +50,12 @@ class InferenceModel:
         device (str, optional): [description]. "cuda" or "cpu"
     """
 
-    def __init__(self, base_dir: str=DEFAULT_MODEL, gpu: bool = 1, warning_to_error: bool=False):
+    def __init__(
+        self,
+        base_dir: str = DEFAULT_MODEL,
+        gpu: bool = 1,
+        warning_to_error: bool = False,
+    ):
 
         self.base_dir = base_dir
         self.device = "cpu"
@@ -64,7 +68,7 @@ class InferenceModel:
         self.n2n = Nifti2Npy(
             target_pixel_spacing=3.5, min_hu=-1000, max_hu=1500, size=128
         )
-        self.warning_to_error = warning_to_error 
+        self.warning_to_error = warning_to_error
 
     def load_inference_settings(self):
 
@@ -115,20 +119,25 @@ class InferenceModel:
 
     def predict_nifti(self, nifti_path: str):
         # get nifti file as tensor
-        try: 
+        try:
             x, pixel_spacings = self.n2n.preprocess_nifti(nifti_path)
-        except: x, pixel_spacings = np.nan, np.nan 
+        except:
+            x, pixel_spacings = np.nan, np.nan
 
         if isinstance(x, float) and np.isnan(x):
             x, pixel_spacings = self.n2n.load_volume(nifti_path)
-            if not isinstance(x, np.ndarray):   
-                if self.warning_to_error: ValueError("File {nifti_path} can not be loaded.")
-                return np.nan 
+            if not isinstance(x, np.ndarray):
+                if self.warning_to_error:
+                    ValueError("File {nifti_path} can not be loaded.")
+                return np.nan
 
-            warning_msg = f"File {nifti_path.split('/')[-1]} with shape {x.shape} and pixel spacings {pixel_spacings} can not be converted to a 3-dimensional volume " + \
-                f"of the size {self.n2n.size}x{self.n2n.size}xz;"
+            warning_msg = (
+                f"File {nifti_path.split('/')[-1]} with shape {x.shape} and pixel spacings {pixel_spacings} can not be converted to a 3-dimensional volume "
+                + f"of the size {self.n2n.size}x{self.n2n.size}xz;"
+            )
             print("WARNING: ", warning_msg)
-            if self.warning_to_error: raise ValueError(warning_msg)
+            if self.warning_to_error:
+                raise ValueError(warning_msg)
             return np.nan
 
         x = np.transpose(x, (2, 0, 1))[:, np.newaxis, :, :]
@@ -151,47 +160,63 @@ class InferenceModel:
             tangential_slope_max=self.tangential_slope_max,
         )
         return scores
-        
 
-    def npy2json(self, X_: np.array, output_path: str, pixel_spacings: tuple, axis_ordering=(0, 1, 2), ignore_invalid_z: bool =False):
+    def npy2json(
+        self,
+        X_: np.array,
+        output_path: str,
+        pixel_spacings: tuple,
+        axis_ordering=(0, 1, 2),
+        ignore_invalid_z: bool = False,
+    ):
         """
-        Method to predict slice scores from numpy arrays (in Hounsfiel dunits). 
+        Method to predict slice scores from numpy arrays (in Hounsfiel dunits).
         Converts plain numpy array to numpy arrays which can be used by the DEFAULT_MODEL to predict the slice scores.n
 
         Args:
-            X (np.array): matrix of CT volume in Hounsfield units. 
+            X (np.array): matrix of CT volume in Hounsfield units.
             output_path (str): output path to save json file
-            pixel_spacing (tuple): pixel spacing in x, y and z direction. 
+            pixel_spacing (tuple): pixel spacing in x, y and z direction.
             axis_ordering (tuple): Axis ordering of CT volume. (0,1,2) is equivalent to the axis ordering xyz.
-            ignore_invalid_z (bool): If true, than invalid z-spacing will be ignored for predicting the body part examined and not NONE will be given back. 
+            ignore_invalid_z (bool): If true, than invalid z-spacing will be ignored for predicting the body part examined and not NONE will be given back.
         """
-        X = self.n2n.preprocess_npy(X_, pixel_spacings, axis_ordering=axis_ordering) 
+        X = self.n2n.preprocess_npy(X_, pixel_spacings, axis_ordering=axis_ordering)
 
         # convert axis ordering to zxy
         X = X.transpose(2, 0, 1)
-        
+
         slice_scores = self.predict_npy_array(X)
         slice_scores = self.parse_scores(slice_scores, pixel_spacings[2])
-        data_storage = VolumeStorage(slice_scores, self.lookuptable, ignore_invalid_z=ignore_invalid_z)
+        data_storage = VolumeStorage(
+            slice_scores, self.lookuptable, ignore_invalid_z=ignore_invalid_z
+        )
         if len(output_path) > 0:
             data_storage.save_json(output_path)
         return data_storage.json
 
-    def nifti2json(self, nifti_path: str, output_path: str="", stringify_json: bool=False, ignore_invalid_z: bool =False):
+    def nifti2json(
+        self,
+        nifti_path: str,
+        output_path: str = "",
+        stringify_json: bool = False,
+        ignore_invalid_z: bool = False,
+    ):
         """
-        Main method to convert NIFTI CT volumes int JSON meta data files. 
+        Main method to convert NIFTI CT volumes int JSON meta data files.
         Args:
             nifti_path (str): path of input NIFTI file
             output_path (str): output path to save JSON file
-            stringify_json (bool): Set it to true for Kaapana JSON format 
+            stringify_json (bool): Set it to true for Kaapana JSON format
             axis_ordering (tuple): Axis ordering of CT volume. (0,1,2) is equivalent to the axis ordering xyz.
-            ignore_invalid_z (bool): If true, than invalid z-spacing will be ignored for predicting the body part examined and not NONE will be given back. 
+            ignore_invalid_z (bool): If true, than invalid z-spacing will be ignored for predicting the body part examined and not NONE will be given back.
         """
         slice_scores = self.predict_nifti(nifti_path)
         if isinstance(slice_scores, float) and np.isnan(slice_scores):
             return np.nan
 
-        data_storage = VolumeStorage(slice_scores, self.lookuptable, ignore_invalid_z=ignore_invalid_z)
+        data_storage = VolumeStorage(
+            slice_scores, self.lookuptable, ignore_invalid_z=ignore_invalid_z
+        )
         if len(output_path) > 0:
             data_storage.save_json(output_path, stringify_json=stringify_json)
         return data_storage.json
@@ -209,18 +234,20 @@ class VolumeStorage:
         distinct_body_parts ([type], optional): dictionary to calculate the "body part examined tag". Defaults to DISTINCT_BODY_PARTS.
         min_present_landmarks ([type], optional): dictionary to calculate the "body part examined rtag". Defaults to MIN_PRESENT_LANDMARKS.
     """
-    def __init__(self, 
-                 scores: Scores, 
-                 lookuptable: dict, 
-                 body_parts=BODY_PARTS, 
-                 body_parts_included=BODY_PARTS_INCLUDED, 
-                 distinct_body_parts=DISTINCT_BODY_PARTS, 
-                 min_present_landmarks=MIN_PRESENT_LANDMARKS, 
-                 ignore_invalid_z: bool=False, 
-                 ):
+
+    def __init__(
+        self,
+        scores: Scores,
+        lookuptable: dict,
+        body_parts=BODY_PARTS,
+        body_parts_included=BODY_PARTS_INCLUDED,
+        distinct_body_parts=DISTINCT_BODY_PARTS,
+        min_present_landmarks=MIN_PRESENT_LANDMARKS,
+        ignore_invalid_z: bool = False,
+    ):
 
         self.ignore_invalid_z = ignore_invalid_z
-        self.body_parts=body_parts
+        self.body_parts = body_parts
         self.body_parts_included = body_parts_included
         self.distinct_body_parts = distinct_body_parts
         self.min_present_landmarks = min_present_landmarks
@@ -240,18 +267,23 @@ class VolumeStorage:
         self.expected_zspacing = float(scores.expected_zspacing)
         self.r_slope = float(scores.r_slope)
         self.bpe = BodyPartExaminedDict(lookuptable, body_parts=self.body_parts)
-        self.bpet = BodyPartExaminedTag(lookuptable,         
-                                        body_parts_included=self.body_parts_included,
-                                        distinct_body_parts=self.distinct_body_parts,
-                                        min_present_landmarks=self.min_present_landmarks, 
-                                        ignore_invalid_z=self.ignore_invalid_z)
+        self.bpet = BodyPartExaminedTag(
+            lookuptable,
+            body_parts_included=self.body_parts_included,
+            distinct_body_parts=self.distinct_body_parts,
+            min_present_landmarks=self.min_present_landmarks,
+            ignore_invalid_z=self.ignore_invalid_z,
+        )
 
-        self.settings = {"slice score processing": scores.settings, 
-                            "body part examined dict": self.body_parts, 
-                           "body part examined tag": {
-                                "body parts included": self.body_parts_included, 
-                                "distinct body parts": self.distinct_body_parts, 
-                                "min present landmarks": self.min_present_landmarks}}
+        self.settings = {
+            "slice score processing": scores.settings,
+            "body part examined dict": self.body_parts,
+            "body part examined tag": {
+                "body parts included": self.body_parts_included,
+                "distinct body parts": self.distinct_body_parts,
+                "min present landmarks": self.min_present_landmarks,
+            },
+        }
 
         self.json = {
             "cleaned slice scores": self.cleaned_slice_scores,
@@ -269,19 +301,19 @@ class VolumeStorage:
             "slope ratio": self.r_slope,
             "expected z-spacing": self.expected_zspacing,
             "z-spacing": self.zspacing,
-            "settings": self.settings
+            "settings": self.settings,
         }
 
     def save_json(self, output_path: str, stringify_json=False):
-        """Store data in json file 
+        """Store data in json file
 
         Args:
-            output_path (str): save path for json file 
+            output_path (str): save path for json file
             stringify_json (bool, optional): if True, stringify output of parameters and
             convert json file to a Kaapana friendly format
         """
-        data = self.json 
-        if stringify_json: 
+        data = self.json
+        if stringify_json:
             data = parse_json4kaapana(data)
 
         with open(output_path, "w") as f:
@@ -302,7 +334,9 @@ def load_model(
     config.load(path=config_filepath)
 
     model = BodyPartRegression(alpha=config.alpha, lr=config.lr)
-    model.load_state_dict(torch.load(model_filepath, map_location=torch.device(device)), strict=False)
+    model.load_state_dict(
+        torch.load(model_filepath, map_location=torch.device(device)), strict=False
+    )
     model.eval()
     model.to(device)
 
