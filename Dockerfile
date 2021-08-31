@@ -33,7 +33,7 @@ RUN apt-get update && apt-get install -y \
  && rm -rf /var/lib/apt/lists/*
 
 # Clone directory from git
-RUN git clone  --single-branch --branch master https://github.com/MIC-DKFZ/BodyPartRegression.git && cd BodyPartRegression && git checkout v1.1 
+RUN git clone  --single-branch --branch master https://github.com/MIC-DKFZ/BodyPartRegression.git && cd BodyPartRegression && git checkout cecb5d40e93b0ec81e4df75d9614eb63d943ae71 
 
 # Download public model from zenodo 
 RUN touch BodyPartRegression/src/models/public_bpr_model.zip
