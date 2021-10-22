@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import SimpleITK as sitk
 import os, sys
 import pickle
 from tqdm import tqdm
@@ -15,6 +14,7 @@ from bpreg.inference.inference_model import InferenceModel
 
 
 def dicom2nifti(ifilepath, ofilepath):
+    import SimpleITK as sitk
     reader = sitk.ImageSeriesReader()
     dicom_names = reader.GetGDCMSeriesFileNames(ifilepath)
     reader.SetFileNames(dicom_names)
@@ -120,42 +120,40 @@ def crop_scores(scores, start_score, end_score):
     return min_index, max_index
 
 
-def plot_dicomexamined_distribution(
-    df, column="tag", count_column="count", fontsize=20
-):
-
+def plot_dicomexamined_distribution(df, column="tag", count_column="count", fontsize=20, others_percentage_upper_bound=0): 
+    
     color_counts = len(np.unique(df[column])) + 2
-    cmap = plt.cm.get_cmap("cubehelix", color_counts)
+    cmap = plt.cm.get_cmap('cubehelix', color_counts)
     colors = [cmap(i) for i in range(color_counts - 1)]
-
-    bodypartexamined_dicomtags = df.groupby(column)[count_column].count() / len(df)
-
-    if bodypartexamined_dicomtags.sum() != 1:
+    
+    bodypartexamined_dicomtags = df.groupby(column)[count_column].count()/len(df)
+    bodyparts2others = bodypartexamined_dicomtags[bodypartexamined_dicomtags <= others_percentage_upper_bound].index 
+    if len(bodyparts2others) > 0: bodypartexamined_dicomtags["OTHERS"] = 0
+    for bodypart in bodyparts2others: 
+        bodypartexamined_dicomtags["OTHERS"] += bodypartexamined_dicomtags[bodypart]
+        del bodypartexamined_dicomtags[bodypart]
+    
+    if np.round(bodypartexamined_dicomtags.sum(), 2) != 1: 
         bodypartexamined_dicomtags["NONE"] = 1 - bodypartexamined_dicomtags.sum()
 
     bodypartexamined_dicomtags = bodypartexamined_dicomtags.sort_values()
-
+    
     _, ax = plt.subplots(figsize=(10, 10))
-    _, texts, autotexts = ax.pie(
-        bodypartexamined_dicomtags.values * 100,
-        labels=bodypartexamined_dicomtags.index,
-        autopct="%1.1f%%",
-        colors=colors,
-    )
+    _, texts, autotexts  = ax.pie(bodypartexamined_dicomtags.values*100, 
+           labels=bodypartexamined_dicomtags.index,
+           autopct='%1.1f%%', 
+           colors=colors)
 
-    for i, txt, txt2 in zip(np.arange(len(texts)), texts, autotexts):
+    for i, txt, txt2 in zip(np.arange(len(texts)), texts, autotexts): 
         txt.set_fontsize(fontsize)
-        txt2.set_fontsize(fontsize - 2)
-        if i < 4:
-            txt2.set_color("white")
+        txt2.set_fontsize(fontsize-2)
+        if i < 4:  txt2.set_color("white")
 
     ax.axis("equal")
     plt.tight_layout()
 
     bodypartexamined_dicomtags = bodypartexamined_dicomtags.sort_values(ascending=False)
-    bodypartexamined_dicomtags = pd.DataFrame(
-        np.round(bodypartexamined_dicomtags * 100, 1)
-    )
+    bodypartexamined_dicomtags = pd.DataFrame(np.round(bodypartexamined_dicomtags*100, 1))
     bodypartexamined_dicomtags.columns = ["Proportion [%]"]
     return bodypartexamined_dicomtags
 
@@ -215,10 +213,10 @@ def plot_scores(filepath, fontsize=18):
     plt.xlim((0, np.nanmax(x["z"])))
 
     filename = filepath.split("/")[-1]
-    if len(filename) > 60:
-        plt.title(f"{filename[:60]}...\n", fontsize=fontsize - 2)
+    if len(filename) > 50:
+        plt.title(f"Filename: {filename[:50]}...\nPredicted Examined Body Part: {x['body part examined tag']}", fontsize=fontsize - 2)
     else:
-        plt.title(filename + "\n", fontsize=fontsize - 2)
+        plt.title(f"Filename: {filename}\nPredicted Examined Body Part: {x['body part examined tag']}", fontsize=fontsize - 2)
     plt.show()
 
 
@@ -234,45 +232,63 @@ def get_updated_bodypartexamined_from_json_files(data_path):
 
 
 # Interactive plot to visualize scores
-def plot_scores_interactive(json_filepaths, nifti_filepaths):
+def plot_scores_interactive(json_filepath, nifti_filepath): 
+    json_files = [f for f in os.listdir(json_filepath) if f.endswith(".json")]
+    json_filepaths = [json_filepath + f for f in json_files]
+    nifti_filepaths = [nifti_filepath + f.replace(".json", ".nii.gz") for f in json_files]
+    
     def plotit(idx):
         filepath = json_filepaths[int(idx)]
         plot_scores(filepath)
         plot_volume(nifti_filepaths[int(idx)])
-
+    
     idx = widgets.BoundedFloatText(
-        value=0,
-        min=0,
-        max=len(json_filepaths) - 1,
-        step=1,
-        description="JSON file:",
-        disabled=False,
-        color="black",
+    value=15,
+    min=0,
+    max=len(json_filepaths)-1,
+    step=1,
+    description='File:',
+    disabled=False,
+    color='black'
     )
+    return interactive(plotit, idx=idx)
 
+def plot_volumes_interactive(nifti_filepath): 
+    
+    nifti_files= [f for f in os.listdir(nifti_filepath) if ".nii" in f]
+    def plotit(idx):
+        filepath = nifti_filepath + nifti_files[int(idx)]
+        plot_volume(filepath)
+    
+    idx = widgets.BoundedFloatText(
+    value=39,
+    min=0,
+    max=len(nifti_files)-1,
+    step=1,
+    description='File:',
+    disabled=False,
+    color='black'
+    )
     return interactive(plotit, idx=idx)
 
 
-def plot_volume(filepath, min_index=0, max_index=np.nan, title=""):
-    X, pixel_spacings = load_nifti_volume(filepath.replace(".json", ".nii.gz"))
+def plot_volume(filepath, min_index=0, max_index=np.nan, title=""): 
+    n2n = Nifti2Npy()
+    X, pixel_spacings = n2n.load_volume(filepath.replace(".json", ".nii.gz"))
     plt.figure(figsize=(6, 6))
-    if np.isnan(max_index):
-        max_index = X.shape[2]
-    plt.imshow(
-        X[:, 250, min_index:max_index].T,
-        origin="lower",
-        cmap="gray",
-        vmax=1500,
-        vmin=-1000,
-        aspect="auto",
-    )
+    if np.isnan(max_index): max_index = X.shape[2]
+    plt.imshow(X[:, X.shape[1]//2, min_index:max_index].T, 
+               origin="lower", 
+               cmap="gray", 
+               vmax=1500, 
+               vmin=-1000, 
+               aspect="auto")
     plt.xticks([])
     plt.yticks([])
-    if len(title) > 0:
+    if len(title) > 0: 
         plt.title(title, fontsize=18)
     plt.show()
 
-    return X
 
 
 # Interactive plot to visualize tailerd volumes

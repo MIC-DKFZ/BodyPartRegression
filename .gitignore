@@ -7,6 +7,7 @@ src/configs/local/
 __pycache__/
 lightning_logs/
 dist/
+docs/notebooks/COVID-19-AR/
 docs/docker-docs.txt
 .vscode/*
 .vscode/settings.json
