@@ -279,7 +279,7 @@ def plot_scores_interactive(json_filepath, nifti_filepath):
     return interactive(plotit, idx=idx)
 
 
-def plot_volumes_interactive(nifti_filepath):
+def plot_volumes_interactive(nifti_filepath, start_index=0):
 
     nifti_files = [f for f in os.listdir(nifti_filepath) if ".nii" in f]
 
@@ -288,7 +288,7 @@ def plot_volumes_interactive(nifti_filepath):
         plot_volume(filepath)
 
     idx = widgets.BoundedFloatText(
-        value=39,
+        value=start_index,
         min=0,
         max=len(nifti_files) - 1,
         step=1,
