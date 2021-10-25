@@ -103,32 +103,23 @@ def crop_ct_images(nifti_filepaths,
 
 # # TODO 
 #
-# 1. Clean up code 
-# 2. Get ride of NONE images 
-# 3. Add Notebook + helper functions to BodyPartRegression/doc 
-# 4. Test presentation 
-# 5. Pfade anpassen 
 #
-# - Bilder & Jupyter notebook -> github 
-# - Daten auf USB back-up erstellen 
-# - add Body Part prediction to plot function 
-# - transfer notebook -> BodyPartRegression/doc 
-# - clean jupyter notebook 
-# - add image: nii -> json 
-# - show example json file in presentation 
-# - test locally 
-# - change body part regresssion explanation image 
-# - test presentation 
-# - add image for final thankyou 
-# - jupyter notebook fast enough? 
-# - Convert jupyter notebook to html 
-# - vertebra of the spine image 
-# - prepare slideshow for sharing 
-# - uploa Jupyter notebook 
-# - Change Text/Markdown Style for Notebook 
-# - HTML back-up 
-# - Provide data to download on Zenodo! 
+# 1. Provide Nifti Data on Zenodo 
 #     - Subset of CT scans from the COVID-19-AR dataset in the nifti file format for the body part regression tutorial 
+# 2. Show example json file in presentation 
+# 3. Add Thank You image
+# - Happy Smilie for solving the problem 
+# - Stating Problem more explicit in Quote bigger font ... 
+# 4. Adapt Style of Notebook 
+# 5. Add Vertebrae of the Spine explanation iamge (?) 
+# 3. Clean up notebook 
+# - Functions to utils 
+# 4. Test presentation 
+# - How long is it? 
+# - Add HTML backup 
+# 5. Prepare Slideshow for sharing
+#
+#
 #
 # # Analyze chest CT scans in COVID-19 dataset
 #
@@ -319,10 +310,5 @@ plot_scores_interactive(cropped_json_path, cropped_path)
 
 
 
-
-# ------------------------
-# ### You have similar problems in your project?
-# ### Feel free to reach out. 
-#
 
 
