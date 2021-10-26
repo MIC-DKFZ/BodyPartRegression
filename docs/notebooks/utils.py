@@ -229,16 +229,9 @@ def plot_scores(filepath, fontsize=18):
     plt.legend(loc=1, fontsize=fontsize)
     plt.xlim((0, np.nanmax(x["z"])))
 
-    filename = filepath.split("/")[-1]
-    if len(filename) > 50:
-        plt.title(
-            f"Filename: {filename[:50]}...\nPredicted Examined Body Part: {x['body part examined tag']}",
-            fontsize=fontsize - 2,
-        )
-    else:
-        plt.title(
-            f"Filename: {filename}\nPredicted Examined Body Part: {x['body part examined tag']}",
-            fontsize=fontsize - 2,
+    plt.title(
+        f"Predicted Body Range: {x['body part examined tag']}",
+        fontsize=fontsize - 2,
         )
     plt.show()
 
