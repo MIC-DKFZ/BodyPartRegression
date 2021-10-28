@@ -248,7 +248,7 @@ def get_updated_bodypartexamined_from_json_files(data_path):
 
 
 # Interactive plot to visualize scores
-def plot_scores_interactive(json_filepath, nifti_filepath):
+def plot_scores_interactive(json_filepath, nifti_filepath, start_index=0):
     json_files = [f for f in os.listdir(json_filepath) if f.endswith(".json")]
     json_filepaths = [json_filepath + f for f in json_files]
     nifti_filepaths = [
@@ -262,7 +262,7 @@ def plot_scores_interactive(json_filepath, nifti_filepath):
 
     idx = widgets.BoundedFloatText(
         value=15,
-        min=0,
+        min=start_index,
         max=len(json_filepaths) - 1,
         step=1,
         description="File:",

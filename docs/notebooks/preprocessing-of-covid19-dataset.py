@@ -19,24 +19,13 @@
 # %load_ext autoreload
 # %autoreload 2
 
-import matplotlib.pyplot as plt 
-import pandas as pd
-import numpy as np 
-import nibabel as nib
-import json, sys
-
-from ipywidgets import widgets, interactive
-from bpreg.scripts.bpreg_inference import bpreg_inference
-from bpreg.preprocessing.nifti2npy import load_nifti_volume, Nifti2Npy
-from bpreg.settings.settings import * 
-from tqdm import tqdm 
-
+import sys 
 sys.path.append("../")
 from utils import * 
 
 # define paths 
-nifti_path = "COVID-19-AR/nifti_files/"
-json_path = "COVID-19-AR/output_files/"
+input_path = "COVID-19-AR/nifti_files/"
+output_path = "COVID-19-AR/output_files/"
 cropped_path = "COVID-19-AR/cropped_nifti_files/"
 cropped_json_path = "COVID-19-AR/cropped_output_files/"
 # -
@@ -66,7 +55,7 @@ cropped_json_path = "COVID-19-AR/cropped_output_files/"
 
 # ## 2. Analyze Data 
 
-plot_volumes_interactive(nifti_path, start_index=36) 
+plot_volumes_interactive(input_path, start_index=36) 
 
 
 # <br> 
@@ -116,18 +105,17 @@ plot_volumes_interactive(nifti_path, start_index=36)
 # <img src="images/Main-body-part-regression-function.png" width=800/>
 #
 
-# +
-# bpreg_inference(nifti_path, json_filepath, plot=True)
-# -
+from bpreg.scripts.bpreg_inference import bpreg_inference
+# bpreg_inference(input_path, output_path, plot=True)
 
 # <br><br><br><br><br><br>
 #
 # ## 6. Analyze body part meta data files
 
-plot_scores_interactive(json_path, nifti_path)
+plot_scores_interactive(output_path, input_path, start_index=166)
 
 # +
-df = create_meta_data_table(json_path)
+df = create_meta_data_table(output_path)
 
 # Filter CT scans with less than 20 slices 
 df = df[df.z > 20]
@@ -166,16 +154,17 @@ plot_dicomexamined_distribution(df_cleaned,
 
 # <img src="images/Landmarks-for-cropping.png" width=1000/>
 
-json_filepaths = [json_path + f for f in os.listdir(json_path) if f.endswith(".json")]
+import pandas as pd
+json_filepaths = [output_path + f for f in os.listdir(output_path) if f.endswith(".json")]
 x = load_json(json_filepaths[0])
 lookuptable = pd.DataFrame(x["look-up table"]).T
 lookuptable.sort_values(by="mean")[["mean"]]
 
 # +
-nifti_filepaths = [nifti_path + f.replace(".json", ".nii.gz") for f in df_cleaned.FILE]
+nifti_filepaths = [input_path + f.replace(".json", ".nii.gz") for f in df_cleaned.FILE]
 
 # crop and save ct images to chest region 
-# crop_ct_images(nifti_filepaths, json_path,  cropped_path, save=True)
+# crop_ct_images(nifti_filepaths, output_path,  cropped_path, save=True)
 
 # create body part meta data for cropped images
 # bpreg_inference(cropped_path, cropped_json_path, plot=True, gpu_available=False)
@@ -197,3 +186,5 @@ plot_volumes_interactive(cropped_path)
 # <br>
 # <img src="images/emoji-hug.png" width=300/>
 # <br><br><br><br><br><br><br><br><br><br><br><br>
+
+
