@@ -321,7 +321,7 @@ class Nifti2Npy:
 
         x = self.preprocess_npy(x0, pixel_spacings)
 
-        if save and np.isnan(x).any():
+        if save and not np.isnan(x).any():
             np.save(ofilepath, x.astype(np.float32))
         return x, x0, pixel_spacings
 
