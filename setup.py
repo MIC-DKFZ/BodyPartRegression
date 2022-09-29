@@ -19,7 +19,7 @@ setup(
         "albumentations==0.5.2",
         "dataclasses",
         "pandas==1.2.1",
-        "torch==1.12.1",
+        "torch==1.8.1",
         "torchvision==0.9.1",
     ],
     data_files=[("models", ["bpreg/settings/body-part-metadata.md"])],
