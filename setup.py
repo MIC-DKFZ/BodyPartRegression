@@ -18,7 +18,7 @@ setup(
         "scipy==1.7.0",
         "albumentations==0.5.2",
         "dataclasses",
-        "pandas==1.2.1",
+        "pandas==1.3.5",
         "torch==1.8.1",
         "torchvision==0.9.1",
     ],
