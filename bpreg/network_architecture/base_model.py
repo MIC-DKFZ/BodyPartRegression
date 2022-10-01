@@ -100,6 +100,7 @@ class BodyPartRegressionBase(pl.LightningModule):
         return x
 
     def validation_epoch_end(self, validation_step_outputs):
+      '''
         val_dataloader = self.val_dataloader()
         train_dataloader = self.train_dataloader()
 
@@ -110,7 +111,7 @@ class BodyPartRegressionBase(pl.LightningModule):
         self.log("lmse", lmse)
         self.log("lmse_std", lmse_std)
         self.log("d", d)
-
+'''
     def validation_step(self, batch, batch_idx):
         loss, loss_order, loss_dist, loss_l2 = self.base_step(batch, batch_idx)
         self.log("val_loss", loss)
@@ -119,6 +120,7 @@ class BodyPartRegressionBase(pl.LightningModule):
         self.log("val_loss_l2", loss_l2)
 
     def test_step(self, batch, batch_idx):
+      '''
         test_dataloader = self.test_dataloader()
         train_dataloader = self.train_dataloader()
 
@@ -129,7 +131,7 @@ class BodyPartRegressionBase(pl.LightningModule):
         self.log("lmse", lmse)
         self.log("lmse_std", lmse_std)
         self.log("d", d)
-
+      '''
     def loss(self, scores_pred, slice_indices, z):
         l2_norm = 0
         ldist_reg = 0
