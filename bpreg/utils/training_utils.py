@@ -63,17 +63,18 @@ def save_model(model, config: ModelSettings, path):
         torch.save(model.state_dict(), path + "model.pt")
 
     # save lookuptable
-    df_landmarks = pd.read_excel(
-        config.landmark_path, sheet_name="landmarks-train", engine="openpyxl"
-    )
-    lscores = LandmarkScores(
-        config.data_path,
-        df_landmarks,
-        model,
-        landmark_start=np.nan,
-        landmark_end=np.nan,
-    )
-    lscores.save_lookuptable(filepath=os.path.join(path, "lookuptable.json"))
+    if config.landmark_path:
+      df_landmarks = pd.read_excel(
+         config.landmark_path, sheet_name="landmarks-train", engine="openpyxl"
+      )
+      lscores = LandmarkScores(
+         config.data_path,
+         df_landmarks,
+         model,
+         landmark_start=np.nan,
+         landmark_end=np.nan,
+      )
+      lscores.save_lookuptable(filepath=os.path.join(path, "lookuptable.json"))
 
 
 def data_preprocessing_ssbr(df: pd.DataFrame, config: ModelSettings):
