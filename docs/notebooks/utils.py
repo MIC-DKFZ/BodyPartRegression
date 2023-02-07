@@ -14,6 +14,12 @@ from bpreg.settings import *
 from bpreg.inference.inference_model import InferenceModel
 
 
+def conversion2nifti(ifilepath, ofilepath):
+    import SimpleITK as sitk
+    sitk_img = sitk.ReadImage(ifilepath)
+    sitk.WriteImage(sitk_img, ofilepath)
+    
+    
 def dicom2nifti(ifilepath, ofilepath):
     import SimpleITK as sitk
 
@@ -44,20 +50,19 @@ def convert_ct_lymph_nodes_to_nifti(dicom_path, nifti_path):
         dicom2nifti(ifilepath, ofilepath)
 
 
-def nifti2npy(nifti_path, npy_path):
+def nifti2npy(nifti_path, npy_path, min_hu=-1000, max_hu=1500, size=64):
     base_path = "/".join(nifti_path.split("/")[0:-2]) + "/"
     n2n = Nifti2Npy(
-        target_pixel_spacing=7,  # in mm/pixel
-        min_hu=-1000,  # in Hounsfield units
-        max_hu=1500,  # in Hounsfield units
-        size=64,  # x/y size
+        target_pixel_spacing=7*64/size,  # in mm/pixel
+        min_hu=min_hu,  # in Hounsfield units
+        max_hu=max_hu,  # in Hounsfield units
+        size=size,  # x/y size
         ipath=nifti_path,  # input path
         opath=npy_path,  # output path
         rescale_max=1,  # rescale max value
         rescale_min=-1,
     )  # rescale min value
     filepaths = np.sort([nifti_path + f for f in os.listdir(nifti_path)])
-
     df = n2n.convert(filepaths, save=True)
     df.to_excel(base_path + "meta_data.xlsx")
 
@@ -83,6 +88,22 @@ def update_meta_data(landmark_filepath, meta_data_filepath):
     df_meta_data.loc[val_filenames, "val_data"] = 1
     df_meta_data.loc[test_filenames, "test_data"] = 1
     df_meta_data.loc[val_filenames + test_filenames, "train_data"] = 0
+
+    df_meta_data.to_excel(meta_data_filepath)
+
+
+def update_meta_data_split(meta_data_filepath):
+    """
+    add information to train, val and test data to dataframe
+    """
+    df_meta_data = pd.read_excel(meta_data_filepath, index_col=0)
+
+    n_vol = len(df_meta_data)
+    n_fol = n_vol//5
+
+    df_meta_data.loc[0:n_fol*3, "train_data"] = 1
+    df_meta_data.loc[n_fol*3+1:n_fol*4, "val_data"] = 1
+    df_meta_data.loc[n_fol*4+1::, "test_data"] = 1
 
     df_meta_data.to_excel(meta_data_filepath)
 

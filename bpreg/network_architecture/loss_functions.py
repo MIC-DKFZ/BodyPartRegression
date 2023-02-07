@@ -27,6 +27,11 @@ class order_loss_h:
 
     def __call__(self, scores_pred, z):
         scores_diff = scores_pred[:, 1:] - scores_pred[:, :-1]
+        print("=======================================")
+        print("z: ", self.beta*z)
+        print("pred_z: ", self.alpha*scores_diff)
+        print(scores_pred)
+
         p_pred = torch.sigmoid(self.alpha * scores_diff)
         p_obs = torch.sigmoid(self.beta * z)
         loss = torch.mean((p_obs - p_pred) ** 2)

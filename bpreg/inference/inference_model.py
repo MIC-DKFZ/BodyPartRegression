@@ -55,6 +55,7 @@ class InferenceModel:
         base_dir: str = DEFAULT_MODEL,
         gpu: bool = 1,
         warning_to_error: bool = False,
+        model_file="model.pt"
     ):
 
         self.base_dir = base_dir
@@ -62,7 +63,7 @@ class InferenceModel:
         if gpu:
             self.device = "cuda"
 
-        self.model = load_model(base_dir, device=self.device)
+        self.model = load_model(base_dir, device=self.device, model_file=model_file)
         self.load_inference_settings()
 
         self.n2n = Nifti2Npy(
@@ -73,26 +74,30 @@ class InferenceModel:
     def load_inference_settings(self):
 
         path = self.base_dir + "inference-settings.json"
-        if not os.path.exists(path):
+        flag_settings = os.path.exists(path)
+
+        if not flag_settings:
             print("WARNING: For this model, no inference settings can be load!")
 
-        with open(path, "rb") as f:
-            settings = json.load(f)
+        else:
 
-        # use for inference the lookuptable from all predictions
-        # of the annotated landmarks in the train- and validation-dataset
-        self.lookuptable_original = settings["lookuptable_train_val"]["original"]
-        self.lookuptable = settings["lookuptable_train_val"]["transformed"]
+            with open(path, "rb") as f:
+                settings = json.load(f)
 
-        self.start_landmark = settings["settings"]["start-landmark"]
-        self.end_landmark = settings["settings"]["end-landmark"]
+            # use for inference the lookuptable from all predictions
+            # of the annotated landmarks in the train- and validation-dataset
+        self.lookuptable_original = settings["lookuptable_train_val"]["original"] if flag_settings else None
+        self.lookuptable = settings["lookuptable_train_val"]["transformed"] if flag_settings else None
 
-        self.transform_min = self.lookuptable_original[self.start_landmark]["mean"]
-        self.transform_max = self.lookuptable_original[self.end_landmark]["mean"]
+        self.start_landmark = settings["settings"]["start-landmark"] if flag_settings else None
+        self.end_landmark = settings["settings"]["end-landmark"] if flag_settings else None
 
-        self.slope_mean = settings["slope_mean"]
-        self.tangential_slope_min = settings["lower_quantile_tangential_slope"]
-        self.tangential_slope_max = settings["upper_quantile_tangential_slope"]
+        self.transform_min = self.lookuptable_original[self.start_landmark]["mean"] if flag_settings else None
+        self.transform_max = self.lookuptable_original[self.end_landmark]["mean"] if flag_settings else None
+
+        self.slope_mean = settings["slope_mean"] if flag_settings else None
+        self.tangential_slope_min = settings["lower_quantile_tangential_slope"] if flag_settings else None
+        self.tangential_slope_max = settings["upper_quantile_tangential_slope"] if flag_settings else None
 
     def predict_tensor(self, tensor, n_splits=200):
         scores = []
@@ -150,11 +155,15 @@ class InferenceModel:
 
     def parse_scores(self, scores_array, pixel_spacing):
 
+        transform_min, transform_max = None, None
+        if self.lookuptable_original is not None:
+            transform_min, transform_may = self.lookuptable_original[self.start_landmark]["mean"], self.lookuptable_original[self.end_landmark]["mean"]
+
         scores = Scores(
             scores_array,
             pixel_spacing,
-            transform_min=self.lookuptable_original[self.start_landmark]["mean"],
-            transform_max=self.lookuptable_original[self.end_landmark]["mean"],
+            transform_min=transform_min,
+            transform_max=transform_max,
             slope_mean=self.slope_mean,
             tangential_slope_min=self.tangential_slope_min,
             tangential_slope_max=self.tangential_slope_max,
@@ -334,9 +343,13 @@ def load_model(
     config.load(path=config_filepath)
 
     model = BodyPartRegression(alpha=config.alpha, lr=config.lr)
-    model.load_state_dict(
-        torch.load(model_filepath, map_location=torch.device(device)), strict=False
-    )
+    if model_filepath.endswith(".ckpt"):
+        checkpoint = torch.load(model_filepath, map_location=lambda storage, loc: storage)
+        model.load_state_dict(checkpoint["state_dict"])
+    else:
+        model.load_state_dict(
+            torch.load(model_filepath, map_location=torch.device(device)), strict=False
+        )
     model.eval()
     model.to(device)
 

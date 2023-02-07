@@ -26,12 +26,15 @@ class LMSE:
         pass
 
     def from_dataset(self, model, val_dataset, train_dataset):
-        val_score_matrix = model.compute_slice_score_matrix(val_dataset)
-        train_score_matrix = model.compute_slice_score_matrix(train_dataset)
-        d = self.get_normalizing_constant(np.nanmean(train_score_matrix, axis=0))
-        mse, mse_std = self.from_matrices(val_score_matrix, train_score_matrix)
+        if hasattr(train_dataset, 'landmark_matrix'):
+            val_score_matrix = model.compute_slice_score_matrix(val_dataset)
+            train_score_matrix = model.compute_slice_score_matrix(train_dataset)
+            d = self.get_normalizing_constant(np.nanmean(train_score_matrix, axis=0))
+            mse, mse_std = self.from_matrices(val_score_matrix, train_score_matrix)
 
-        return mse, mse_std, d
+            return mse, mse_std, d
+        else:
+            return 0, 0, 0
 
     def lmse_per_landmark_from_matrices(self, score_matrix, reference_matrix, d=False):
         square_error_matrix = self.get_square_error_matrix(

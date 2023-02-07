@@ -49,20 +49,23 @@ class Evaluation(Visualization):
         device: str = "cuda",
         landmark_start: str = "pelvis_start",
         landmark_end: str = "eyes_end",
+        model_file: str = "model.pt"
     ):
 
         Visualization.__init__(self)
         self.device = device
         self.base_filepath = base_filepath
-        self.inference_model = InferenceModel(base_filepath)
+        self.inference_model = InferenceModel(base_filepath, model_file=model_file)
         self.normalizedMSE = LMSE()
-        self.landmark_score_bundle = LandmarkScoreBundle(
-            data_path,
-            landmark_path,
-            self.inference_model.model,
-            landmark_start=landmark_start,
-            landmark_end=landmark_end,
-        )
+
+        if landmark_path is not None:
+            self.landmark_score_bundle = LandmarkScoreBundle(
+                data_path,
+                landmark_path,
+                self.inference_model.model,
+                landmark_start=landmark_start,
+                landmark_end=landmark_end,
+            )
 
         # setup data
         self.df_data_source_path = df_data_source_path
@@ -70,12 +73,13 @@ class Evaluation(Visualization):
         self.data_path = data_path
         self._setup_data()
 
-        self.mse, self.mse_std = self.landmark_score_bundle.nMSE(
-            target="validation", reference="train"
-        )
-        self.acc5 = self.landmark_score_bundle.accuracy(
-            self.val_dataset, reference="train", class2landmark=CLASS_TO_LANDMARK_5
-        )
+        if landmark_path is not None:
+            self.mse, self.mse_std = self.landmark_score_bundle.nMSE(
+                target="validation", reference="train"
+            )
+            self.acc5 = self.landmark_score_bundle.accuracy(
+                self.val_dataset, reference="train", class2landmark=CLASS_TO_LANDMARK_5
+            )
 
     def _setup_data(self):
         path = self.base_filepath + "config.json"
@@ -90,7 +94,7 @@ class Evaluation(Visualization):
 
         if len(self.df_data_source_path) > 0:
             config.df_data_source_path = self.df_data_source_path
-        if len(self.landmark_path) > 0:
+        if (self.landmark_path is not None) and (len(self.landmark_path) > 0):
             config.landmark_path = self.landmark_path
         if len(self.data_path) > 0:
             config.data_path = self.data_path
@@ -149,17 +153,20 @@ class Evaluation(Visualization):
         )
 
     def plot_slices2scores(
-        self, max_cols=4, nearby_values=[0, 25, 50, 75, 100], save_path="", fontsize=16
+        self, max_cols=4, nearby_values=[0, 25, 50, 75, 100], save_path="", fontsize=16, threshold_score=1
     ):
         _, ax = plt.subplots(len(nearby_values), max_cols, figsize=(14, 16))
 
         for row, nearby_value in enumerate(nearby_values):
             col = 0
+            id = 0
             slice_indices = []
+            test_idx = np.arange(0, len(self.test_dataset))
+            np.random.shuffle(test_idx)
             while col < max_cols:
-                idx = np.random.randint(0, len(self.test_dataset))
-                if idx in slice_indices:
-                    continue
+                idx = test_idx[id%len(test_idx)]
+                #if idx in slice_indices:
+                #    continue
                 slice_indices.append(idx)
 
                 filepaths = self.test_dataset.filepaths
@@ -171,16 +178,18 @@ class Evaluation(Visualization):
                     np.abs(myScores.original_transformed_values - nearby_value)
                 )
                 slice_score = myScores.original_transformed_values[slice_index]
-                if np.abs(slice_score - nearby_value) > 1:
+                if np.abs(slice_score - nearby_value) > threshold_score:
+                    id += 1
                     continue
 
                 ax[row, col].imshow(X[slice_index, :, :], cmap="gray")
-                ax[row, col].set_title(np.round(slice_score, 2), fontsize=fontsize)
+                ax[row, col].set_title(f"{np.round(slice_score, 2)} [id: {id%len(test_idx)}]", fontsize=fontsize)
                 ax[row, col].set_yticklabels([])
                 ax[row, col].set_xticklabels([])
                 ax[row, col].set_yticks([])
                 ax[row, col].set_xticks([])
                 col += 1
+                id += 1
         plt.tight_layout()
         if len(save_path) > 0:
             plt.savefig(save_path)

@@ -190,13 +190,21 @@ class Nifti2Npy:
         return y
 
     def rescale_xy(self, x):
-        x = np.where(x > self.max_hu, self.max_hu, x)
-        x = np.where(x < self.min_hu, self.min_hu, x)
-        x = x - self.min_hu
-        x = (
-            x * (self.rescale_max - self.rescale_min) / (self.max_hu - self.min_hu)
-            + self.rescale_min
-        )
+        if (self.max_hu is not None) and (self.min_hu is not None):
+            x = np.where(x > self.max_hu, self.max_hu, x)
+            x = np.where(x < self.min_hu, self.min_hu, x)
+            x = x - self.min_hu
+            x = (
+                x * (self.rescale_max - self.rescale_min) / (self.max_hu - self.min_hu)
+                + self.rescale_min
+            )
+        else:
+            x = x - x.min()
+            x /= (x.max()-x.min())
+            x = (
+                    x * (self.rescale_max - self.rescale_min)
+                    + self.rescale_min
+                )
         return x
 
     def resize_xy(self, x, pixel_spacings):
@@ -279,8 +287,8 @@ class Nifti2Npy:
         # convert X to corect axis ordering
         X = X.transpose(tuple(np.argsort(axis_ordering)))
 
-        x = self.rescale_xy(X)
-        x = self.resize_volume(x, pixel_spacings)
+        x = self.resize_volume(X, pixel_spacings)
+        x = self.rescale_xy(x)
         if isinstance(x, float) and np.isnan(x):
             return np.nan
 
@@ -321,7 +329,7 @@ class Nifti2Npy:
 
         x = self.preprocess_npy(x0, pixel_spacings)
 
-        if save and ~np.isnan(x):
+        if save and ~np.isnan(x).any():
             np.save(ofilepath, x.astype(np.float32))
         return x, x0, pixel_spacings
 

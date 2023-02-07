@@ -65,7 +65,7 @@ def train_config(config: ModelSettings):
         )
 
         # run model
-        run_fast_dev(config, train_dataloader, val_dataloader)
+        #run_fast_dev(config, train_dataloader, val_dataloader)
 
         model = BodyPartRegression(
             alpha=config.alpha,
@@ -76,6 +76,13 @@ def train_config(config: ModelSettings):
             base_model=config.base_model,
             loss_order=config.loss_order,
         )
+        
+        #print("resume training")
+        #print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+        #checkpoint = "/media/lisa/HDD/Data/examples/output/BPR_MRT/version_7/checkpoints/epoch=31612-step=31612.ckpt"
+        #checkpoint = torch.load(checkpoint, map_location=lambda storage, loc: storage)
+        #model.load_state_dict(checkpoint["state_dict"])
+        #model.load_from_checkpoint()
 
     logger_uar = TensorBoardLogger(save_dir=config.save_dir, name=config.model_name)
     trainer = pl.Trainer(
@@ -85,6 +92,7 @@ def train_config(config: ModelSettings):
         logger=logger_uar,
         deterministic=config.deterministic,
         accumulate_grad_batches=int(config.effective_batch_size / config.batch_size),
+        check_val_every_n_epoch=101
     )
 
     trainer.fit(model, train_dataloader, val_dataloader)

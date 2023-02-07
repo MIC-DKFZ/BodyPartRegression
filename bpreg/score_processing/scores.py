@@ -75,7 +75,8 @@ class Scores:
         self.values = self.transform_scores(self.values)
         self.values = self.smooth_scores(self.values)
         self.set_boundary_indices(self.values)
-        self.values = self.remove_outliers(self.values)
+        if self.slope_mean is not None:
+            self.values = self.remove_outliers(self.values)
         self.valid_region = np.where(~np.isnan(self.values))[0]
 
         self.z = np.arange(len(scores)) * zspacing
@@ -85,10 +86,11 @@ class Scores:
 
         # data sanity chekcs
         self.r_slope_threshold = r_slope_threshold
-        self.expected_zspacing = self.calculate_expected_zspacing()
-        self.r_slope = self.calculate_relative_error_to_expected_slope()
-        self.valid_zspacing = self.is_zspacing_valid()
-        self.reverse_zordering = self.is_zordering_reverse()
+        if self.slope_mean:
+            self.expected_zspacing = self.calculate_expected_zspacing()
+            self.r_slope = self.calculate_relative_error_to_expected_slope()
+            self.valid_zspacing = self.is_zspacing_valid()
+            self.reverse_zordering = self.is_zordering_reverse()
 
         # define settings
         self.settings = {
@@ -118,7 +120,7 @@ class Scores:
         return np.array(smoothed)
 
     def transform_scores(self, x):
-        if (not np.isnan(self.transform_min)) & (not np.isnan(self.transform_max)):
+        if (self.transform_min is not None) & (self.transform_max is not None):
             transformed = linear_transform(
                 x,
                 scale=self.scale,
@@ -126,6 +128,8 @@ class Scores:
                 max_value=self.transform_max,
             )
             return transformed
+        else:
+            return x
 
     def filter_scores(self, x):
         """Filter predictions of empty slices."""

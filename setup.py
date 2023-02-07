@@ -21,6 +21,9 @@ setup(
         "pandas==1.2.1",
         "torch==1.8.1",
         "torchvision==0.9.1",
+        "ipywidgets",
+        "SimpleITK",
+        "openpycl"
     ],
     data_files=[("models", ["bpreg/settings/body-part-metadata.md"])],
     long_description=readme,

@@ -83,6 +83,8 @@ class BodyPartRegressionBase(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         loss, loss_order, loss_dist, loss_l2 = self.base_step(batch, batch_idx)
+        print("TRAIN------------------------------------------------------------------------------------------------------")
+        print(loss.item(), loss_order.item(), loss_dist, loss_l2)
         self.log("train_loss", loss)
         self.log("train_loss_order", loss_order)
         self.log("train_loss_dist", loss_dist)
@@ -113,6 +115,8 @@ class BodyPartRegressionBase(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         loss, loss_order, loss_dist, loss_l2 = self.base_step(batch, batch_idx)
+        print("VAL------------------------------------------------------------------------------------------------------")
+        print(loss.item(), loss_order.item(), loss_dist, loss_l2)
         self.log("val_loss", loss)
         self.log("val_loss_order", loss_order)
         self.log("val_loss_dist", loss_dist)
