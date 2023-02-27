@@ -19,7 +19,6 @@ bpreg.egg-info/
 *.dcm
 *.nii
 *.npy
-*.ipynb
 *.pt
 *.pth
 *.pyc
