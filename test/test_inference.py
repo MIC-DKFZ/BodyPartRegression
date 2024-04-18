@@ -1,5 +1,6 @@
 import sys, os, json
 import nibabel as nib
+import torch
 
 sys.path.append("../")
 from bpreg.scripts.bpreg_inference import *
@@ -59,7 +60,9 @@ def test_npy_inference():
     input_path = os.path.join(MAIN_PATH, "data/test_cases/")
     input_path += os.listdir(input_path)[0]
 
-    model = InferenceModel()
+    if not torch.cuda.is_available():
+        gpu_available = False
+    model = InferenceModel(gpu=gpu_available)
     metadata1 = model.nifti2json(input_path, "")
 
     img = nib.load(input_path)
