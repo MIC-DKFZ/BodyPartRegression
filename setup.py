@@ -15,12 +15,14 @@ setup(
     install_requires=[
         "pytorch_lightning==1.2.10",
         "nibabel==3.2.1",
-        "scipy==1.7.0",
+        "scipy==1.10.0",
         "albumentations==0.5.2",
         "dataclasses",
-        "pandas==1.2.1",
-        "torch==1.8.1",
-        "torchvision==0.9.1",
+        "pandas==1.4.4",
+        "torch==1.11.0",
+        "torchvision==0.12.0",
+        "requests==2.32.3",
+        "pynrrd==1.1.1"
     ],
     data_files=[("models", ["bpreg/settings/body-part-metadata.md"])],
     long_description=readme,
