@@ -31,6 +31,7 @@ def bpreg_for_directory(
     skip_existing: bool = True,
     stringify_json: bool = False,
     gpu_available: bool = True,
+    save_json: bool = True
 ):
     # test if gpu is available
     if not torch.cuda.is_available():
@@ -42,16 +43,25 @@ def bpreg_for_directory(
             "Input path is not defined. Please define the input path via -i <input_path>."
         )
 
-    if output_dirpath == "":
+    if output_dirpath == "" and save_json:
         raise ValueError(
             "Output path is not defined. Please define the output path via -o <output_path>."
         )
 
-    ifiles = [f for f in os.listdir(input_dirpath) if f.endswith((".nii.gz", ".nii"))]
-    ofiles = [f.replace(".nii", "").replace(".gz", "") + ".json" for f in ifiles]
-
+    if os.path.isdir(input_dirpath):
+        ifiles = [f for f in os.listdir(input_dirpath) if f.endswith((".nii.gz", ".nii",".nrrd"))]
+    elif os.path.isfile(input_dirpath):
+        ifiles = [os.path.basename(input_dirpath)]
+    else:
+        raise ValueError(f"Invalid input path: {input_dirpath} is neither a supported file nor a directory.")
+    
+    ofiles = [f.replace(".nii", "").replace(".gz", "") + ".json" if f.endswith((".nii.gz", ".nii")) else
+              f.replace(".nrrd", "") + ".json"
+              for f in ifiles]
+    
+    result_dict = {}
     for ifile, ofile in zip(ifiles, ofiles):
-        ipath = os.path.join(input_dirpath, ifile)
+        ipath = os.path.join(input_dirpath, ifile) if os.path.isdir(input_dirpath) else input_dirpath
         opath = os.path.join(output_dirpath, ofile)
 
         if os.path.exists(opath) and skip_existing == 1:
@@ -59,7 +69,9 @@ def bpreg_for_directory(
             continue
 
         print(f"Create body-part meta data file: {ofile}")
-        model.nifti2json(ipath, opath, stringify_json=stringify_json)
+        result_dict[ifile]=model.nifti2json(ipath, opath, stringify_json=stringify_json,save_json=save_json)
+
+    return result_dict
 
 
 def plot_scores_in_json_files(output_path):
@@ -77,16 +89,19 @@ def bpreg_inference(
     stringify_json: bool = False,
     gpu_available: bool = True,
     plot: bool = False,
+    save_json: bool = True
 ):
 
     # run body part regression for each file in the dictionary
-    bpreg_for_directory(
+    result_dict = bpreg_for_directory(
         model,
         input_path,
         output_path,
         skip_existing=skip_existing,
         stringify_json=stringify_json,
         gpu_available=gpu_available,
+        save_json=save_json
+
     )
 
     # plot slice scores if plot is True
@@ -100,6 +115,8 @@ def bpreg_inference(
         os.path.join(output_path, "README.md"),
     )
 
+    return result_dict
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -110,6 +127,7 @@ def main():
     parser.add_argument("--skip", default=True)
     parser.add_argument("--str", default=False)
     parser.add_argument("--gpu", default=True)
+    parser.add_argument("--save", default=True)
 
     value = parser.parse_args()
     model_path = value.model
@@ -119,8 +137,9 @@ def main():
     skip_existing = value.skip
     stringify_json = value.str
     gpu_available = value.gpu
+    save_json = value.save
 
-    bpreg_inference(
+    result_dict = bpreg_inference(
         input_dirpath,
         output_dirpath,
         model_path,
@@ -128,7 +147,10 @@ def main():
         stringify_json,
         gpu_available=gpu_available,
         plot=plot,
+        save_json=save_json
     )
+
+    return result_dict
 
 
 if __name__ == "__main__":
