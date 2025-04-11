@@ -19,8 +19,8 @@ setup(
         "albumentations==0.5.2",
         "dataclasses",
         "pandas==1.4.4",
-        "torch==1.11.0",
-        "torchvision==0.12.0",
+        "torch==2.0.0",
+        "torchvision==0.15.1",
         "requests==2.32.3",
         "pynrrd==1.1.1"
     ],
