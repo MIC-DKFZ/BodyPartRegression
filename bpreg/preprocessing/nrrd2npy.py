@@ -14,7 +14,7 @@ class Nrrd2Npy:
     """Convert nrrd files to numpy arrays
 
     Args:
-        ipath (str, optional): input path of nifti-files. Defaults to "/home/AD/s429r/Documents/Data/DataSet/Images/".
+        ipath (str, optional): input path of nifti-files. Defaults to "/home/username/Documents/Data/DataSet/Images/".
     """
 
     def __init__(
