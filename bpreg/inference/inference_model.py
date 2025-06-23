@@ -23,6 +23,7 @@ import argparse
 sys.path.append("../../")
 
 from bpreg.preprocessing.nifti2npy import Nifti2Npy
+from bpreg.preprocessing.nrrd2npy import Nrrd2Npy
 from bpreg.network_architecture.bpr_model import BodyPartRegression
 from bpreg.score_processing import Scores, BodyPartExaminedDict
 from bpreg.settings.settings import *
@@ -67,6 +68,8 @@ class InferenceModel:
 
         self.n2n = Nifti2Npy(
             target_pixel_spacing=3.5, min_hu=-1000, max_hu=1500, size=128
+        )
+        self.nrrd2n = Nrrd2Npy(
         )
         self.warning_to_error = warning_to_error
 
@@ -120,13 +123,14 @@ class InferenceModel:
     def predict_nifti(self, nifti_path: str):
         # get nifti file as tensor
         try:
-            x, pixel_spacings = self.n2n.preprocess_nifti(nifti_path)
+            x, pixel_spacings = self.nrrd2n.preprocess_nrrd(nifti_path) if nifti_path.endswith(".nrrd") else self.n2n.preprocess_nifti(nifti_path)
         except:
             x, pixel_spacings = np.nan, np.nan
 
         if isinstance(x, float) and np.isnan(x):
-            x, pixel_spacings = self.n2n.load_volume(nifti_path)
+            x, pixel_spacings = self.nrrd2n.load_volume(nifti_path) if nifti_path.endswith(".nrrd") else self.n2n.load_volume(nifti_path)
             if not isinstance(x, np.ndarray):
+                print(f"WARNING: File {nifti_path.split('/')[-1]} can not be loaded and / or preprocessed. This might be due to missing spatial information.")
                 if self.warning_to_error:
                     raise ValueError(f"File {nifti_path} can not be loaded.")
                 return np.nan
@@ -200,6 +204,7 @@ class InferenceModel:
         output_path: str = "",
         stringify_json: bool = False,
         ignore_invalid_z: bool = False,
+        save_json: bool = True
     ):
         """
         Main method to convert NIFTI CT volumes int JSON meta data files.
@@ -217,7 +222,7 @@ class InferenceModel:
         data_storage = VolumeStorage(
             slice_scores, self.lookuptable, ignore_invalid_z=ignore_invalid_z
         )
-        if len(output_path) > 0:
+        if len(output_path) > 0 and save_json:
             data_storage.save_json(output_path, stringify_json=stringify_json)
         return data_storage.json
 

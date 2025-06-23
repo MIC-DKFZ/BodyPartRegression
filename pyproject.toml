@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bpreg"
+version = "1.1.0"
+description = ""
+readme = "README.md"
+requires-python = ">=3.7"
+authors = [
+  { name = "Division of Medical Image Computing, German Cancer Research Center", email = "mic-office@dkfz.de" }
+]
+maintainers = [
+  { email = "s.schuhegger@dkfz-heidelberg.de" }
+]
+dependencies = [
+  "pytorch_lightning==1.2.10",
+  "nibabel==3.2.1",
+  "scipy==1.10.0",
+  "albumentations==0.5.2",
+  "dataclasses",
+  "pandas==1.4.4",
+  "torch==2.0.0",
+  "torchvision==0.15.1",
+  "requests==2.32.3",
+  "pynrrd==1.1.1"
+]
+
+[project.urls]
+Homepage = "https://github.com/MIC-DKFZ/BodyPartRegression"
+
+[project.scripts]
+bpreg_predict = "bpreg.scripts.bpreg_inference:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
