@@ -14,7 +14,6 @@ limitations under the License.
 """
 import os
 import numpy as np
-from numpy.lib.arraysetops import isin
 import pandas as pd
 import random, math, cv2
 import albumentations as A
