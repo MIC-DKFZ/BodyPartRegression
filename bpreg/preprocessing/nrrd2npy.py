@@ -29,6 +29,40 @@ class Nrrd2Npy:
         x = self.n2n.rescale_xy(x)
         x = self.n2n.resize_volume(x, pixel_spacings)
         return x, pixel_spacings
+    
+    def nrrd_header_to_nifti_geometry(self,header):
+        """
+        Converts NRRD header orientation (usually LPS) to NIfTI geometry (RAS) and extracts spacing & rotation.
+        Only supports 'left-posterior-superior' (LPS) and 'right-anterior-superior' (RAS).
+        """     
+        # Read orientation from header   
+        orientation = header.get("space", "").lower()
+
+        # Select transformation matrix from NRRD orientation to RAS
+        if orientation == "left-posterior-superior":
+            orient_to_ras = np.diag([-1, -1, 1])
+        elif orientation == "right-anterior-superior":
+            orient_to_ras = np.eye(3)
+        else:
+            raise ValueError(f"Unsupported orientation: {orientation}. Only LPS and RAS are supported.")
+
+        # Read direction and origin from NRRD header
+        directions = np.array(header['space directions'])
+        origin = np.array(header['space origin'])
+
+        # Apply orientation transform to directions and transpose for NIfTI convention
+        directions_ras = (directions @ orient_to_ras).T
+
+        # Build 4x4 affine: rotation+scaling in upper 3x3
+        affine = np.eye(4)
+        affine[:3, :3] = directions_ras
+        affine[:3, 3] = origin @ orient_to_ras
+        
+        # Extract voxel spacing (norm of each direction vector) and rotation
+        spacing = np.linalg.norm(directions_ras, axis=0)
+        rotation = affine[:3, :3]
+
+        return  spacing.astype(np.float32), rotation
 
     def load_volume(self, filepath):
         try:
@@ -38,9 +72,8 @@ class Nrrd2Npy:
             print(f"WARNING: Corrupted file {filepath}")
             return None, None
         
-        # get voxel sizes from dic, equivalent to header.get_zooms in nibabel
-        pixel_spacings = np.linalg.norm(header["space directions"], axis=0) 
-        affine = header.get('space directions')
+        # Get voxel sizes and affine matrix
+        pixel_spacings, affine = self.nrrd_header_to_nifti_geometry(header)
 
         # If affine matrix contains nan's, volume can't be reordered
         try:
